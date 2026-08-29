@@ -1,9 +1,9 @@
-import { IS_DEV, IS_TEST, IS_CI } from '@codebuff/common/env'
+import { IS_DEV, IS_TEST, IS_CI } from '@rivocode/common/env'
 
 import { getApiClient } from './codebuff-api'
 import { getCliEnv } from './env'
 
-import type { LogRecordInput } from '@codebuff/common/schemas/logs'
+import type { LogRecordInput } from '@rivocode/common/schemas/logs'
 
 const MAX_BATCH = 50
 const FLUSH_INTERVAL_MS = 10_000

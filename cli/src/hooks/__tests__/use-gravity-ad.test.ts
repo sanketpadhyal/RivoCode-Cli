@@ -8,7 +8,7 @@ import {
 } from '../use-gravity-ad'
 
 import type { ChatMessage } from '../../types/chat'
-import type { FirstPartyViewAckRequest } from '@codebuff/common/ads/first-party-view-ack'
+import type { FirstPartyViewAckRequest } from '@rivocode/common/ads/first-party-view-ack'
 
 const msg = (over: Partial<ChatMessage>): ChatMessage => ({
   id: 'user-1',
@@ -107,7 +107,7 @@ describe('dispatchFirstPartyViewAcknowledgement', () => {
           client_family: 'cli',
         })
         return Promise.resolve()
-      }) as typeof import('@codebuff/common/ads/first-party-view-ack').acknowledgeFirstPartyView,
+      }) as typeof import('@rivocode/common/ads/first-party-view-ack').acknowledgeFirstPartyView,
     )
     expect(dispatched).toBe(true)
     expect(calls).toHaveLength(1)
@@ -129,7 +129,7 @@ describe('dispatchFirstPartyViewAcknowledgement', () => {
     const acknowledge = (() => {
       calls++
       return Promise.resolve()
-    }) as typeof import('@codebuff/common/ads/first-party-view-ack').acknowledgeFirstPartyView
+    }) as typeof import('@rivocode/common/ads/first-party-view-ack').acknowledgeFirstPartyView
     expect(
       dispatchFirstPartyViewAcknowledgement(
         'gravity',

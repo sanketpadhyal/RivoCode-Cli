@@ -1,6 +1,6 @@
 
-import type { StreamRecoverySource } from '@codebuff/common/types/contracts/llm'
-import { isTransientNetworkError } from '@codebuff/common/util/error'
+import type { StreamRecoverySource } from '@rivocode/common/types/contracts/llm'
+import { isTransientNetworkError } from '@rivocode/common/util/error'
 
 export interface StreamFinishInfo {
   finishReason: string

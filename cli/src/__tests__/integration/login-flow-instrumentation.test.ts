@@ -1,7 +1,7 @@
 import { describe, test, expect, mock } from 'bun:test'
 
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
-import { createMockLogger } from '@codebuff/common/testing/mock-types'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
+import { createMockLogger } from '@rivocode/common/testing/mock-types'
 
 import { generateLoginUrl, pollLoginStatus } from '../../login/login-flow'
 import { createMockApiClient } from '../helpers/mock-api-client'

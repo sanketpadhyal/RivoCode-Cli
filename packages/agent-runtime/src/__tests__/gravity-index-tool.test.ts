@@ -1,7 +1,7 @@
-import { TEST_USER_ID } from '@codebuff/common/old-constants'
-import { TEST_AGENT_RUNTIME_IMPL } from '@codebuff/common/testing/impl/agent-runtime'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { promptSuccess } from '@codebuff/common/util/error'
+import { TEST_USER_ID } from '@rivocode/common/old-constants'
+import { TEST_AGENT_RUNTIME_IMPL } from '@rivocode/common/testing/impl/agent-runtime'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { promptSuccess } from '@rivocode/common/util/error'
 import {
   afterEach,
   beforeEach,
@@ -20,10 +20,10 @@ import { assembleLocalAgentTemplates } from '../templates/agent-registry'
 import type {
   AgentRuntimeDeps,
   AgentRuntimeScopedDeps,
-} from '@codebuff/common/types/contracts/agent-runtime'
-import type { ParamsExcluding } from '@codebuff/common/types/function-params'
-import type { StreamChunk } from '@codebuff/common/types/contracts/llm'
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
+} from '@rivocode/common/types/contracts/agent-runtime'
+import type { ParamsExcluding } from '@rivocode/common/types/function-params'
+import type { StreamChunk } from '@rivocode/common/types/contracts/llm'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
 
 let agentRuntimeImpl: AgentRuntimeDeps & AgentRuntimeScopedDeps
 let runAgentStepBaseParams: ParamsExcluding<

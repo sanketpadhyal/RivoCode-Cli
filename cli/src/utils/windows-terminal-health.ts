@@ -1,8 +1,8 @@
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
 
 import { getCliEnv } from './env'
 
-import type { LogRecordInput } from '@codebuff/common/schemas/logs'
+import type { LogRecordInput } from '@rivocode/common/schemas/logs'
 
 type WindowsTerminalFailureEvent =
   | AnalyticsEvent.TERMINAL_BROKER_SPAWN_FAILED

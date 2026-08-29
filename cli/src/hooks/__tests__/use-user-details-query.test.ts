@@ -12,7 +12,7 @@ import { createMockApiClient } from '../../__tests__/helpers/mock-api-client'
 import * as CodebuffApiModule from '../../utils/codebuff-api'
 import { fetchUserDetails } from '../use-user-details-query'
 
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 describe('fetchUserDetails', () => {
   const mockLogger: Logger = {

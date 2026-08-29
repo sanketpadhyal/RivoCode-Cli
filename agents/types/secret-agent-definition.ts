@@ -1,6 +1,6 @@
 import type { AgentDefinition } from './agent-definition'
 import type * as Tools from './tools'
-import type { ComposioMetaToolName } from '@codebuff/common/constants/composio'
+import type { ComposioMetaToolName } from '@rivocode/common/constants/composio'
 export type { Tools }
 
 export type AllToolNames =

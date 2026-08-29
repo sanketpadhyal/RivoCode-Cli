@@ -1,17 +1,17 @@
-import { TEST_USER_ID } from '@codebuff/common/old-constants'
-import { TEST_AGENT_RUNTIME_IMPL } from '@codebuff/common/testing/impl/agent-runtime'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { promptSuccess } from '@codebuff/common/util/error'
-import { assistantMessage, userMessage } from '@codebuff/common/util/messages'
+import { TEST_USER_ID } from '@rivocode/common/old-constants'
+import { TEST_AGENT_RUNTIME_IMPL } from '@rivocode/common/testing/impl/agent-runtime'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { promptSuccess } from '@rivocode/common/util/error'
+import { assistantMessage, userMessage } from '@rivocode/common/util/messages'
 import { beforeEach, describe, expect, it } from 'bun:test'
 
 import { loopAgentSteps } from '../run-agent-step'
 
 import type { AgentTemplate } from '../templates/types'
-import type { ParamsExcluding } from '@codebuff/common/types/function-params'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
-import type { TextPart } from '@codebuff/common/types/messages/content-part'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+import type { ParamsExcluding } from '@rivocode/common/types/function-params'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
+import type { TextPart } from '@rivocode/common/types/messages/content-part'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 const mockFileContext: ProjectFileContext = {
   projectRoot: '/test',
@@ -312,7 +312,7 @@ describe('Prompt Caching for Subagents with inheritParentSystemPrompt', () => {
   it('should validate that agents with inheritParentSystemPrompt cannot have custom systemPrompt', () => {
     const {
       DynamicAgentTemplateSchema,
-    } = require('@codebuff/common/types/dynamic-agent-template')
+    } = require('@rivocode/common/types/dynamic-agent-template')
 
     const validAgent = {
       id: 'valid-agent',

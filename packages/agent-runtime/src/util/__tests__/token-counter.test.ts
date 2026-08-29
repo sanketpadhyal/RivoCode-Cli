@@ -6,7 +6,7 @@ import {
   countTokensMessages,
 } from '../token-counter'
 
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
 
 describe('countTokensMessages', () => {
   test('counts text content plus per-message overhead', () => {

@@ -1,4 +1,4 @@
-import { jsonToolResult } from '@codebuff/common/util/messages'
+import { jsonToolResult } from '@rivocode/common/util/messages'
 
 import {
   requestRelevantFiles,
@@ -13,15 +13,15 @@ import type { CodebuffToolHandlerFunction } from '../handler-function-type'
 import type {
   CodebuffToolCall,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
-import type { RequestFilesFn } from '@codebuff/common/types/contracts/client'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+} from '@rivocode/common/tools/list'
+import type { RequestFilesFn } from '@rivocode/common/types/contracts/client'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 import type {
   ParamsExcluding,
   ParamsOf,
-} from '@codebuff/common/types/function-params'
-import type { AgentState } from '@codebuff/common/types/session-state'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+} from '@rivocode/common/types/function-params'
+import type { AgentState } from '@rivocode/common/types/session-state'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 const COLLECT_FULL_FILE_CONTEXT = false
 

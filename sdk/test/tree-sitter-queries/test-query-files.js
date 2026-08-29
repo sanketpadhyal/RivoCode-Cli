@@ -2,7 +2,7 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 
-const { initialSessionState } = require('@codebuff/sdk')
+const { initialSessionState } = require('@rivocode/sdk')
 
 const testSourceFiles = {
   'calculator.ts': `

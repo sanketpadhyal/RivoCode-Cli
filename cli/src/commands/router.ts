@@ -1,5 +1,5 @@
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
-import { runTerminalCommand } from '@codebuff/sdk'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
+import { runTerminalCommand } from '@rivocode/sdk'
 
 import {
   findCommand,

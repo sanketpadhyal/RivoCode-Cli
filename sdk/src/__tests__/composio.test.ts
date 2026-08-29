@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
 
-import { COMPOSIO_META_TOOL_NAMES } from '@codebuff/common/constants/composio'
-import { clientToolNames, toolParams } from '@codebuff/common/tools/list'
+import { COMPOSIO_META_TOOL_NAMES } from '@rivocode/common/constants/composio'
+import { clientToolNames, toolParams } from '@rivocode/common/tools/list'
 
 import { executeComposioToolViaServer } from '../composio'
 

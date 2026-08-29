@@ -1,6 +1,6 @@
-import { SUBSCRIPTION_DISPLAY_NAME } from '@codebuff/common/constants/subscription-plans'
+import { SUBSCRIPTION_DISPLAY_NAME } from '@rivocode/common/constants/subscription-plans'
 import { IS_FREEBUFF } from '../utils/constants'
-import { pluralize } from '@codebuff/common/util/string'
+import { pluralize } from '@rivocode/common/util/string'
 import { TextAttributes } from '@opentui/core'
 import React, { useCallback, useMemo } from 'react'
 

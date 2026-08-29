@@ -4,7 +4,7 @@ import {
   getAllPathsWithDirectories,
   getProjectFileTree,
   type PathInfo,
-} from '@codebuff/common/project-file-tree'
+} from '@rivocode/common/project-file-tree'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { getProjectRoot } from '../project-files'
@@ -16,7 +16,7 @@ import type { SlashCommand } from '../data/slash-commands'
 import type { Prettify } from '../types/utils'
 import type { AgentMode } from '../utils/constants'
 import type { LocalAgentInfo } from '../utils/local-agent-registry'
-import type { FileTreeNode } from '@codebuff/common/util/file'
+import type { FileTreeNode } from '@rivocode/common/util/file'
 
 export interface TriggerContext {
   active: boolean

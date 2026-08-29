@@ -1,4 +1,4 @@
-import { stripAnsi } from '@codebuff/common/util/string'
+import { stripAnsi } from '@rivocode/common/util/string'
 
 const bunGlobal = globalThis as typeof globalThis & {
   Bun?: {

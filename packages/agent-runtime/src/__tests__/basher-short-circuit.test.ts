@@ -1,14 +1,14 @@
-import { TEST_USER_ID } from '@codebuff/common/old-constants'
-import { createTestAgentRuntimeParams } from '@codebuff/common/testing/fixtures/agent-runtime'
-import { clearMockedModules } from '@codebuff/common/testing/mock-modules'
+import { TEST_USER_ID } from '@rivocode/common/old-constants'
+import { createTestAgentRuntimeParams } from '@rivocode/common/testing/fixtures/agent-runtime'
+import { clearMockedModules } from '@rivocode/common/testing/mock-modules'
 import {
   createMockDbOperations,
   setupDbSpies,
-} from '@codebuff/common/testing/mocks/database'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { promptSuccess } from '@codebuff/common/util/error'
-import { userMessage } from '@codebuff/common/util/messages'
-import * as analytics from '@codebuff/common/analytics'
+} from '@rivocode/common/testing/mocks/database'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { promptSuccess } from '@rivocode/common/util/error'
+import { userMessage } from '@rivocode/common/util/messages'
+import * as analytics from '@rivocode/common/analytics'
 import {
   afterAll,
   afterEach,
@@ -26,7 +26,7 @@ import { clearAgentGeneratorCache } from '../run-programmatic-step'
 import { createToolCallChunk, mockFileContext } from './test-utils'
 
 import type { AgentTemplate } from '../templates/types'
-import type { DbSpies } from '@codebuff/common/testing/mocks/database'
+import type { DbSpies } from '@rivocode/common/testing/mocks/database'
 
 describe('basher summarization short-circuit (end-to-end)', () => {
   let llmCallCount: number

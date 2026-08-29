@@ -3,7 +3,7 @@ import {
   jsonToolResult,
   systemMessage,
   userMessage,
-} from '@codebuff/common/util/messages'
+} from '@rivocode/common/util/messages'
 import {
   afterEach,
   beforeEach,
@@ -22,9 +22,9 @@ import {
 } from '../../util/messages'
 import * as tokenCounter from '../token-counter'
 
-import type { CodebuffToolMessage } from '@codebuff/common/tools/list'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
-import type { TextPart } from '@codebuff/common/types/messages/content-part'
+import type { CodebuffToolMessage } from '@rivocode/common/tools/list'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
+import type { TextPart } from '@rivocode/common/types/messages/content-part'
 
 function isTextPart(part: unknown): part is TextPart {
   return (

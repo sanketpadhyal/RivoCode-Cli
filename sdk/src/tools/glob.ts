@@ -2,11 +2,11 @@ import {
   DEFAULT_MAX_FILES,
   flattenTree,
   getProjectFileTree,
-} from '@codebuff/common/project-file-tree'
+} from '@rivocode/common/project-file-tree'
 import micromatch from 'micromatch'
 
-import type { CodebuffToolOutput } from '@codebuff/common/tools/list'
-import type { CodebuffFileSystem } from '@codebuff/common/types/filesystem'
+import type { CodebuffToolOutput } from '@rivocode/common/tools/list'
+import type { CodebuffFileSystem } from '@rivocode/common/types/filesystem'
 
 export async function glob(params: {
   pattern: string

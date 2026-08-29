@@ -2,7 +2,7 @@
 import type {
   BaseEnv,
   ClientEnv,
-} from '@codebuff/common/types/contracts/env'
+} from '@rivocode/common/types/contracts/env'
 
 export type SdkEnv = BaseEnv & {
   CODEBUFF_RG_PATH?: string

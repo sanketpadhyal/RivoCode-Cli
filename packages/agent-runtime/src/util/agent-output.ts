@@ -1,9 +1,9 @@
-import type { AgentTemplate } from '@codebuff/common/types/agent-template'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
+import type { AgentTemplate } from '@rivocode/common/types/agent-template'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
 import type {
   AgentState,
   AgentOutput,
-} from '@codebuff/common/types/session-state'
+} from '@rivocode/common/types/session-state'
 
 const EXCLUDED_OUTPUT_TAGS = ['TOOL_CALL_ERROR'] as const
 

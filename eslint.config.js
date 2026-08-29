@@ -23,7 +23,7 @@ export default tseslint.config(
         {
           paths: [
             {
-              name: '@codebuff/common/env-process',
+              name: '@rivocode/common/env-process',
               importNames: ['getProcessEnv', 'processEnv'],
               message:
                 'CLI should use getCliEnv() from "../utils/env" or "./env" instead of getProcessEnv() from common. This ensures CLI uses CliEnv type.',
@@ -31,7 +31,7 @@ export default tseslint.config(
           ],
           patterns: [
             {
-              group: ['@codebuff/common/types/contracts/env'],
+              group: ['@rivocode/common/types/contracts/env'],
               importNames: ['ProcessEnv'],
               message:
                 'CLI should use CliEnv from "../types/env" instead of ProcessEnv from common.',
@@ -50,7 +50,7 @@ export default tseslint.config(
         {
           paths: [
             {
-              name: '@codebuff/common/env-process',
+              name: '@rivocode/common/env-process',
               importNames: ['getProcessEnv', 'processEnv'],
               message:
                 'SDK should use getSdkEnv() from "./env" instead of getProcessEnv() from common. This ensures SDK uses SdkEnv type.',
@@ -58,7 +58,7 @@ export default tseslint.config(
           ],
           patterns: [
             {
-              group: ['@codebuff/common/types/contracts/env'],
+              group: ['@rivocode/common/types/contracts/env'],
               importNames: ['ProcessEnv'],
               message:
                 'SDK should use SdkEnv from "./types/env" instead of ProcessEnv from common.',

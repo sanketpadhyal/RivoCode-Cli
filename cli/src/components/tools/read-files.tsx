@@ -1,5 +1,5 @@
-import { readFilePathsOf } from '@codebuff/common/tools/params/tool/read-files'
-import { isEnvTemplateFilePath } from '@codebuff/common/util/env-file-path'
+import { readFilePathsOf } from '@rivocode/common/tools/params/tool/read-files'
+import { isEnvTemplateFilePath } from '@rivocode/common/util/env-file-path'
 import { TextAttributes } from '@opentui/core'
 
 import { SimpleToolCallItem } from './tool-call-item'

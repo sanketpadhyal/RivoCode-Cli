@@ -1,4 +1,4 @@
-import { pluralize } from '@codebuff/common/util/string'
+import { pluralize } from '@rivocode/common/util/string'
 import { useMemo } from 'react'
 
 import { formatQueuedPreview } from '../utils/helpers'

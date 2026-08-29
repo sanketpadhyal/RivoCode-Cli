@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test'
-import { FREEBUFF_PROVIDER_USAGE_MESSAGE } from '@codebuff/common/constants/freebuff-errors'
+import { FREEBUFF_PROVIDER_USAGE_MESSAGE } from '@rivocode/common/constants/freebuff-errors'
 
 import {
   getFreebuffRateLimitErrorMessage,

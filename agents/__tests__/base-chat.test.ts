@@ -2,7 +2,7 @@ import {
   FREEBUFF_DEFAULT_CONTEXT_WINDOW,
   FREEBUFF_DEEPSEEK_V4_FLASH_MODEL_ID,
   FREEBUFF_MODEL_CONTEXT_WINDOWS,
-} from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/freebuff-models'
 import { describe, test, expect } from 'bun:test'
 
 import baseChat from '../base-chat'

@@ -4,7 +4,7 @@ import {
   getFreebuffModelEfforts,
   resolveAvailableFreebuffModel,
   resolveSupportedFreebuffModel,
-} from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/freebuff-models'
 import { create } from 'zustand'
 
 import {
@@ -13,7 +13,7 @@ import {
   saveFreebuffReasoningEffort,
 } from '../utils/settings'
 
-import type { ReasoningEffort } from '@codebuff/common/constants/reasoning-effort'
+import type { ReasoningEffort } from '@rivocode/common/constants/reasoning-effort'
 
 interface FreebuffModelStore {
   selectedModel: string

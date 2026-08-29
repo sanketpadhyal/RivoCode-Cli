@@ -1,7 +1,7 @@
 import path from 'path'
 
-import { MAX_AGENT_STEPS_DEFAULT } from '@codebuff/common/constants/agents'
-import { isSensitiveEnvFilePath } from '@codebuff/common/util/env-file-path'
+import { MAX_AGENT_STEPS_DEFAULT } from '@rivocode/common/constants/agents'
+import { isSensitiveEnvFilePath } from '@rivocode/common/util/env-file-path'
 
 import {
   createEventHandler,
@@ -9,13 +9,13 @@ import {
 } from './sdk-event-handlers'
 
 import type { EventHandlerState } from './sdk-event-handlers'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 import type {
   AgentDefinition,
   FileFilter,
   MessageContent,
   RunState,
-} from '@codebuff/sdk'
+} from '@rivocode/sdk'
 
 export type CreateRunConfigParams = {
   logger: Logger

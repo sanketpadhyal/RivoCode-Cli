@@ -1,46 +1,106 @@
-# CLI Project
+# RivoCode
 
-A terminal-based AI coding assistant and CLI interface built with OpenTUI and React.
+> **An Agentic Terminal AI Coding Assistant & Framework**  
+> *Created and Developed by **Sanket Padhyal***
+
+[![Repository](https://img.shields.io/badge/GitHub-RivoCode--Cli-blue)](https://github.com/sanketpadhyal/RivoCode-Cli.git)
+[![Runtime](https://img.shields.io/badge/Runtime-Bun-f472b6)](https://bun.sh)
+[![Architecture](https://img.shields.io/badge/UI-OpenTUI%20%2B%20React-green)](https://github.com/opentui)
+
+---
+
+## Overview
+
+**RivoCode** is a terminal-based AI coding assistant and agent orchestration environment designed for developers who want an interactive, responsive terminal UI (TUI) with multi-model streaming, intelligent codebase indexing, and automated tool execution.
+
+---
 
 ## Project Structure
 
-- `cli/`: Terminal UI (TUI) application, rendering components, and command entry points.
-- `common/`: Shared utilities, schemas, constants, and types.
-- `sdk/`: Core agent framework, tool integrations, and file search/manipulation.
-- `packages/`:
-  - `packages/agent-runtime`: Agent runtime lifecycle and execution.
-  - `packages/code-map`: AST parsing and codebase indexing.
-  - `packages/llm-providers`: LLM client providers and streaming handlers.
-- `agents/`: Agent definitions and configurations.
+```
+RivoCode-Cli/
+├── cli/                 # Terminal UI application (OpenTUI + React 19)
+│   ├── src/entry.ts     # CLI entry point
+│   ├── src/index.tsx    # Terminal renderer & application startup
+│   ├── src/app.tsx      # Main application state & UI tree
+│   ├── src/chat.tsx     # Chat interface, prompt execution, and streaming
+│   ├── src/commands/    # CLI command definitions
+│   └── src/components/  # TUI widgets, status bars, spinners, inputs
+│
+├── agents/              # Built-in agent definitions and prompt templates
+├── common/              # Shared schemas, constants, types, and file utilities
+├── sdk/                 # Core agent framework, Ripgrep integration, and tools
+└── packages/            # Modular sub-packages
+    ├── agent-runtime/   # Agent execution lifecycle & token counting
+    ├── code-map/        # AST parsing and codebase indexing via Tree-Sitter
+    └── llm-providers/   # LLM streaming clients & provider abstractions
+```
 
-## Getting Started
+---
 
-### Development
+## Opening & Running RivoCode
 
-To start the CLI in development mode:
+### 1. Prerequisites
+
+Make sure you have **[Bun](https://bun.sh)** installed:
+
+```bash
+# Install Bun (macOS/Linux)
+curl -fsSL https://bun.sh/install | bash
+```
+
+### 2. Install Dependencies
+
+In the root of the project:
+
+```bash
+bun install
+```
+
+### 3. Launching RivoCode (Opening the CLI)
+
+To start RivoCode in development mode:
 
 ```bash
 bun start-cli
 ```
 
-Or from inside the `cli/` workspace:
+Or run directly inside the `cli/` directory:
 
 ```bash
 cd cli
 bun dev
 ```
 
-### Building
+You can also pass a prompt directly when starting:
 
-To build the SDK:
+```bash
+bun --cwd cli dev "Help me inspect and refactor my project"
+```
+
+---
+
+## Building RivoCode
+
+### Build the SDK:
 
 ```bash
 bun run build:sdk
 ```
 
-To build the CLI binary:
+### Build the Standalone Binary:
+
+To package RivoCode into a single standalone binary executable (`rivocode`):
 
 ```bash
 cd cli
 bun run build:binary
 ```
+
+---
+
+## Author & Maintainer
+
+- **Creator**: **Sanket Padhyal**
+- **Repository**: [https://github.com/sanketpadhyal/RivoCode-Cli.git](https://github.com/sanketpadhyal/RivoCode-Cli.git)
+

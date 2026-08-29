@@ -2,14 +2,14 @@ import { appendFileSync, existsSync, mkdirSync, unlinkSync } from 'fs'
 import path, { dirname } from 'path'
 import { format as stringFormat } from 'util'
 
-import { env, IS_DEV, IS_TEST, IS_CI } from '@codebuff/common/env'
-import { createAnalyticsDispatcher } from '@codebuff/common/util/analytics-dispatcher'
-import { getAnalyticsEventId } from '@codebuff/common/util/analytics-log'
-import { getAxiomOnlyLogEvent } from '@codebuff/common/util/axiom-only-log'
+import { env, IS_DEV, IS_TEST, IS_CI } from '@rivocode/common/env'
+import { createAnalyticsDispatcher } from '@rivocode/common/util/analytics-dispatcher'
+import { getAnalyticsEventId } from '@rivocode/common/util/analytics-log'
+import { getAxiomOnlyLogEvent } from '@rivocode/common/util/axiom-only-log'
 import {
   isFullTelemetryEnabled,
   summarizeAnalyticsValue,
-} from '@codebuff/common/util/analytics-sampling'
+} from '@rivocode/common/util/analytics-sampling'
 import { pino } from 'pino'
 
 import {
@@ -21,7 +21,7 @@ import {
 import { enqueueClientLog } from './log-shipper'
 import { getCurrentChatDir, getProjectRoot } from '../project-files'
 
-import type { LogRecordInput } from '@codebuff/common/schemas/logs'
+import type { LogRecordInput } from '@rivocode/common/schemas/logs'
 
 export const CHAT_LOG_FILENAME = 'log.jsonl'
 

@@ -1,4 +1,4 @@
-import { AskUserBridge } from '@codebuff/common/utils/ask-user-bridge'
+import { AskUserBridge } from '@rivocode/common/utils/ask-user-bridge'
 import { useEffect } from 'react'
 
 import { useChatStore } from '../state/chat-store'

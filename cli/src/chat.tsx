@@ -1,6 +1,6 @@
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
-import type { FeedbackCategory } from '@codebuff/common/constants/feedback'
-import { setFreeModeCapacityDeferralListener } from '@codebuff/sdk'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
+import type { FeedbackCategory } from '@rivocode/common/constants/feedback'
+import { setFreeModeCapacityDeferralListener } from '@rivocode/sdk'
 import { safeOpen } from './utils/open-url'
 import {
   useCallback,
@@ -101,7 +101,7 @@ import type { MatchedSlashCommand } from './hooks/use-suggestion-engine'
 import type { FreebuffSessionResponse } from './types/freebuff-session'
 import type { User } from './utils/auth'
 import type { AgentMode } from './utils/constants'
-import type { FileTreeNode } from '@codebuff/common/util/file'
+import type { FileTreeNode } from '@rivocode/common/util/file'
 import type { BoxRenderable, ScrollBoxRenderable } from '@opentui/core'
 import type { UseMutationResult } from '@tanstack/react-query'
 import type { Dispatch, SetStateAction } from 'react'

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the @codebuff/sdk package will be documented in this file.
+All notable changes to the @rivocode/sdk package will be documented in this file.
 
 ## [Unreleased]
 

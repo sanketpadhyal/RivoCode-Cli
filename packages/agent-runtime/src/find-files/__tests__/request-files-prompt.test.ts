@@ -1,7 +1,7 @@
-import { finetunedVertexModels } from '@codebuff/common/old-constants'
-import { TEST_AGENT_RUNTIME_IMPL } from '@codebuff/common/testing/impl/agent-runtime'
-import { promptSuccess } from '@codebuff/common/util/error'
-import { userMessage } from '@codebuff/common/util/messages'
+import { finetunedVertexModels } from '@rivocode/common/old-constants'
+import { TEST_AGENT_RUNTIME_IMPL } from '@rivocode/common/testing/impl/agent-runtime'
+import { promptSuccess } from '@rivocode/common/util/error'
+import { userMessage } from '@rivocode/common/util/messages'
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
 
 import { requestRelevantFiles } from '../request-files-prompt'
@@ -9,9 +9,9 @@ import { requestRelevantFiles } from '../request-files-prompt'
 import type {
   AgentRuntimeDeps,
   AgentRuntimeScopedDeps,
-} from '@codebuff/common/types/contracts/agent-runtime'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+} from '@rivocode/common/types/contracts/agent-runtime'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 let agentRuntimeImpl: AgentRuntimeDeps & AgentRuntimeScopedDeps
 

@@ -3,11 +3,11 @@ import { describe, expect, test, beforeEach } from 'bun:test'
 import {
   FREEBUFF_DEEPSEEK_V4_FLASH_MODEL_ID,
   FREEBUFF_GPT_5_6_LUNA_MODEL_ID,
-} from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/freebuff-models'
 import {
   formatFreebuffRowQuota,
   getFreebuffSectionQuotas,
-} from '@codebuff/common/util/freebuff-session-pools'
+} from '@rivocode/common/util/freebuff-session-pools'
 
 const quota = (
   model: string,

@@ -4,7 +4,7 @@ import { logger } from './logger'
 import { useChatStore } from '../state/chat-store'
 
 import type { CodebuffApiClient } from './codebuff-api'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 export interface FetchAndUpdateUsageParams {
   showBanner?: boolean

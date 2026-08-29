@@ -13,7 +13,7 @@ import { useChatStore } from '../../state/chat-store'
 import { stopActiveRun } from '../../utils/active-run'
 import { setChatDirOverrideForTesting } from '../../utils/run-state-storage'
 
-import type { RunState } from '@codebuff/sdk'
+import type { RunState } from '@rivocode/sdk'
 import type { SendMessageFn } from '../../types/contracts/send-message'
 import type { ElapsedTimeTracker } from '../use-elapsed-time'
 

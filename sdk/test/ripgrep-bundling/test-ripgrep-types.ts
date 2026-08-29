@@ -1,4 +1,4 @@
-import { getBundledRgPath, ToolHelpers } from '@codebuff/sdk'
+import { getBundledRgPath, ToolHelpers } from '@rivocode/sdk'
 ;(async () => {
   console.log('🧪 Testing ripgrep TypeScript types...')
 

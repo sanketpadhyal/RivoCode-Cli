@@ -1,8 +1,8 @@
-import { failure, success } from '@codebuff/common/util/error'
+import { failure, success } from '@rivocode/common/util/error'
 
-import type { RenderUIGravityIndexLink } from '@codebuff/common/tools/params/tool/render-ui'
-import type { ErrorOr } from '@codebuff/common/util/error'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
+import type { RenderUIGravityIndexLink } from '@rivocode/common/tools/params/tool/render-ui'
+import type { ErrorOr } from '@rivocode/common/util/error'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
 
 type JsonRecord = Record<string, unknown>
 

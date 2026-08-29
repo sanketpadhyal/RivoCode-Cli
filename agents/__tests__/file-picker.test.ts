@@ -1,7 +1,7 @@
 
 import { describe, test, expect } from 'bun:test'
 
-import { GEMINI_3_5_FLASH_LITE_MODEL_ID } from '@codebuff/common/constants/gemini'
+import { GEMINI_3_5_FLASH_LITE_MODEL_ID } from '@rivocode/common/constants/gemini'
 
 import fileLister from '../file-explorer/file-lister'
 import filePicker, { createFilePicker } from '../file-explorer/file-picker'

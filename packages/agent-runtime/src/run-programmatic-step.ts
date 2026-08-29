@@ -1,6 +1,6 @@
-import { HandleStepsYieldValueSchema } from '@codebuff/common/types/agent-template'
-import { getErrorObject } from '@codebuff/common/util/error'
-import { assistantMessage } from '@codebuff/common/util/messages'
+import { HandleStepsYieldValueSchema } from '@rivocode/common/types/agent-template'
+import { getErrorObject } from '@rivocode/common/util/error'
+import { assistantMessage } from '@rivocode/common/util/messages'
 import { cloneDeep } from 'lodash'
 
 import { clearProposedContentForRun } from './tools/handlers/tool/proposed-content-store'
@@ -10,26 +10,26 @@ import { parseTextWithToolCalls } from './util/parse-tool-calls-from-text'
 import type { FileProcessingState } from './tools/handlers/tool/write-file'
 import type { ExecuteToolCallParams } from './tools/tool-executor'
 import type { ParsedSegment } from './util/parse-tool-calls-from-text'
-import type { CodebuffToolCall } from '@codebuff/common/tools/list'
+import type { CodebuffToolCall } from '@rivocode/common/tools/list'
 import type {
   AgentTemplate,
   StepGenerator,
   PublicAgentState,
-} from '@codebuff/common/types/agent-template'
+} from '@rivocode/common/types/agent-template'
 import type {
   HandleStepsLogChunkFn,
   SendActionFn,
-} from '@codebuff/common/types/contracts/client'
-import type { AddAgentStepFn } from '@codebuff/common/types/contracts/database'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { ParamsExcluding } from '@codebuff/common/types/function-params'
-import type { ToolMessage } from '@codebuff/common/types/messages/codebuff-message'
+} from '@rivocode/common/types/contracts/client'
+import type { AddAgentStepFn } from '@rivocode/common/types/contracts/database'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { ParamsExcluding } from '@rivocode/common/types/function-params'
+import type { ToolMessage } from '@rivocode/common/types/messages/codebuff-message'
 import type {
   ToolCallPart,
   ToolResultOutput,
-} from '@codebuff/common/types/messages/content-part'
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
-import type { AgentState } from '@codebuff/common/types/session-state'
+} from '@rivocode/common/types/messages/content-part'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
+import type { AgentState } from '@rivocode/common/types/session-state'
 const runIdToGenerator: Record<string, StepGenerator | undefined> = {}
 export const runIdToStepAll: Set<string> = new Set()
 type HandleStepsFn = Exclude<AgentTemplate['handleSteps'], string | undefined>

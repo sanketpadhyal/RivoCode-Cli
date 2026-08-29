@@ -3,7 +3,7 @@ import { closeSync, existsSync, openSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
 
 import { TERMINAL_RESET_SEQUENCES } from './terminal-reset-sequences'
 import { getCliEnv } from './env'

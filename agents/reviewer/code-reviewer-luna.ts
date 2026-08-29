@@ -1,4 +1,4 @@
-import { FREEBUFF_GPT_5_6_LUNA_MODEL_ID } from '@codebuff/common/constants/freebuff-models'
+import { FREEBUFF_GPT_5_6_LUNA_MODEL_ID } from '@rivocode/common/constants/freebuff-models'
 
 import { publisher } from '../constants'
 import type { SecretAgentDefinition } from '../types/secret-agent-definition'

@@ -7,7 +7,7 @@ import path from 'path'
 import {
   getActiveTerminalCommandProcesses,
   runTerminalCommand,
-} from '@codebuff/sdk'
+} from '@rivocode/sdk'
 
 import {
   classifyTerminalBrokerFailure,

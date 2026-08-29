@@ -1,7 +1,7 @@
 import os from 'os'
 import path from 'path'
 
-import { env } from '@codebuff/common/env'
+import { env } from '@rivocode/common/env'
 
 export const getConfigDir = (): string => {
   return path.join(

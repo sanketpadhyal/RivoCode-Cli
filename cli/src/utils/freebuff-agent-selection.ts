@@ -1,7 +1,7 @@
 import {
   getFreebuffBase3RootAgentIdForModel,
   getFreebuffRootAgentIdForModel,
-} from '@codebuff/common/constants/free-agents'
+} from '@rivocode/common/constants/free-agents'
 
 import { getSelectedFreebuffModel } from '../state/freebuff-model-store'
 import {

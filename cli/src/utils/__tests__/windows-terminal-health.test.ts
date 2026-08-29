@@ -1,4 +1,4 @@
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
 import { afterEach, describe, expect, mock, test } from 'bun:test'
 
 import {
@@ -9,7 +9,7 @@ import {
 } from '../analytics'
 import { deliverWindowsTerminalFailure } from '../windows-terminal-health'
 
-import type { LogRecordInput } from '@codebuff/common/schemas/logs'
+import type { LogRecordInput } from '@rivocode/common/schemas/logs'
 
 const FAILED_ANALYTICS_DEPS: AnalyticsDeps = {
   env: {},

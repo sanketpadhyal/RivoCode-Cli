@@ -4,22 +4,22 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@codebuff/common/*": [
+      "@rivocode/common/*": [
         "./common/src/*"
       ],
-      "@codebuff/sdk": [
+      "@rivocode/sdk": [
         "./sdk/src/index.ts"
       ],
-      "@codebuff/sdk/*": [
+      "@rivocode/sdk/*": [
         "./sdk/*"
       ],
-      "@codebuff/agent-runtime/*": [
+      "@rivocode/agent-runtime/*": [
         "./packages/agent-runtime/src/*"
       ],
-      "@codebuff/llm-providers/*": [
+      "@rivocode/llm-providers/*": [
         "./packages/llm-providers/src/*"
       ],
-      "@codebuff/code-map/*": [
+      "@rivocode/code-map/*": [
         "./packages/code-map/*"
       ]
     }

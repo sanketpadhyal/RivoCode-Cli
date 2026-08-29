@@ -52,9 +52,9 @@ import type { ChatMessage } from '../types/chat'
 import type { SendMessageFn } from '../types/contracts/send-message'
 import type { AgentMode } from '../utils/constants'
 import type { SendMessageTimerEvent } from '../utils/send-message-timer'
-import { STATE_SNAPSHOT_INTERRUPTION_MESSAGE } from '@codebuff/sdk'
+import { STATE_SNAPSHOT_INTERRUPTION_MESSAGE } from '@rivocode/sdk'
 
-import type { AgentDefinition, MessageContent, RunState } from '@codebuff/sdk'
+import type { AgentDefinition, MessageContent, RunState } from '@rivocode/sdk'
 import { isCoveredBySubscription } from '../utils/subscription'
 
 import type { SubscriptionResponse } from './use-subscription-query'

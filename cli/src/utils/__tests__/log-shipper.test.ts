@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { ensureCliTestEnv } from '../../__tests__/test-utils'
 
-import type { LogRecordInput } from '@codebuff/common/schemas/logs'
+import type { LogRecordInput } from '@rivocode/common/schemas/logs'
 
 ensureCliTestEnv()
 

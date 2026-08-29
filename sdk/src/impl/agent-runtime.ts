@@ -1,8 +1,8 @@
-import { trackEvent as trackCommonEvent } from '@codebuff/common/analytics'
-import { env as clientEnvDefault } from '@codebuff/common/env'
-import { getCiEnv } from '@codebuff/common/env-ci'
-import { shouldTrackAnalyticsEvent } from '@codebuff/common/util/analytics-sampling'
-import { success } from '@codebuff/common/util/error'
+import { trackEvent as trackCommonEvent } from '@rivocode/common/analytics'
+import { env as clientEnvDefault } from '@rivocode/common/env'
+import { getCiEnv } from '@rivocode/common/env-ci'
+import { shouldTrackAnalyticsEvent } from '@rivocode/common/util/analytics-sampling'
+import { success } from '@rivocode/common/util/error'
 
 import { getWebsiteUrl } from '../constants'
 
@@ -18,13 +18,13 @@ import { promptAiSdk, promptAiSdkStream, promptAiSdkStructured } from './llm'
 import type {
   AgentRuntimeDeps,
   AgentRuntimeScopedDeps,
-} from '@codebuff/common/types/contracts/agent-runtime'
-import type { AgentTemplate } from '@codebuff/common/types/agent-template'
-import type { DatabaseAgentCache } from '@codebuff/common/types/contracts/database'
-import type { ClientEnv } from '@codebuff/common/types/contracts/env'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { TraceWriter } from '@codebuff/common/types/contracts/trace'
-import type { TrackEventFn } from '@codebuff/common/types/contracts/analytics'
+} from '@rivocode/common/types/contracts/agent-runtime'
+import type { AgentTemplate } from '@rivocode/common/types/agent-template'
+import type { DatabaseAgentCache } from '@rivocode/common/types/contracts/database'
+import type { ClientEnv } from '@rivocode/common/types/contracts/env'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { TraceWriter } from '@rivocode/common/types/contracts/trace'
+import type { TrackEventFn } from '@rivocode/common/types/contracts/analytics'
 
 const DATABASE_AGENT_CACHE_MAX_ENTRIES = 200
 

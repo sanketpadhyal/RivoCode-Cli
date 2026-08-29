@@ -1,13 +1,13 @@
 import path from 'path'
 
-import { ensureDirectoryExists, fileExists } from '@codebuff/common/util/file'
+import { ensureDirectoryExists, fileExists } from '@rivocode/common/util/file'
 import { applyPatch } from 'diff'
 import z from 'zod/v4'
 
 import { resolveFilePath } from './path-utils'
 
-import type { CodebuffToolOutput } from '@codebuff/common/tools/list'
-import type { CodebuffFileSystem } from '@codebuff/common/types/filesystem'
+import type { CodebuffToolOutput } from '@rivocode/common/tools/list'
+import type { CodebuffFileSystem } from '@rivocode/common/types/filesystem'
 import type { ResolvedProjectPath } from './path-utils'
 
 const FileChangeSchema = z.object({

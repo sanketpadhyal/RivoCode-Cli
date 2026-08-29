@@ -1,4 +1,4 @@
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
 
 import { createCodebuffApiClient } from '../utils/codebuff-api'
 
@@ -6,7 +6,7 @@ import type {
   CodebuffApiClient,
   LoginCodeResponse,
 } from '../utils/codebuff-api'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 export type LoginUrlResponse = LoginCodeResponse
 

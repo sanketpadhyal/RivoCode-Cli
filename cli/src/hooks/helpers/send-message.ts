@@ -1,5 +1,5 @@
-import { FREEBUFF_PROVIDER_USAGE_MESSAGE } from '@codebuff/common/constants/freebuff-errors'
-import { getErrorObject } from '@codebuff/common/util/error'
+import { FREEBUFF_PROVIDER_USAGE_MESSAGE } from '@rivocode/common/constants/freebuff-errors'
+import { getErrorObject } from '@rivocode/common/util/error'
 
 import {
   markFreebuffSessionCountryBlocked,
@@ -47,7 +47,7 @@ import type { AgentMode } from '../../utils/constants'
 import type { SendMessageTimerController } from '../../utils/send-message-timer'
 import type { StreamController } from '../stream-state'
 import type { StreamStatus } from '../use-message-queue'
-import type { MessageContent, RunState } from '@codebuff/sdk'
+import type { MessageContent, RunState } from '@rivocode/sdk'
 import type { MutableRefObject, SetStateAction } from 'react'
 
 export type ResetEarlyReturnStateParams = {

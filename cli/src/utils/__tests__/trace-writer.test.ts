@@ -3,14 +3,14 @@ import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 
-mock.module('@codebuff/common/env', () => ({
+mock.module('@rivocode/common/env', () => ({
   IS_DEV: true,
 }))
 
 import { createTraceWriter } from '../trace-writer'
 import { setProjectRoot, tryGetProjectRoot } from '../../project-files'
 
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
 
 let tempDir = ''
 

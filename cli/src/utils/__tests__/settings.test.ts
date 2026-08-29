@@ -10,7 +10,7 @@ import {
   FREEBUFF_MIMO_V25_MODEL_ID,
   FREEBUFF_DEEPSEEK_V4_PRO_MODEL_ID,
   FREEBUFF_GLM_V53_FLASH_MODEL_ID,
-} from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/freebuff-models'
 
 import * as auth from '../auth'
 import {

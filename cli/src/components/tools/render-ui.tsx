@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   parseRenderUIButtonWidget,
   type RenderUIButtonWidget,
-} from '@codebuff/common/tools/params/tool/render-ui'
+} from '@rivocode/common/tools/params/tool/render-ui'
 
 import { defineToolComponent } from './types'
 import { useTheme } from '../../hooks/use-theme'

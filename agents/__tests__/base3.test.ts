@@ -1,8 +1,8 @@
 import {
   FREEBUFF_CLI_BASE3_AGENT_ID_BY_MODEL,
   hasFreebuffRootSystemPromptOpening,
-} from '@codebuff/common/constants/free-agents'
-import { SUPPORTED_FREEBUFF_MODELS } from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/free-agents'
+import { SUPPORTED_FREEBUFF_MODELS } from '@rivocode/common/constants/freebuff-models'
 import { describe, test, expect } from 'bun:test'
 
 import base3, { createBase3, createBase3CliRoot } from '../base3'

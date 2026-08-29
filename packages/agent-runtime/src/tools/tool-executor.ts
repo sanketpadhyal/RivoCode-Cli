@@ -1,6 +1,6 @@
-import { endsAgentStepParam, toolNames } from '@codebuff/common/tools/constants'
-import { toolParams } from '@codebuff/common/tools/list'
-import { generateCompactId } from '@codebuff/common/util/string'
+import { endsAgentStepParam, toolNames } from '@rivocode/common/tools/constants'
+import { toolParams } from '@rivocode/common/tools/list'
+import { generateCompactId } from '@rivocode/common/util/string'
 import { cloneDeep } from 'lodash'
 
 import { getMCPToolData } from '../mcp'
@@ -16,33 +16,33 @@ import { ensureZodSchema } from './prompts'
 import type { AgentTemplate } from '../templates/types'
 import type { CodebuffToolHandlerFunction } from './handlers/handler-function-type'
 import type { FileProcessingState } from './handlers/tool/write-file'
-import type { ToolName } from '@codebuff/common/tools/constants'
+import type { ToolName } from '@rivocode/common/tools/constants'
 import type {
   ClientToolCall,
   ClientToolName,
   CodebuffToolCall,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
+} from '@rivocode/common/tools/list'
 import type {
   AgentRuntimeDeps,
   AgentRuntimeScopedDeps,
-} from '@codebuff/common/types/contracts/agent-runtime'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+} from '@rivocode/common/types/contracts/agent-runtime'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 import type {
   Message,
   ToolMessage,
-} from '@codebuff/common/types/messages/codebuff-message'
-import type { ToolResultOutput } from '@codebuff/common/types/messages/content-part'
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
+} from '@rivocode/common/types/messages/codebuff-message'
+import type { ToolResultOutput } from '@rivocode/common/types/messages/content-part'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
 import type {
   AgentTemplateType,
   AgentState,
   Subgoal,
-} from '@codebuff/common/types/session-state'
+} from '@rivocode/common/types/session-state'
 import type {
   CustomToolDefinitions,
   ProjectFileContext,
-} from '@codebuff/common/util/file'
+} from '@rivocode/common/util/file'
 import type { ToolCallPart, ToolSet } from 'ai'
 
 export type CustomToolCall = {

@@ -29,15 +29,15 @@ export const useLogo = ({
   const ASCII_LOGO_LINES = 6
   const rawLogoString = useMemo(() => {
     if (maxHeight != null && maxHeight < ASCII_LOGO_LINES) {
-      return IS_FREEBUFF ? 'FREEBUFF' : 'CODEBUFF'
+      return 'RIVOCODE'
     }
     if (availableWidth >= 70) return LOGO
     if (availableWidth >= 20) return LOGO_SMALL
-    return IS_FREEBUFF ? 'FREEBUFF' : 'CODEBUFF'
+    return 'RIVOCODE'
   }, [availableWidth, maxHeight])
 
   const textBlock = useMemo(() => {
-    if (rawLogoString === 'CODEBUFF' || rawLogoString === 'FREEBUFF') {
+    if (rawLogoString === 'RIVOCODE') {
       return ''
     }
     return parseLogoLines(rawLogoString)
@@ -46,8 +46,8 @@ export const useLogo = ({
   }, [rawLogoString, availableWidth])
 
   const component = useMemo(() => {
-    if (rawLogoString === 'CODEBUFF' || rawLogoString === 'FREEBUFF') {
-      const brandName = IS_FREEBUFF ? 'Freebuff' : 'Codebuff'
+    if (rawLogoString === 'RIVOCODE') {
+      const brandName = 'RivoCode'
       const forcedByHeight = maxHeight != null && maxHeight < ASCII_LOGO_LINES
       const displayText =
         availableWidth < 30 || forcedByHeight

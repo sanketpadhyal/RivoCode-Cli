@@ -1,4 +1,4 @@
-import { createMockLogger } from '@codebuff/common/testing/mocks/logger'
+import { createMockLogger } from '@rivocode/common/testing/mocks/logger'
 import { describe, test, expect, beforeEach, afterEach, mock } from 'bun:test'
 
 import {
@@ -13,7 +13,7 @@ import {
   usageQueryKeys,
 } from '../use-usage-query'
 
-import type { ClientEnv } from '@codebuff/common/types/contracts/env'
+import type { ClientEnv } from '@rivocode/common/types/contracts/env'
 
 beforeEach(() => {
   resetActivityQueryCache()

@@ -1,4 +1,4 @@
-import { jsonToolResult } from '@codebuff/common/util/messages'
+import { jsonToolResult } from '@rivocode/common/util/messages'
 
 import { getFileReadingUpdates } from '../../../get-file-reading-updates'
 import { renderReadFilesResult } from '../../../util/render-read-files-result'
@@ -7,11 +7,11 @@ import type { CodebuffToolHandlerFunction } from '../handler-function-type'
 import type {
   CodebuffToolCall,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
-import type { AgentTemplate } from '@codebuff/common/types/agent-template'
-import type { FileReadWindow } from '@codebuff/common/types/contracts/client'
-import type { ParamsExcluding } from '@codebuff/common/types/function-params'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+} from '@rivocode/common/tools/list'
+import type { AgentTemplate } from '@rivocode/common/types/agent-template'
+import type { FileReadWindow } from '@rivocode/common/types/contracts/client'
+import type { ParamsExcluding } from '@rivocode/common/types/function-params'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 type ToolName = 'read_files'
 export const handleReadFiles = (async (

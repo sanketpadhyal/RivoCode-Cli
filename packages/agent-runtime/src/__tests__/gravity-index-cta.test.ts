@@ -2,8 +2,8 @@ import { describe, expect, test } from 'bun:test'
 
 import { resolveGravityIndexLink } from '../tools/gravity-index-cta'
 
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
-import type { JSONObject } from '@codebuff/common/types/json'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
+import type { JSONObject } from '@rivocode/common/types/json'
 
 const gravityResult = (toolCallId: string, value: JSONObject): Message => ({
   role: 'tool',

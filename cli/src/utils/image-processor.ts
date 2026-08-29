@@ -2,7 +2,7 @@ import { extractImagePaths, processImageFile } from './image-handler'
 import { logger } from './logger'
 
 import type { PendingImageAttachment } from '../types/store'
-import type { MessageContent } from '@codebuff/sdk'
+import type { MessageContent } from '@rivocode/sdk'
 
 export type ProcessedImagePart = {
   type: 'image'

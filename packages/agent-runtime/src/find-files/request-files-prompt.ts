@@ -4,10 +4,10 @@ import {
   finetunedVertexModels,
   models,
   type FinetunedVertexModel,
-} from '@codebuff/common/old-constants'
-import { getAllFilePaths } from '@codebuff/common/project-file-tree'
-import { isAbortError, unwrapPromptResult } from '@codebuff/common/util/error'
-import { systemMessage, userMessage } from '@codebuff/common/util/messages'
+} from '@rivocode/common/old-constants'
+import { getAllFilePaths } from '@rivocode/common/project-file-tree'
+import { isAbortError, unwrapPromptResult } from '@rivocode/common/util/error'
+import { systemMessage, userMessage } from '@rivocode/common/util/messages'
 import { range, shuffle, uniq } from 'lodash'
 
 import { promptFlashWithFallbacks } from '../llm-api/gemini-with-fallbacks'
@@ -18,11 +18,11 @@ import {
 } from '../util/messages'
 
 import type { TextBlock } from '../llm-api/claude'
-import type { PromptAiSdkFn } from '@codebuff/common/types/contracts/llm'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { ParamsExcluding } from '@codebuff/common/types/function-params'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+import type { PromptAiSdkFn } from '@rivocode/common/types/contracts/llm'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { ParamsExcluding } from '@rivocode/common/types/function-params'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 const NUMBER_OF_EXAMPLE_FILES = 100
 const MAX_FILES_PER_REQUEST = 30

@@ -1,15 +1,15 @@
-import { setTreeSitterWasmPath as setCodeMapTreeSitterWasmPath } from '@codebuff/code-map/init-node'
-import { setWasmDir as setCodeMapWasmDir } from '@codebuff/code-map/languages'
-import { getFileTokenScores as getCodeMapFileTokenScores } from '@codebuff/code-map/parse'
+import { setTreeSitterWasmPath as setCodeMapTreeSitterWasmPath } from '@rivocode/code-map/init-node'
+import { setWasmDir as setCodeMapWasmDir } from '@rivocode/code-map/languages'
+import { getFileTokenScores as getCodeMapFileTokenScores } from '@rivocode/code-map/parse'
 
-export type * from '@codebuff/common/types/json'
-export type * from '@codebuff/common/types/messages/codebuff-message'
-export type * from '@codebuff/common/types/messages/data-content'
-export type * from '@codebuff/common/types/print-mode'
+export type * from '@rivocode/common/types/json'
+export type * from '@rivocode/common/types/messages/codebuff-message'
+export type * from '@rivocode/common/types/messages/data-content'
+export type * from '@rivocode/common/types/print-mode'
 export type {
   TextPart,
   ImagePart,
-} from '@codebuff/common/types/messages/content-part'
+} from '@rivocode/common/types/messages/content-part'
 export { run, STATE_SNAPSHOT_INTERRUPTION_MESSAGE } from './run'
 export { getFiles } from './tools/read-files'
 export type { FileFilter, FileFilterResult } from './tools/read-files'
@@ -20,16 +20,16 @@ export type {
   TextContent,
   ImageContent,
 } from './run'
-export type { TraceWriter } from '@codebuff/common/types/contracts/trace'
-export { buildUserMessageContent } from '@codebuff/agent-runtime/util/messages'
-export type { AgentDefinition } from '@codebuff/common/templates/initial-agents-dir/types/agent-definition'
-export type { ToolName } from '@codebuff/common/tools/constants'
+export type { TraceWriter } from '@rivocode/common/types/contracts/trace'
+export { buildUserMessageContent } from '@rivocode/agent-runtime/util/messages'
+export type { AgentDefinition } from '@rivocode/common/templates/initial-agents-dir/types/agent-definition'
+export type { ToolName } from '@rivocode/common/tools/constants'
 
 export type {
   ClientToolCall,
   ClientToolName,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
+} from '@rivocode/common/tools/list'
 export * from './client'
 export * from './custom-tool'
 export * from './native/ripgrep'
@@ -42,9 +42,9 @@ export * from './credentials'
 export { loadLocalAgents } from './agents/load-agents'
 export { loadMCPConfig, loadMCPConfigSync } from './agents/load-mcp-config'
 export { loadSkills, loadSkillsSync, parseSkillFileContent } from './skills/load-skills'
-export { formatAvailableSkillsXml } from '@codebuff/common/util/skills'
+export { formatAvailableSkillsXml } from '@rivocode/common/util/skills'
 export type { LoadSkillsOptions } from './skills/load-skills'
-export type { SkillDefinition, SkillsMap } from '@codebuff/common/types/skill'
+export type { SkillDefinition, SkillsMap } from '@rivocode/common/types/skill'
 export type {
   LoadedAgents,
   LoadedAgentDefinition,
@@ -84,7 +84,7 @@ export {
   RECONNECTION_RETRY_DELAY_MS,
 } from './retry-config'
 
-export type { CodebuffFileSystem } from '@codebuff/common/types/filesystem'
+export type { CodebuffFileSystem } from '@rivocode/common/types/filesystem'
 
 export function getFileTokenScores(
   ...args: Parameters<typeof getCodeMapFileTokenScores>
@@ -99,7 +99,7 @@ export function setWasmDir(dir: string): void {
 export function setTreeSitterWasmPath(wasmPath: string): void {
   setCodeMapTreeSitterWasmPath(wasmPath)
 }
-export type { FileTokenData, TokenCallerMap } from '@codebuff/code-map'
+export type { FileTokenData, TokenCallerMap } from '@rivocode/code-map'
 
 export {
   getActiveTerminalCommandProcesses,

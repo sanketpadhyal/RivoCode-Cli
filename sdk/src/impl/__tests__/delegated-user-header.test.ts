@@ -1,10 +1,10 @@
-import { FREEBUFF_ACTING_USER_HEADER } from '@codebuff/common/constants/freebuff-models'
+import { FREEBUFF_ACTING_USER_HEADER } from '@rivocode/common/constants/freebuff-models'
 import { afterEach, describe, expect, mock, test } from 'bun:test'
 
 import { addAgentStep, finishAgentRun, startAgentRun } from '../database'
 import { getModelForRequest } from '../model-provider'
 
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 const originalFetch = globalThis.fetch
 const logger = {

@@ -1,11 +1,11 @@
-import { SKILLS_DIR_NAME, SKILL_FILE_NAME } from '@codebuff/common/constants/skills'
+import { SKILLS_DIR_NAME, SKILL_FILE_NAME } from '@rivocode/common/constants/skills'
 import {
   createSkillDefinition,
   SkillFrontmatterSchema,
   type SkillDefinition,
-} from '@codebuff/common/types/skill'
-import { isSkillModelInvocable } from '@codebuff/common/util/skills'
-import { jsonToolResult } from '@codebuff/common/util/messages'
+} from '@rivocode/common/types/skill'
+import { isSkillModelInvocable } from '@rivocode/common/util/skills'
+import { jsonToolResult } from '@rivocode/common/util/messages'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
@@ -15,8 +15,8 @@ import type { CodebuffToolHandlerFunction } from '../handler-function-type'
 import type {
   CodebuffToolCall,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+} from '@rivocode/common/tools/list'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 async function loadSkillFromDisk(
   projectRoot: string,

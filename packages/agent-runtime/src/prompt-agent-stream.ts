@@ -1,17 +1,17 @@
 import { globalStopSequence } from './constants'
 
 import type { AgentTemplate } from './templates/types'
-import type { TrackEventFn } from '@codebuff/common/types/contracts/analytics'
-import type { SendActionFn } from '@codebuff/common/types/contracts/client'
+import type { TrackEventFn } from '@rivocode/common/types/contracts/analytics'
+import type { SendActionFn } from '@rivocode/common/types/contracts/client'
 import type {
   CacheDebugUsageData,
   ModelUsageData,
   PromptAiSdkStreamFn,
-} from '@codebuff/common/types/contracts/llm'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { ParamsOf } from '@codebuff/common/types/function-params'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
-import type { OpenRouterProviderOptions } from '@codebuff/common/types/agent-template'
+} from '@rivocode/common/types/contracts/llm'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { ParamsOf } from '@rivocode/common/types/function-params'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
+import type { OpenRouterProviderOptions } from '@rivocode/common/types/agent-template'
 import type { ToolSet } from 'ai'
 
 export const getAgentStreamFromTemplate = (params: {

@@ -1,4 +1,4 @@
-# @codebuff/cli
+# @rivocode/cli
 
 A Terminal User Interface (TUI) package built with OpenTUI and React.
 

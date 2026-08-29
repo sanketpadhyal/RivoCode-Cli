@@ -1,11 +1,11 @@
-import { API_KEY_ENV_VAR } from '@codebuff/common/old-constants'
-import { CodebuffClient } from '@codebuff/sdk'
+import { API_KEY_ENV_VAR } from '@rivocode/common/old-constants'
+import { CodebuffClient } from '@rivocode/sdk'
 import { describe, expect, it } from 'bun:test'
 
 import fileListerDefinition from '../file-explorer/file-lister'
 import filePickerDefinition from '../file-explorer/file-picker'
 
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
 
 describe('File Lister Agent Integration - read_subtree tool', () => {
   it(

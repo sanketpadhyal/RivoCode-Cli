@@ -1,4 +1,4 @@
-export const publisher = 'codebuff'
+export const publisher = 'Sanket Padhyal'
 
 export const FOLLOWUP_STYLE_GUIDANCE =
   'Keep each one short and goal-oriented: name the outcome, not the steps to reach it, so whoever picks it up is free to choose the approach. Each suggestion is clicked out of context, so name its target.'

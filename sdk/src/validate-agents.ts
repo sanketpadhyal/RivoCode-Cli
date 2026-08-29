@@ -1,11 +1,11 @@
 import {
   validateAgents as validateAgentsCommon,
   type DynamicAgentValidationError,
-} from '@codebuff/common/templates/agent-validation'
+} from '@rivocode/common/templates/agent-validation'
 
 import { getWebsiteUrl } from './constants'
 
-import type { AgentDefinition } from '@codebuff/common/templates/initial-agents-dir/types/agent-definition'
+import type { AgentDefinition } from '@rivocode/common/templates/initial-agents-dir/types/agent-definition'
 
 export interface ValidationResult {
   success: boolean

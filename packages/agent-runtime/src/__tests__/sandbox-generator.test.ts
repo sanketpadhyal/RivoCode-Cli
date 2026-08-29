@@ -1,8 +1,8 @@
-import { TEST_AGENT_RUNTIME_IMPL } from '@codebuff/common/testing/impl/agent-runtime'
+import { TEST_AGENT_RUNTIME_IMPL } from '@rivocode/common/testing/impl/agent-runtime'
 import {
   getInitialAgentState,
   type AgentState,
-} from '@codebuff/common/types/session-state'
+} from '@rivocode/common/types/session-state'
 import { afterEach, beforeEach, describe, expect, test, spyOn } from 'bun:test'
 
 import {
@@ -15,8 +15,8 @@ import type { AgentTemplate } from '../templates/types'
 import type {
   AgentRuntimeDeps,
   AgentRuntimeScopedDeps,
-} from '@codebuff/common/types/contracts/agent-runtime'
-import type { ParamsOf } from '@codebuff/common/types/function-params'
+} from '@rivocode/common/types/contracts/agent-runtime'
+import type { ParamsOf } from '@rivocode/common/types/function-params'
 
 describe('QuickJS Sandbox Generator', () => {
   let mockAgentState: AgentState

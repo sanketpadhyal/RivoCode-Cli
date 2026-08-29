@@ -5,7 +5,7 @@ import path from 'path'
 
 import { handleSkill } from '../skill'
 
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 function writeSkill(
   projectRoot: string,

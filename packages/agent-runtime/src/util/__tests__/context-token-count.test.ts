@@ -6,7 +6,7 @@ import {
 } from '../context-token-count'
 import { countTokensMessages } from '../token-counter'
 
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
 
 const text = (role: 'user' | 'assistant', body: string) =>
   ({ role, content: [{ type: 'text', text: body }] }) as unknown as Message

@@ -1,6 +1,6 @@
 import { AGENT_MODES, IS_FREEBUFF } from '../utils/constants'
 
-import type { SkillsMap } from '@codebuff/common/types/skill'
+import type { SkillsMap } from '@rivocode/common/types/skill'
 
 export interface SlashCommand {
   id: string

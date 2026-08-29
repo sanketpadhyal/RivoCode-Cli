@@ -4,8 +4,8 @@ import { getAuthToken } from '../utils/auth'
 import { getApiClient, setApiClientAuthToken } from '../utils/codebuff-api'
 import { logger as defaultLogger } from '../utils/logger'
 
-import type { FreebuffStreakResponse } from '@codebuff/common/types/freebuff-streak'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { FreebuffStreakResponse } from '@rivocode/common/types/freebuff-streak'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 export const freebuffStreakQueryKeys = {
   all: ['freebuffStreak'] as const,

@@ -4,7 +4,7 @@ import { fetchAndUpdateUsage } from '../fetch-usage'
 
 import type { CodebuffApiClient } from '../codebuff-api'
 import type { FetchAndUpdateUsageParams } from '../fetch-usage'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 describe('fetchAndUpdateUsage (deprecated)', () => {
   let setInputModeMock: ReturnType<typeof mock>

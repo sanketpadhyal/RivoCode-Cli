@@ -1,7 +1,7 @@
-import { TEST_USER_ID } from '@codebuff/common/old-constants'
-import { TEST_AGENT_RUNTIME_IMPL } from '@codebuff/common/testing/impl/agent-runtime'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { assistantMessage, userMessage } from '@codebuff/common/util/messages'
+import { TEST_USER_ID } from '@rivocode/common/old-constants'
+import { TEST_AGENT_RUNTIME_IMPL } from '@rivocode/common/testing/impl/agent-runtime'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { assistantMessage, userMessage } from '@rivocode/common/util/messages'
 import {
   afterEach,
   beforeEach,
@@ -25,11 +25,11 @@ import type { executeToolCall } from '../tools/tool-executor'
 import type {
   AgentRuntimeDeps,
   AgentRuntimeScopedDeps,
-} from '@codebuff/common/types/contracts/agent-runtime'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { ParamsOf } from '@codebuff/common/types/function-params'
-import type { ToolMessage } from '@codebuff/common/types/messages/codebuff-message'
-import type { AgentState } from '@codebuff/common/types/session-state'
+} from '@rivocode/common/types/contracts/agent-runtime'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { ParamsOf } from '@rivocode/common/types/function-params'
+import type { ToolMessage } from '@rivocode/common/types/messages/codebuff-message'
+import type { AgentState } from '@rivocode/common/types/session-state'
 
 const logger: Logger = {
   debug: () => {},

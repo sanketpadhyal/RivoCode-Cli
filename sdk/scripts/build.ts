@@ -28,7 +28,7 @@ async function build() {
   const pkg = JSON.parse(pkgText)
   const external = [
     ...Object.keys(pkg.dependencies || {}).filter(
-      (dep) => !dep.startsWith('@codebuff/'),
+      (dep) => !dep.startsWith('@rivocode/'),
     ),
     'fs',
     'path',
@@ -126,10 +126,10 @@ async function build() {
           },
           libraries: {
             importedLibraries: [
-              '@codebuff/common',
-              '@codebuff/agent-runtime',
-              '@codebuff/code-map',
-              '@codebuff/llm-providers',
+              '@rivocode/common',
+              '@rivocode/agent-runtime',
+              '@rivocode/code-map',
+              '@rivocode/llm-providers',
             ],
           },
         },

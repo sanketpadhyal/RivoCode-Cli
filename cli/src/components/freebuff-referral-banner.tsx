@@ -1,16 +1,16 @@
 import {
   FREEBUFF_EARN_PATH,
   FREEBUFF_EARN_PROMPT_SHORT,
-} from '@codebuff/common/constants/freebuff-levels'
+} from '@rivocode/common/constants/freebuff-levels'
 import { TextAttributes } from '@opentui/core'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Button } from './button'
 import { useCopyToClipboard } from './copy-button'
-import { FREEBUFF_GLM_V52_MODEL_ID } from '@codebuff/common/constants/freebuff-models'
-import { FREEBUFF_GLM_V52_MAX_DAILY_SESSIONS } from '@codebuff/common/constants/freebuff-models'
-import { REFERRAL_CLI_DAILY_SESSION_BONUS_CAP } from '@codebuff/common/constants/freebuff-referral-tiers'
-import { pluralize } from '@codebuff/common/util/string'
+import { FREEBUFF_GLM_V52_MODEL_ID } from '@rivocode/common/constants/freebuff-models'
+import { FREEBUFF_GLM_V52_MAX_DAILY_SESSIONS } from '@rivocode/common/constants/freebuff-models'
+import { REFERRAL_CLI_DAILY_SESSION_BONUS_CAP } from '@rivocode/common/constants/freebuff-referral-tiers'
+import { pluralize } from '@rivocode/common/util/string'
 
 import { startFreebuffSession } from '../hooks/use-freebuff-session'
 import { useNow } from '../hooks/use-now'
@@ -20,11 +20,11 @@ import { formatFreebuffPremiumResetCountdown } from '../utils/freebuff-premium-r
 import { safeOpen } from '../utils/open-url'
 import { BORDER_CHARS } from '../utils/ui-constants'
 
-import type { FreebuffAccessTier } from '@codebuff/common/constants/freebuff-models'
+import type { FreebuffAccessTier } from '@rivocode/common/constants/freebuff-models'
 import type {
   FreebuffGlmPromo,
   FreebuffReferralInfo,
-} from '@codebuff/common/types/freebuff-session'
+} from '@rivocode/common/types/freebuff-session'
 
 function referralLink(code: string, referrerName: string | null): string {
   const params = new URLSearchParams({ ref: code })

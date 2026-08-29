@@ -2,7 +2,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 import { cpus, networkInterfaces } from 'node:os'
 
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
 
 import { trackEvent } from './analytics'
 import { detectShell } from './detect-shell'

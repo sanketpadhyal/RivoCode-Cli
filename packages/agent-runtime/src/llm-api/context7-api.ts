@@ -1,4 +1,4 @@
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 import { countTokens } from '../util/token-counter'
 

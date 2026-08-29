@@ -1,10 +1,11 @@
-{
-  "name": "@codebuff/cli",
+  "name": "@rivocode/cli",
   "version": "1.0.0",
+  "author": "Sanket Padhyal <mrsanketpadhyal@gmail.com>",
   "private": true,
   "type": "module",
   "bin": {
-    "codebuff-tui": "./bin/codecane"
+    "rivocode": "./src/entry.ts",
+    "rivocode-tui": "./src/entry.ts"
   },
   "exports": {
     ".": {
@@ -17,7 +18,7 @@
   "scripts": {
     "dev": "bun run prebuild:agents && bun run src/entry.ts --cwd ..",
     "prebuild:agents": "bun run scripts/prebuild-agents.ts",
-    "build:binary": "bun ./scripts/build-binary.ts codebuff $npm_package_version",
+    "build:binary": "bun ./scripts/build-binary.ts rivocode $npm_package_version",
     "release": "bun run scripts/release.ts",
     "test": "NODE_ENV=production bun test $(bun run --silent test:files)",
     "test:files": "find src \\( -name '*.test.ts' -o -name '*.test.tsx' \\) ! -name '*.integration.test.ts' ! -name '*.integration.test.tsx' 2>/dev/null | sort",
@@ -32,7 +33,7 @@
     "bun": "1.3.11"
   },
   "dependencies": {
-    "@codebuff/sdk": "workspace:*",
+    "@rivocode/sdk": "workspace:*",
     "@gravity-ai/api": "^0.1.2",
     "@opentui/core": "0.3.4",
     "@opentui/react": "0.3.4",

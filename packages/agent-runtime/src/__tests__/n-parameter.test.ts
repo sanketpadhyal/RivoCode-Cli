@@ -1,9 +1,9 @@
-import * as analytics from '@codebuff/common/analytics'
-import { TEST_USER_ID } from '@codebuff/common/old-constants'
-import { createTestAgentRuntimeParams } from '@codebuff/common/testing/fixtures/agent-runtime'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { promptAborted, promptSuccess } from '@codebuff/common/util/error'
-import { assistantMessage, userMessage } from '@codebuff/common/util/messages'
+import * as analytics from '@rivocode/common/analytics'
+import { TEST_USER_ID } from '@rivocode/common/old-constants'
+import { createTestAgentRuntimeParams } from '@rivocode/common/testing/fixtures/agent-runtime'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { promptAborted, promptSuccess } from '@rivocode/common/util/error'
+import { assistantMessage, userMessage } from '@rivocode/common/util/messages'
 import {
   afterEach,
   beforeEach,
@@ -23,10 +23,10 @@ import { mockFileContext } from './test-utils'
 import * as toolExecutor from '../tools/tool-executor'
 
 import type { AgentTemplate, StepGenerator } from '../templates/types'
-import type { PromptAiSdkFn } from '@codebuff/common/types/contracts/llm'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { ParamsOf } from '@codebuff/common/types/function-params'
-import type { AgentState } from '@codebuff/common/types/session-state'
+import type { PromptAiSdkFn } from '@rivocode/common/types/contracts/llm'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { ParamsOf } from '@rivocode/common/types/function-params'
+import type { AgentState } from '@rivocode/common/types/session-state'
 
 const logger: Logger = {
   debug: () => {},

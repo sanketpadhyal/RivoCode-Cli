@@ -7,8 +7,8 @@ import { describe, expect, it } from 'bun:test'
 import { CodebuffClient } from '../client'
 import { loadLocalAgents } from '../agents/load-agents'
 
-import type { AgentOutput } from '@codebuff/common/types/session-state'
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
+import type { AgentOutput } from '@rivocode/common/types/session-state'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
 
 const DEFAULT_TIMEOUT_MS = 120_000
 const EXPECTED_KEYWORD = 'useActionState'

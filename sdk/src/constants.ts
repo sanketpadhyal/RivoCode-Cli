@@ -1,4 +1,4 @@
-import { env, IS_DEV, IS_TEST, IS_PROD } from '@codebuff/common/env'
+import { env, IS_DEV, IS_TEST, IS_PROD } from '@rivocode/common/env'
 
 import { getRuntimeAppUrlFromEnv } from './env'
 

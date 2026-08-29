@@ -1,16 +1,16 @@
 export {
   FREEBUFF_STREAK_WEEK,
   getFreebuffStreakBonusNote,
-} from '@codebuff/common/util/freebuff-streak-line'
-export type { FreebuffStreakLine } from '@codebuff/common/util/freebuff-streak-line'
+} from '@rivocode/common/util/freebuff-streak-line'
+export type { FreebuffStreakLine } from '@rivocode/common/util/freebuff-streak-line'
 
 import {
   FREEBUFF_STREAK_WEEK,
   getFreebuffStreakBonusNote,
   getFreebuffStreakLine as getSharedFreebuffStreakLine,
-} from '@codebuff/common/util/freebuff-streak-line'
+} from '@rivocode/common/util/freebuff-streak-line'
 
-import type { FreebuffStreakLine } from '@codebuff/common/util/freebuff-streak-line'
+import type { FreebuffStreakLine } from '@rivocode/common/util/freebuff-streak-line'
 
 const FREEBUFF_STREAK_BONUS_MIN_HEIGHT = 30
 

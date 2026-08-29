@@ -6,15 +6,15 @@ import {
   getFreebuffModelEfforts,
   isFreebuffModelId,
   migrateSupersededFreebuffModelPreference,
-} from '@codebuff/common/constants/freebuff-models'
-import { isReasoningEffort } from '@codebuff/common/constants/reasoning-effort'
+} from '@rivocode/common/constants/freebuff-models'
+import { isReasoningEffort } from '@rivocode/common/constants/reasoning-effort'
 
 import { getConfigDir } from './auth'
 import { AGENT_MODES } from './constants'
 import { logger } from './logger'
 
 import type { AgentMode } from './constants'
-import type { ReasoningEffort } from '@codebuff/common/constants/reasoning-effort'
+import type { ReasoningEffort } from '@rivocode/common/constants/reasoning-effort'
 
 const DEFAULT_SETTINGS: Settings = {
   mode: 'DEFAULT' as const,

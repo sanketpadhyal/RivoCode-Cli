@@ -1,6 +1,6 @@
-import { FILE_READ_STATUS } from '@codebuff/common/old-constants'
-import * as projectFileTree from '@codebuff/common/project-file-tree'
-import { createNodeError } from '@codebuff/common/testing/errors'
+import { FILE_READ_STATUS } from '@rivocode/common/old-constants'
+import * as projectFileTree from '@rivocode/common/project-file-tree'
+import { createNodeError } from '@rivocode/common/testing/errors'
 import {
   describe,
   test,
@@ -13,7 +13,7 @@ import {
 
 import { getFiles } from '../tools/read-files'
 
-import type { CodebuffFileSystem } from '@codebuff/common/types/filesystem'
+import type { CodebuffFileSystem } from '@rivocode/common/types/filesystem'
 import type { PathLike } from 'node:fs'
 
 function createMockFs(config: {

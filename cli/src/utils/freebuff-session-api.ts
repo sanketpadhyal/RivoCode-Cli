@@ -1,16 +1,16 @@
-import { env } from '@codebuff/common/env'
+import { env } from '@rivocode/common/env'
 import {
   FREEBUFF_COMPACT_SESSION_HEADER,
   FREEBUFF_INSTANCE_HEADER,
   FREEBUFF_MODEL_HEADER,
-} from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/freebuff-models'
 
 import { useFreebuffSessionStore } from '../state/freebuff-session-store'
 import { getAuthTokenDetails } from './auth'
 import { IS_FREEBUFF } from './constants'
 
 import type { FreebuffSessionResponse } from '../types/freebuff-session'
-import type { FreebuffSessionServerResponse } from '@codebuff/common/types/freebuff-session'
+import type { FreebuffSessionServerResponse } from '@rivocode/common/types/freebuff-session'
 
 const SESSION_FETCH_TIMEOUT_MS = 20_000
 export type FreebuffSessionMethod = 'POST' | 'GET' | 'DELETE'

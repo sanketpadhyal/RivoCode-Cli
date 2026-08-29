@@ -2,7 +2,7 @@ import { afterEach, expect, spyOn, test } from 'bun:test'
 import {
   FREEBUFF_GLM_V52_MODEL_ID,
   resolveFreebuffModelForAccessTier,
-} from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/freebuff-models'
 
 import {
   callFreebuffSession,

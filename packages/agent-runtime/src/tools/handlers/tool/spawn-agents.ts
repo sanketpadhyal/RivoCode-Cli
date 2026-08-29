@@ -1,4 +1,4 @@
-import { jsonToolResult } from '@codebuff/common/util/messages'
+import { jsonToolResult } from '@rivocode/common/util/messages'
 
 import {
   validateAndGetAgentTemplate,
@@ -12,13 +12,13 @@ import type { CodebuffToolHandlerFunction } from '../handler-function-type'
 import type {
   CodebuffToolCall,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
-import type { AgentTemplate } from '@codebuff/common/types/agent-template'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { ParamsExcluding } from '@codebuff/common/types/function-params'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
-import type { AgentState } from '@codebuff/common/types/session-state'
+} from '@rivocode/common/tools/list'
+import type { AgentTemplate } from '@rivocode/common/types/agent-template'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { ParamsExcluding } from '@rivocode/common/types/function-params'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
+import type { AgentState } from '@rivocode/common/types/session-state'
 import type { ToolSet } from 'ai'
 
 export type SendSubagentChunk = (data: {

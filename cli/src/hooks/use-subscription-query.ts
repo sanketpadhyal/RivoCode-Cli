@@ -4,8 +4,8 @@ import { IS_FREEBUFF } from '../utils/constants'
 import { getApiClient } from '../utils/codebuff-api'
 import { logger as defaultLogger } from '../utils/logger'
 
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { SubscriptionResponse } from '@codebuff/common/types/subscription'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { SubscriptionResponse } from '@rivocode/common/types/subscription'
 
 export type { SubscriptionResponse }
 

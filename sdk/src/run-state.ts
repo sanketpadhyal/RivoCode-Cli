@@ -1,18 +1,18 @@
 import * as os from 'os'
 import path from 'path'
 
-import { getSystemInfo } from '@codebuff/common/util/system-info'
+import { getSystemInfo } from '@rivocode/common/util/system-info'
 import {
   KNOWLEDGE_FILE_NAMES_LOWERCASE,
   isKnowledgeFile,
-} from '@codebuff/common/constants/knowledge'
+} from '@rivocode/common/constants/knowledge'
 import {
   DEFAULT_MAX_FILES,
   getProjectFileTree,
   getAllFilePaths,
-} from '@codebuff/common/project-file-tree'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { getErrorObject } from '@codebuff/common/util/error'
+} from '@rivocode/common/project-file-tree'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { getErrorObject } from '@rivocode/common/util/error'
 import { cloneDeep } from 'lodash'
 import z from 'zod/v4'
 
@@ -22,23 +22,23 @@ import { loadSkills } from './skills/load-skills'
 export {
   KNOWLEDGE_FILE_NAMES,
   isKnowledgeFile,
-} from '@codebuff/common/constants/knowledge'
+} from '@rivocode/common/constants/knowledge'
 
 import type { CustomToolDefinition } from './custom-tool'
-import type { AgentDefinition } from '@codebuff/common/templates/initial-agents-dir/types/agent-definition'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { CodebuffFileSystem } from '@codebuff/common/types/filesystem'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
+import type { AgentDefinition } from '@rivocode/common/templates/initial-agents-dir/types/agent-definition'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { CodebuffFileSystem } from '@rivocode/common/types/filesystem'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
 import type {
   AgentOutput,
   SessionState,
-} from '@codebuff/common/types/session-state'
-import type { SkillsMap } from '@codebuff/common/types/skill'
-import type { CodebuffSpawn } from '@codebuff/common/types/spawn'
+} from '@rivocode/common/types/session-state'
+import type { SkillsMap } from '@rivocode/common/types/skill'
+import type { CodebuffSpawn } from '@rivocode/common/types/spawn'
 import type {
   CustomToolDefinitions,
   FileTreeNode,
-} from '@codebuff/common/util/file'
+} from '@rivocode/common/util/file'
 import type * as fsType from 'fs'
 
 export function selectHighestPriorityKnowledgeFile(
@@ -266,7 +266,7 @@ async function computeProjectIndex(params: ProjectIndexInput): Promise<{
 
   if (filePaths.length > 0) {
     try {
-      const { getFileTokenScores } = await import('@codebuff/code-map/parse')
+      const { getFileTokenScores } = await import('@rivocode/code-map/parse')
       const tokenData = await getFileTokenScores(cwd, filePaths, readFile)
       fileTokenScores = tokenData.tokenScores
       tokenCallers = tokenData.tokenCallers

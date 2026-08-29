@@ -1,12 +1,12 @@
-import { countTokensMessages } from '@codebuff/agent-runtime/util/token-counter'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { getStubProjectFileContext } from '@codebuff/common/util/file'
+import { countTokensMessages } from '@rivocode/agent-runtime/util/token-counter'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { getStubProjectFileContext } from '@rivocode/common/util/file'
 import { describe, expect, test } from 'bun:test'
 
 import { buildCancelledSessionState } from '../run'
 
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
-import type { SessionState } from '@codebuff/common/types/session-state'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
+import type { SessionState } from '@rivocode/common/types/session-state'
 
 const SYSTEM_AND_TOOLS = 9_000
 

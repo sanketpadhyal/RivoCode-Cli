@@ -1,12 +1,12 @@
 import {
   createTestAgentRuntimeParams,
   testFileContext,
-} from '@codebuff/common/testing/fixtures/agent-runtime'
+} from '@rivocode/common/testing/fixtures/agent-runtime'
 import {
   getInitialAgentState,
   getInitialSessionState,
-} from '@codebuff/common/types/session-state'
-import { assistantMessage } from '@codebuff/common/util/messages'
+} from '@rivocode/common/types/session-state'
+import { assistantMessage } from '@rivocode/common/util/messages'
 import {
   spyOn,
   beforeEach,
@@ -21,7 +21,7 @@ import * as agentRegistry from '../templates/agent-registry'
 import * as spawnAgentUtils from '../tools/handlers/tool/spawn-agent-utils'
 import { handleSpawnAgents } from '../tools/handlers/tool/spawn-agents'
 
-import type { AgentState } from '@codebuff/common/types/session-state'
+import type { AgentState } from '@rivocode/common/types/session-state'
 
 const mockFileContext = testFileContext
 

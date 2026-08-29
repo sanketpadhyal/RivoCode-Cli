@@ -76,7 +76,7 @@ try {
   setupTestFiles()
 
   console.log('\n1. Testing ripgrep imports...')
-  const { getBundledRgPath, ToolHelpers } = await import('@codebuff/sdk')
+  const { getBundledRgPath, ToolHelpers } = await import('@rivocode/sdk')
 
   if (typeof getBundledRgPath !== 'function') {
     throw new Error(

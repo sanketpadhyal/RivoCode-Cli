@@ -1,4 +1,4 @@
-import { sanitizeErrorMessage, getErrorStatusCode } from '@codebuff/sdk'
+import { sanitizeErrorMessage, getErrorStatusCode } from '@rivocode/sdk'
 
 export function formatErrorForDisplay(error: unknown, fallbackTitle: string): string {
   const statusCode = getErrorStatusCode(error)

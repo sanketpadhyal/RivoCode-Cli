@@ -65,8 +65,8 @@ export function parseArgs({
       .helpOption('-h, --help', 'Show this help message')
   } else {
     program
-      .name('codebuff')
-      .description('Codebuff CLI - AI-powered coding assistant')
+      .name('rivocode')
+      .description('RivoCode CLI - AI Coding Assistant created by Sanket Padhyal')
       .version(version, '-v, --version', 'Print the CLI version')
       .option(
         '--agent <agent-id>',

@@ -1,16 +1,16 @@
-import { buildArray } from '@codebuff/common/util/array'
-import { COMPOSIO_META_TOOL_NAMES } from '@codebuff/common/constants/composio'
+import { buildArray } from '@rivocode/common/util/array'
+import { COMPOSIO_META_TOOL_NAMES } from '@rivocode/common/constants/composio'
 import {
   FREEBUFF_GEMINI_THINKER_AGENT_ID,
   FREEBUFF_GEMINI_THINKER_INSTRUCTIONS_PROMPT,
   FREEBUFF_GEMINI_THINKER_SYSTEM_INSTRUCTION,
-} from '@codebuff/common/constants/freebuff-gemini-thinker'
-import { FREEBUFF_REVIEWER_AGENT_ID_BY_MODEL } from '@codebuff/common/constants/free-agents'
+} from '@rivocode/common/constants/freebuff-gemini-thinker'
+import { FREEBUFF_REVIEWER_AGENT_ID_BY_MODEL } from '@rivocode/common/constants/free-agents'
 import {
   canFreebuffModelSpawnGeminiThinker,
   FREEBUFF_MINIMAX_M3_MODEL_ID,
-} from '@codebuff/common/constants/freebuff-models'
-import { contextPrunerBudgetForModel } from '@codebuff/common/constants/model-config'
+} from '@rivocode/common/constants/freebuff-models'
+import { contextPrunerBudgetForModel } from '@rivocode/common/constants/model-config'
 
 import {
   FOLLOWUP_STYLE_GUIDANCE,

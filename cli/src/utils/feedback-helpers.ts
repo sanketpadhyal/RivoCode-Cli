@@ -3,12 +3,12 @@ import {
   MAX_ERROR_MESSAGE_LENGTH,
   MAX_ERRORS,
   MAX_RECENT_MESSAGES,
-} from '@codebuff/common/constants/feedback'
+} from '@rivocode/common/constants/feedback'
 
 import type { ChatMessage } from '../types/chat'
-import type { FeedbackCategory } from '@codebuff/common/constants/feedback'
+import type { FeedbackCategory } from '@rivocode/common/constants/feedback'
 
-import type { FeedbackRequest } from '@codebuff/common/schemas/feedback'
+import type { FeedbackRequest } from '@rivocode/common/schemas/feedback'
 
 export type RecentMessageSummary = NonNullable<
   FeedbackRequest['recentMessages']

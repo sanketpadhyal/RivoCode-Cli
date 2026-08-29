@@ -1,6 +1,6 @@
-import * as validationModule from '@codebuff/common/templates/agent-validation'
-import { TEST_AGENT_RUNTIME_IMPL } from '@codebuff/common/testing/impl/agent-runtime'
-import { getStubProjectFileContext } from '@codebuff/common/util/file'
+import * as validationModule from '@rivocode/common/templates/agent-validation'
+import { TEST_AGENT_RUNTIME_IMPL } from '@rivocode/common/testing/impl/agent-runtime'
+import { getStubProjectFileContext } from '@rivocode/common/util/file'
 import {
   describe,
   expect,
@@ -20,10 +20,10 @@ import type { AgentTemplate } from '../types'
 import type {
   AgentRuntimeDeps,
   AgentRuntimeScopedDeps,
-} from '@codebuff/common/types/contracts/agent-runtime'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { DynamicAgentTemplate } from '@codebuff/common/types/dynamic-agent-template'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+} from '@rivocode/common/types/contracts/agent-runtime'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { DynamicAgentTemplate } from '@rivocode/common/types/dynamic-agent-template'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 let agentRuntimeImpl: AgentRuntimeDeps & AgentRuntimeScopedDeps
 

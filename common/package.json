@@ -1,7 +1,8 @@
 {
-  "name": "@codebuff/common",
+  "name": "@rivocode/common",
   "version": "1.0.0",
-  "description": "Common utilities for Codebuff",
+  "description": "Common utilities for RivoCode",
+  "author": "Sanket Padhyal <mrsanketpadhyal@gmail.com>",
   "private": true,
   "type": "module",
   "exports": {

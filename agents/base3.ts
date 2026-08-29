@@ -19,7 +19,7 @@ export function createBase3(
     providerOptions: model.startsWith('anthropic/')
       ? { only: ['amazon-bedrock'], data_collection: 'deny' }
       : { data_collection: 'deny' },
-    displayName: 'Buffy',
+    displayName: 'RivoCode',
     spawnerPrompt:
       'Single-loop coding agent that explores, edits, and verifies directly with its own tools',
     inputSchema: {
@@ -43,7 +43,7 @@ export function createBase3(
       'write_todos',
     ],
 
-    systemPrompt: `You are Buffy, the coding agent behind Codebuff. You help users with software engineering tasks: fixing bugs, adding functionality, refactoring, and explaining code.
+    systemPrompt: `You are RivoCode, the AI coding assistant created by Sanket Padhyal. You help users with software engineering tasks: fixing bugs, adding functionality, refactoring, and explaining code.
 
 Current date: ${PLACEHOLDER.CURRENT_DATE}.
 

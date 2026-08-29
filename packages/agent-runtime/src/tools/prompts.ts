@@ -1,22 +1,22 @@
-import { endsAgentStepParam } from '@codebuff/common/tools/constants'
-import { toolParams } from '@codebuff/common/tools/list'
-import { codeSearchDisplayVariants } from '@codebuff/common/tools/params/tool/code-search'
-import { readFilesDisplayVariants } from '@codebuff/common/tools/params/tool/read-files'
-import { AVAILABLE_SKILLS_PLACEHOLDER } from '@codebuff/common/tools/params/tool/skill'
-import { getToolCallString } from '@codebuff/common/tools/utils'
-import { buildArray } from '@codebuff/common/util/array'
-import { formatAvailableSkillsXml } from '@codebuff/common/util/skills'
-import { pluralize } from '@codebuff/common/util/string'
+import { endsAgentStepParam } from '@rivocode/common/tools/constants'
+import { toolParams } from '@rivocode/common/tools/list'
+import { codeSearchDisplayVariants } from '@rivocode/common/tools/params/tool/code-search'
+import { readFilesDisplayVariants } from '@rivocode/common/tools/params/tool/read-files'
+import { AVAILABLE_SKILLS_PLACEHOLDER } from '@rivocode/common/tools/params/tool/skill'
+import { getToolCallString } from '@rivocode/common/tools/utils'
+import { buildArray } from '@rivocode/common/util/array'
+import { formatAvailableSkillsXml } from '@rivocode/common/util/skills'
+import { pluralize } from '@rivocode/common/util/string'
 import { cloneDeep } from 'lodash'
 import z from 'zod/v4'
 import { convertJsonSchemaToZod } from 'zod-from-json-schema'
 
-import type { ToolName } from '@codebuff/common/tools/constants'
-import type { SkillsMap } from '@codebuff/common/types/skill'
+import type { ToolName } from '@rivocode/common/tools/constants'
+import type { SkillsMap } from '@rivocode/common/types/skill'
 import type {
   CustomToolDefinitions,
   customToolDefinitionsSchema,
-} from '@codebuff/common/util/file'
+} from '@rivocode/common/util/file'
 import type { ToolSet } from 'ai'
 
 export function ensureZodSchema(

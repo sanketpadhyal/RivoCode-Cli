@@ -1,7 +1,7 @@
 import http from 'node:http'
 
-import { isTransientNetworkError } from '@codebuff/common/util/error'
-import { OpenAICompatibleChatLanguageModel } from '@codebuff/llm-providers/openai-compatible'
+import { isTransientNetworkError } from '@rivocode/common/util/error'
+import { OpenAICompatibleChatLanguageModel } from '@rivocode/llm-providers/openai-compatible'
 import { streamText } from 'ai'
 import { describe, expect, it } from 'bun:test'
 

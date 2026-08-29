@@ -1,11 +1,11 @@
-import { MAX_AGENT_STEPS_DEFAULT } from '@codebuff/common/constants/agents'
-import { toolNames } from '@codebuff/common/tools/constants'
+import { MAX_AGENT_STEPS_DEFAULT } from '@rivocode/common/constants/agents'
+import { toolNames } from '@rivocode/common/tools/constants'
 import {
   normalizeAgentIdForLookup,
   parseAgentId,
-} from '@codebuff/common/util/agent-id-parsing'
-import { dropUnansweredToolCalls } from '@codebuff/common/util/messages'
-import { generateCompactId } from '@codebuff/common/util/string'
+} from '@rivocode/common/util/agent-id-parsing'
+import { dropUnansweredToolCalls } from '@rivocode/common/util/messages'
+import { generateCompactId } from '@rivocode/common/util/string'
 
 import {
   UNTRACKED_RUN_ID_PREFIX,
@@ -14,24 +14,24 @@ import {
 import { getAgentTemplate } from '../../../templates/agent-registry'
 import { formatValueForError } from '../../../util/format-value'
 
-import type { AgentTemplate } from '@codebuff/common/types/agent-template'
+import type { AgentTemplate } from '@rivocode/common/types/agent-template'
 import type {
   AgentRuntimeDeps,
   AgentRuntimeScopedDeps,
-} from '@codebuff/common/types/contracts/agent-runtime'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+} from '@rivocode/common/types/contracts/agent-runtime'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 import type {
   ParamsExcluding,
   OptionalFields,
-} from '@codebuff/common/types/function-params'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
+} from '@rivocode/common/types/function-params'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
 import type {
   AgentState,
   AgentTemplateType,
   Subgoal,
-} from '@codebuff/common/types/session-state'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+} from '@rivocode/common/types/session-state'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 import type { ToolSet } from 'ai'
 
 export type SubagentContextParams = AgentRuntimeDeps &

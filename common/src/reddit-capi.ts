@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto'
 
-import { IS_PROD } from '@codebuff/common/env'
-import { extractClientIp } from '@codebuff/common/util/rate-limit'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { RedditCapiEventName } from '@codebuff/common/util/reddit-capi-events'
+import { IS_PROD } from '@rivocode/common/env'
+import { extractClientIp } from '@rivocode/common/util/rate-limit'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { RedditCapiEventName } from '@rivocode/common/util/reddit-capi-events'
 
 export type { RedditCapiEventName }
 

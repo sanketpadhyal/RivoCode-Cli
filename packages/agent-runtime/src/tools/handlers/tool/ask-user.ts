@@ -2,7 +2,7 @@ import type { CodebuffToolHandlerFunction } from '../handler-function-type'
 import type {
   CodebuffToolCall,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
+} from '@rivocode/common/tools/list'
 
 type ToolName = 'ask_user'
 

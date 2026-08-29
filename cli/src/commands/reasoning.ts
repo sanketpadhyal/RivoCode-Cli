@@ -2,8 +2,8 @@ import {
   getFreebuffModel,
   getFreebuffModelDefaultEffort,
   getFreebuffModelEfforts,
-} from '@codebuff/common/constants/freebuff-models'
-import { isReasoningEffort } from '@codebuff/common/constants/reasoning-effort'
+} from '@rivocode/common/constants/freebuff-models'
+import { isReasoningEffort } from '@rivocode/common/constants/reasoning-effort'
 
 import {
   getFreebuffReasoningEffortForModel,
@@ -11,7 +11,7 @@ import {
   useFreebuffModelStore,
 } from '../state/freebuff-model-store'
 
-import type { ReasoningEffort } from '@codebuff/common/constants/reasoning-effort'
+import type { ReasoningEffort } from '@rivocode/common/constants/reasoning-effort'
 
 const CLEAR_WORDS = new Set(['default', 'auto', 'reset', 'clear', 'none'])
 

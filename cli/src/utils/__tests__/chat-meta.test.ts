@@ -17,7 +17,7 @@ import {
 } from '../run-state-storage'
 
 import type { ChatMessage } from '../../types/chat'
-import type { RunState } from '@codebuff/sdk'
+import type { RunState } from '@rivocode/sdk'
 
 let chatDir = ''
 

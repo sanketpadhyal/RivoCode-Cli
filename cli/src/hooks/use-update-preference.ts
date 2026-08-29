@@ -10,7 +10,7 @@ import { showClipboardMessage } from '../utils/clipboard'
 import { getApiClient } from '../utils/codebuff-api'
 import { logger } from '../utils/logger'
 
-import type { SubscriptionResponse } from '@codebuff/common/types/subscription'
+import type { SubscriptionResponse } from '@rivocode/common/types/subscription'
 
 interface UpdatePreferenceParams {
   fallbackToALaCarte?: boolean

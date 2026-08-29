@@ -1,6 +1,6 @@
 import { createHash } from 'crypto'
 
-import { getCiEnv } from '@codebuff/common/env-ci'
+import { getCiEnv } from '@rivocode/common/env-ci'
 import {
   getUserInfoFromApiKey as defaultGetUserInfoFromApiKey,
   isRetryableStatusCode,
@@ -9,7 +9,7 @@ import {
   createServerError,
   MAX_RETRIES_PER_MESSAGE,
   RETRY_BACKOFF_BASE_DELAY_MS,
-} from '@codebuff/sdk'
+} from '@rivocode/sdk'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import {
@@ -21,8 +21,8 @@ import {
 import { resetCodebuffClient } from '../utils/codebuff-client'
 import { logger as defaultLogger, loggerContext } from '../utils/logger'
 
-import type { GetUserInfoFromApiKeyFn } from '@codebuff/common/types/contracts/database'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { GetUserInfoFromApiKeyFn } from '@rivocode/common/types/contracts/database'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 const getApiKeyHash = (apiKey: string): string => {
   return createHash('sha256').update(apiKey).digest('hex')

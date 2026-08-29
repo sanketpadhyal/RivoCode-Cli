@@ -4,7 +4,7 @@ import { describe, expect, it } from 'bun:test'
 import contextPruner from '../../../../agents/context-pruner'
 import { compactMessages } from '../compact-history'
 
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
 
 const noopLogger = {
   debug: () => {},

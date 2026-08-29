@@ -18,7 +18,7 @@ import {
   settleCheckpointSave,
 } from '../run-state-storage'
 import type { ChatMessage, ContentBlock } from '../../types/chat'
-import type { RunState } from '@codebuff/sdk'
+import type { RunState } from '@rivocode/sdk'
 
 const TEST_ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'cli-run-state-'))
 

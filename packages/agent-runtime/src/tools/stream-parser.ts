@@ -1,12 +1,12 @@
-import { toolNames } from '@codebuff/common/tools/constants'
-import { buildArray } from '@codebuff/common/util/array'
-import { STREAM_RECOVERY_EVENT } from '@codebuff/common/util/axiom-only-log'
-import { AbortError } from '@codebuff/common/util/error'
+import { toolNames } from '@rivocode/common/tools/constants'
+import { buildArray } from '@rivocode/common/util/array'
+import { STREAM_RECOVERY_EVENT } from '@rivocode/common/util/axiom-only-log'
+import { AbortError } from '@rivocode/common/util/error'
 import {
   assistantMessage,
   userMessage,
-} from '@codebuff/common/util/messages'
-import { generateCompactId } from '@codebuff/common/util/string'
+} from '@rivocode/common/util/messages'
+import { generateCompactId } from '@rivocode/common/util/string'
 
 import { processStreamWithTools } from '../tool-stream-parser'
 import { INCLUDE_REASONING_IN_MESSAGE_HISTORY } from '../constants'
@@ -27,18 +27,18 @@ import type { CustomToolCall, ExecuteToolCallParams } from './tool-executor'
 import type { ThinkStreamSegment } from '../util/think-tag-stream'
 import type { AgentTemplate } from '../templates/types'
 import type { FileProcessingState } from './handlers/tool/write-file'
-import type { ToolName } from '@codebuff/common/tools/constants'
-import type { CodebuffToolCall } from '@codebuff/common/tools/list'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { StreamRecoverySource } from '@codebuff/common/types/contracts/llm'
-import type { ParamsExcluding } from '@codebuff/common/types/function-params'
+import type { ToolName } from '@rivocode/common/tools/constants'
+import type { CodebuffToolCall } from '@rivocode/common/tools/list'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { StreamRecoverySource } from '@rivocode/common/types/contracts/llm'
+import type { ParamsExcluding } from '@rivocode/common/types/function-params'
 import type {
   Message,
   ToolMessage,
-} from '@codebuff/common/types/messages/codebuff-message'
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
-import type { Subgoal } from '@codebuff/common/types/session-state'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+} from '@rivocode/common/types/messages/codebuff-message'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
+import type { Subgoal } from '@rivocode/common/types/session-state'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 export const STREAM_INTERRUPTED_TAG = 'STREAM_INTERRUPTED'
 export const OUTPUT_LIMIT_TAG = 'OUTPUT_LIMIT'

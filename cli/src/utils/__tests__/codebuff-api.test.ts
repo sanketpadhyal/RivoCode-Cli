@@ -1,6 +1,6 @@
 import { describe, test, expect, mock, beforeEach } from 'bun:test'
 
-import type { FeedbackRequest } from '@codebuff/common/schemas/feedback'
+import type { FeedbackRequest } from '@rivocode/common/schemas/feedback'
 
 import { createCodebuffApiClient } from '../codebuff-api'
 

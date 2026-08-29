@@ -4,7 +4,7 @@ import {
   getFreebuffRetentionMilestonesToFire,
   isFirstFreebuffPrompt,
   planFreebuffRedditConversionEvents,
-} from '@codebuff/common/util/reddit-freebuff-retention'
+} from '@rivocode/common/util/reddit-freebuff-retention'
 
 describe('isFirstFreebuffPrompt', () => {
   test('returns true on first-ever usage day', () => {

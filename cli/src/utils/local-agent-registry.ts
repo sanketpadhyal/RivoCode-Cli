@@ -2,13 +2,13 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { pluralize } from '@codebuff/common/util/string'
+import { pluralize } from '@rivocode/common/util/string'
 import {
   loadLocalAgents as sdkLoadLocalAgents,
   loadMCPConfigSync,
-} from '@codebuff/sdk'
+} from '@rivocode/sdk'
 
-import type { MCPConfig } from '@codebuff/common/types/mcp'
+import type { MCPConfig } from '@rivocode/common/types/mcp'
 
 import { getSelectedFreebuffModel } from '../state/freebuff-model-store'
 import { getProjectRoot } from '../project-files'
@@ -17,7 +17,7 @@ import { getAgentIdForMode } from './freebuff-agent-selection'
 import { logger } from './logger'
 import * as bundledAgentsModule from '../agents/bundled-agents.generated'
 
-import type { AgentDefinition } from '@codebuff/common/templates/initial-agents-dir/types/agent-definition'
+import type { AgentDefinition } from '@rivocode/common/templates/initial-agents-dir/types/agent-definition'
 
 const AGENTS_DIR_NAME = '.agents'
 

@@ -1,5 +1,5 @@
-import { FREEBUFF_WEB_URL_PROD } from '@codebuff/common/constants/hosts'
-import { env, IS_DEV } from '@codebuff/common/env'
+import { FREEBUFF_WEB_URL_PROD } from '@rivocode/common/constants/hosts'
+import { env, IS_DEV } from '@rivocode/common/env'
 
 import { IS_FREEBUFF } from '../utils/constants'
 
@@ -10,44 +10,26 @@ const FREEBUFF_WEB_URL = IS_DEV
   : (env.NEXT_PUBLIC_FREEBUFF_APP_URL ?? FREEBUFF_WEB_URL_PROD)
 export const LOGIN_WEBSITE_URL = IS_FREEBUFF ? FREEBUFF_WEB_URL : WEBSITE_URL
 
-const LOGO_CODEBUFF = `
-  ██████╗ ██████╗ ██████╗ ███████╗██████╗ ██╗   ██╗███████╗███████╗
- ██╔════╝██╔═══██╗██╔══██╗██╔════╝██╔══██╗██║   ██║██╔════╝██╔════╝
- ██║     ██║   ██║██║  ██║█████╗  ██████╔╝██║   ██║█████╗  █████╗
- ██║     ██║   ██║██║  ██║██╔══╝  ██╔══██╗██║   ██║██╔══╝  ██╔══╝
- ╚██████╗╚██████╔╝██████╔╝███████╗██████╔╝╚██████╔╝██║     ██║
-  ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝╚═════╝  ╚═════╝ ╚═╝     ╚═╝
+const LOGO_RIVOCODE = `
+  ██████╗ ██╗██╗   ██╗ ██████╗  ██████╗ ██████╗ ██████╗ ███████╗
+  ██╔══██╗██║██║   ██║██╔═══██╗██╔════╝██╔═══██╗██╔══██╗██╔════╝
+  ██████╔╝██║██║   ██║██║   ██║██║     ██║   ██║██║  ██║█████╗  
+  ██╔══██╗██║╚██╗ ██╔╝██║   ██║██║     ██║   ██║██║  ██║██╔══╝  
+  ██║  ██║██║ ╚████╔╝ ╚██████╔╝╚██████╗╚██████╔╝██████╔╝███████╗
+  ╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝  ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝
 `
 
-const LOGO_SMALL_CODEBUFF = `
-  ██████╗ ██████╗
- ██╔════╝ ██╔══██╗
- ██║      ██████╔╝
- ██║      ██╔══██╗
- ╚██████╗ ██████╔╝
-  ╚═════╝ ╚═════╝
+const LOGO_SMALL_RIVOCODE = `
+  ██████╗  ██████╗
+  ██╔══██╗██╔════╝
+  ██████╔╝██║     
+  ██╔══██╗██║     
+  ██║  ██║╚██████╗
+  ╚═╝  ╚═╝ ╚═════╝
 `
 
-const LOGO_FREEBUFF = `
- ███████╗██████╗ ███████╗███████╗██████╗ ██╗   ██╗███████╗███████╗
- ██╔════╝██╔══██╗██╔════╝██╔════╝██╔══██╗██║   ██║██╔════╝██╔════╝
- █████╗  ██████╔╝█████╗  █████╗  ██████╔╝██║   ██║█████╗  █████╗
- ██╔══╝  ██╔══██╗██╔══╝  ██╔══╝  ██╔══██╗██║   ██║██╔══╝  ██╔══╝
- ██║     ██║  ██║███████╗███████╗██████╔╝╚██████╔╝██║     ██║
- ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚═════╝  ╚═════╝ ╚═╝     ╚═╝
-`
-
-const LOGO_SMALL_FREEBUFF = `
- ███████╗██████╗
- ██╔════╝██╔══██╗
- █████╗  ██████╔╝
- ██╔══╝  ██╔══██╗
- ██║     ██████╔╝
- ╚═╝     ╚═════╝
-`
-
-export const LOGO = IS_FREEBUFF ? LOGO_FREEBUFF : LOGO_CODEBUFF
-export const LOGO_SMALL = IS_FREEBUFF ? LOGO_SMALL_FREEBUFF : LOGO_SMALL_CODEBUFF
+export const LOGO = LOGO_RIVOCODE
+export const LOGO_SMALL = LOGO_SMALL_RIVOCODE
 
 export const SHADOW_CHARS = new Set([
   '╚',

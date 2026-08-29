@@ -42,7 +42,7 @@ import { handleWriteFile } from './tool/write-file'
 import { handleWriteTodos } from './tool/write-todos'
 
 import type { CodebuffToolHandlerFunction } from './handler-function-type'
-import type { ToolName } from '@codebuff/common/tools/constants'
+import type { ToolName } from '@rivocode/common/tools/constants'
 
 export const codebuffToolHandlers: {
   [K in ToolName]: CodebuffToolHandlerFunction<K>

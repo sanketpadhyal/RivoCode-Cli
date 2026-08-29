@@ -3,8 +3,8 @@ import type {
   ClientToolCall,
   CodebuffToolCall,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
-import type { AgentTemplate } from '@codebuff/common/types/agent-template'
+} from '@rivocode/common/tools/list'
+import type { AgentTemplate } from '@rivocode/common/types/agent-template'
 
 const WINDOWED_GLOB_RESULTS = 100
 

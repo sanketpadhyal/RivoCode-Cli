@@ -1,9 +1,9 @@
-import { MAX_AGENT_STEP_ROWS } from '@codebuff/common/constants/agents'
-import { FREEBUFF_ACTING_USER_HEADER } from '@codebuff/common/constants/freebuff-models'
-import { validateSingleAgent } from '@codebuff/common/templates/agent-validation'
-import { DynamicAgentTemplateSchema } from '@codebuff/common/types/dynamic-agent-template'
-import { getErrorObject } from '@codebuff/common/util/error'
-import { truncateString } from '@codebuff/common/util/string'
+import { MAX_AGENT_STEP_ROWS } from '@rivocode/common/constants/agents'
+import { FREEBUFF_ACTING_USER_HEADER } from '@rivocode/common/constants/freebuff-models'
+import { validateSingleAgent } from '@rivocode/common/templates/agent-validation'
+import { DynamicAgentTemplateSchema } from '@rivocode/common/types/dynamic-agent-template'
+import { getErrorObject } from '@rivocode/common/util/error'
+import { truncateString } from '@rivocode/common/util/string'
 import z from 'zod/v4'
 
 import { getWebsiteUrl } from '../constants'
@@ -28,9 +28,9 @@ import type {
   GetUserInfoFromApiKeyOutput,
   StartAgentRunFn,
   UserColumn,
-} from '@codebuff/common/types/contracts/database'
-import type { DynamicAgentTemplate } from '@codebuff/common/types/dynamic-agent-template'
-import type { ParamsOf } from '@codebuff/common/types/function-params'
+} from '@rivocode/common/types/contracts/database'
+import type { DynamicAgentTemplate } from '@rivocode/common/types/dynamic-agent-template'
+import type { ParamsOf } from '@rivocode/common/types/function-params'
 
 type CachedUserInfo = Partial<
   NonNullable<Awaited<GetUserInfoFromApiKeyOutput<UserColumn>>>

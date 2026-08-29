@@ -1,4 +1,4 @@
-import { GEMINI_3_5_FLASH_LITE_MODEL_ID } from '@codebuff/common/constants/gemini'
+import { GEMINI_3_5_FLASH_LITE_MODEL_ID } from '@rivocode/common/constants/gemini'
 
 import type { AgentDefinition } from '../types/agent-definition'
 

@@ -1,4 +1,4 @@
-import { FREEBUFF_EARN_PROMPT_SHORT } from '@codebuff/common/constants/freebuff-levels'
+import { FREEBUFF_EARN_PROMPT_SHORT } from '@rivocode/common/constants/freebuff-levels'
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test'
 import { createTestRenderer } from '@opentui/core/testing'
 import { createRoot, flushSync } from '@opentui/react'
@@ -20,7 +20,7 @@ import {
   getFreebuffModelSupersededBy,
   isFreebuffModelId,
   LIMITED_FREEBUFF_MODELS,
-} from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/freebuff-models'
 
 import { initializeThemeStore } from '../../hooks/use-theme'
 import {

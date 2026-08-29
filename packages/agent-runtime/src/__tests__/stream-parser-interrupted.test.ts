@@ -1,8 +1,8 @@
-import { TEST_AGENT_RUNTIME_IMPL } from '@codebuff/common/testing/impl/agent-runtime'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
+import { TEST_AGENT_RUNTIME_IMPL } from '@rivocode/common/testing/impl/agent-runtime'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
 import { beforeEach, describe, expect, it } from 'bun:test'
 
-import { assistantMessage, userMessage } from '@codebuff/common/util/messages'
+import { assistantMessage, userMessage } from '@rivocode/common/util/messages'
 
 import { mockFileContext } from './test-utils'
 import {
@@ -19,10 +19,10 @@ import type { AgentTemplate } from '../templates/types'
 import type {
   AgentRuntimeDeps,
   AgentRuntimeScopedDeps,
-} from '@codebuff/common/types/contracts/agent-runtime'
-import type { StreamChunk } from '@codebuff/common/types/contracts/llm'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
-import type { PromptResult } from '@codebuff/common/util/error'
+} from '@rivocode/common/types/contracts/agent-runtime'
+import type { StreamChunk } from '@rivocode/common/types/contracts/llm'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
+import type { PromptResult } from '@rivocode/common/util/error'
 
 describe('stream parser interrupted streams', () => {
   let agentRuntimeImpl: AgentRuntimeDeps & AgentRuntimeScopedDeps

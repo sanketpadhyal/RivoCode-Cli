@@ -2,7 +2,7 @@ import {
   finetunedVertexModelNames,
   costModes,
   type CostMode,
-} from '@codebuff/common/old-constants'
+} from '@rivocode/common/old-constants'
 import { z } from 'zod/v4'
 
 const customFileCountsShape = costModes.reduce(

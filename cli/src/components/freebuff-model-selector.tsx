@@ -23,23 +23,23 @@ import {
   isFreebuffModelAvailable,
   isFreebuffPremiumModelId,
   isSupportedFreebuffModelId,
-} from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/freebuff-models'
 import {
   formatFreebuffRowQuota,
   getFreebuffSectionQuotas,
-} from '@codebuff/common/util/freebuff-session-pools'
+} from '@rivocode/common/util/freebuff-session-pools'
 import {
   getLimitedModelOffers,
   getRateLimitsByModel,
   getGlmPromo,
   getReferralInfo,
   getSubscriptionInfo,
-} from '@codebuff/common/types/freebuff-session'
+} from '@rivocode/common/types/freebuff-session'
 
 import {
   formatPlanWindows,
   freebuffPlanSummary,
-} from '@codebuff/common/util/freebuff-plan-summary'
+} from '@rivocode/common/util/freebuff-plan-summary'
 
 import { startFreebuffSession } from '../hooks/use-freebuff-session'
 import { useNow } from '../hooks/use-now'
@@ -61,7 +61,7 @@ import { isPlainEnterKey } from '../utils/terminal-enter-detection'
 import type {
   FreebuffAccessTier,
   FreebuffModelOption,
-} from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/freebuff-models'
 import type { FreebuffReferralFocusTarget } from './freebuff-referral-banner'
 import type {
   BoxRenderable,

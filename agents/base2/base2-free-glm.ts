@@ -1,4 +1,4 @@
-import { FREEBUFF_GLM_V52_MODEL_ID } from '@codebuff/common/constants/freebuff-models'
+import { FREEBUFF_GLM_V52_MODEL_ID } from '@rivocode/common/constants/freebuff-models'
 
 import { createBase2 } from './base2'
 

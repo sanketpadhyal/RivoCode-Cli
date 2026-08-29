@@ -1,4 +1,4 @@
-import { pluralize } from '@codebuff/common/util/string'
+import { pluralize } from '@rivocode/common/util/string'
 import { memo, useCallback } from 'react'
 
 import { useTheme } from '../../hooks/use-theme'

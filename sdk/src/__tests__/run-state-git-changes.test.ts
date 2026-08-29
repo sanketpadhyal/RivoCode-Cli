@@ -8,10 +8,10 @@ import {
   isTestFilePath,
 } from '../run-state'
 
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import type { CodebuffSpawn } from '@codebuff/common/types/spawn'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import { getStubProjectFileContext } from '@codebuff/common/util/file'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import type { CodebuffSpawn } from '@rivocode/common/types/spawn'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import { getStubProjectFileContext } from '@rivocode/common/util/file'
 
 function fakeProc(stdout: string, chunkSize = 1_000_000) {
   const proc = new EventEmitter() as any

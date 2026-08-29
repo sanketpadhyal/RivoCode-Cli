@@ -9,7 +9,7 @@ import type {
   UserField,
   UserDetails,
 } from '../utils/codebuff-api'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 export type { UserField, UserDetails }
 

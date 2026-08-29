@@ -1,8 +1,8 @@
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
 import {
   EngagementTracker,
   createEngagementSessionId,
-} from '@codebuff/common/util/engagement-tracker'
+} from '@rivocode/common/util/engagement-tracker'
 
 import { subscribeToActivity } from './activity-tracker'
 import { trackEvent } from './analytics'

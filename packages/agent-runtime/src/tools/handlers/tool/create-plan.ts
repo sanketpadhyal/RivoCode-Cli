@@ -6,8 +6,8 @@ import type {
   ClientToolCall,
   CodebuffToolCall,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+} from '@rivocode/common/tools/list'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 export const handleCreatePlan = (async (params: {
   previousToolCallFinished: Promise<void>

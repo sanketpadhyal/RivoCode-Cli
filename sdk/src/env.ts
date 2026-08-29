@@ -1,7 +1,7 @@
 
-import { BYOK_OPENROUTER_ENV_VAR } from '@codebuff/common/constants/byok'
-import { API_KEY_ENV_VAR } from '@codebuff/common/constants/paths'
-import { getBaseEnv } from '@codebuff/common/env-process'
+import { BYOK_OPENROUTER_ENV_VAR } from '@rivocode/common/constants/byok'
+import { API_KEY_ENV_VAR } from '@rivocode/common/constants/paths'
+import { getBaseEnv } from '@rivocode/common/env-process'
 
 import type { SdkEnv } from './types/env'
 

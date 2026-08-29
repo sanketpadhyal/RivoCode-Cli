@@ -6,7 +6,7 @@ import {
   rememberReferral,
 } from '../freebuff-referral-cache'
 
-import type { FreebuffReferralInfo } from '@codebuff/common/types/freebuff-session'
+import type { FreebuffReferralInfo } from '@rivocode/common/types/freebuff-session'
 import type { FreebuffSessionResponse } from '../../types/freebuff-session'
 
 const referral: FreebuffReferralInfo = {

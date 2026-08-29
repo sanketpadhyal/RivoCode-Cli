@@ -1,4 +1,4 @@
-import { createTestBaseEnv } from '@codebuff/common/testing-env-process'
+import { createTestBaseEnv } from '@rivocode/common/testing-env-process'
 
 import type { SdkEnv } from '../types/env'
 

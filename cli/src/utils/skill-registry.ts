@@ -1,9 +1,9 @@
-import { loadSkills as sdkLoadSkills } from '@codebuff/sdk'
+import { loadSkills as sdkLoadSkills } from '@rivocode/sdk'
 
 import { getProjectRoot } from '../project-files'
 import { logger } from './logger'
 
-import type { SkillDefinition, SkillsMap } from '@codebuff/common/types/skill'
+import type { SkillDefinition, SkillsMap } from '@rivocode/common/types/skill'
 
 let skillsCache: SkillsMap = {}
 

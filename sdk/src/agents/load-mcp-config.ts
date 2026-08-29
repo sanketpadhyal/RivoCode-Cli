@@ -3,10 +3,10 @@ import fsPromises from 'fs/promises'
 import os from 'os'
 import path from 'path'
 
-import { mcpConfigSchema } from '@codebuff/common/types/mcp'
+import { mcpConfigSchema } from '@rivocode/common/types/mcp'
 import { z } from 'zod/v4'
 
-import type { MCPConfig } from '@codebuff/common/types/mcp'
+import type { MCPConfig } from '@rivocode/common/types/mcp'
 
 export const mcpFileSchema = z.object({
   mcpServers: z.record(z.string(), mcpConfigSchema).default(() => ({})),

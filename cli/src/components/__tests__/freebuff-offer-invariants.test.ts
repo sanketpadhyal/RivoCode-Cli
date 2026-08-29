@@ -1,12 +1,12 @@
 
 import { describe, expect, test } from 'bun:test'
 
-import { getFreebuffRootAgentIdForModel } from '@codebuff/common/constants/free-agents'
+import { getFreebuffRootAgentIdForModel } from '@rivocode/common/constants/free-agents'
 import {
   FREEBUFF_GLM_V52_MODEL_ID,
   resolveFreebuffModelForAccessTier,
-} from '@codebuff/common/constants/freebuff-models'
-import { freebuffOfferViolations } from '@codebuff/common/testing/freebuff-offer-invariants'
+} from '@rivocode/common/constants/freebuff-models'
+import { freebuffOfferViolations } from '@rivocode/common/testing/freebuff-offer-invariants'
 
 import { freebuffCliOfferedModelIds } from '../freebuff-model-selector'
 

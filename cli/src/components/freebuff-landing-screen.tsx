@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Button } from './button'
 import { ChoiceAdBanner, AD_CARD_HEIGHT } from './ad-banner'
-import { visibleWaitingRoomPlacementIds } from '@codebuff/common/ads/waiting-room-placements'
+import { visibleWaitingRoomPlacementIds } from '@rivocode/common/ads/waiting-room-placements'
 import { FreebuffModelSelector } from './freebuff-model-selector'
 import { ShimmerText } from './shimmer-text'
 import {
@@ -39,17 +39,17 @@ import {
   FREEBUFF_ENABLE_STREAK_IN_UI,
   FREEBUFF_LIMITED_SESSION_LIMIT,
   FREEBUFF_PREMIUM_SESSION_LIMIT,
-} from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/freebuff-models'
 import {
   getRateLimitsByModel,
   getReferralInfo,
-} from '@codebuff/common/types/freebuff-session'
+} from '@rivocode/common/types/freebuff-session'
 import {
   FREEBUFF_PAUSED_MODEL_NOTICE,
   FREEBUFF_TIER_CHANGE_NOTICE,
   getFreebuffModelAvailabilityNotice,
-} from '@codebuff/common/util/freebuff-model-availability'
-import { formatFreebuffHardBlockedPrivacySignals } from '@codebuff/common/util/freebuff-privacy'
+} from '@rivocode/common/util/freebuff-model-availability'
+import { formatFreebuffHardBlockedPrivacySignals } from '@rivocode/common/util/freebuff-privacy'
 
 import type { FreebuffStreakLine } from '../utils/freebuff-streak-line'
 import type { FreebuffSessionFailure } from '../state/freebuff-session-store'

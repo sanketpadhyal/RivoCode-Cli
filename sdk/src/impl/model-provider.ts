@@ -1,13 +1,13 @@
 
 import path from 'path'
 
-import { BYOK_OPENROUTER_HEADER } from '@codebuff/common/constants/byok'
-import { FREEBUFF_ACTING_USER_HEADER } from '@codebuff/common/constants/freebuff-models'
-import { isTransientNetworkError } from '@codebuff/common/util/error'
+import { BYOK_OPENROUTER_HEADER } from '@rivocode/common/constants/byok'
+import { FREEBUFF_ACTING_USER_HEADER } from '@rivocode/common/constants/freebuff-models'
+import { isTransientNetworkError } from '@rivocode/common/util/error'
 import {
   OpenAICompatibleChatLanguageModel,
   VERSION,
-} from '@codebuff/llm-providers/openai-compatible'
+} from '@rivocode/llm-providers/openai-compatible'
 import { APICallError } from 'ai'
 
 import { getWebsiteUrl } from '../constants'

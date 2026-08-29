@@ -1,4 +1,4 @@
-import { SUBSCRIPTION_TIERS } from '@codebuff/common/constants/subscription-plans'
+import { SUBSCRIPTION_TIERS } from '@rivocode/common/constants/subscription-plans'
 import { IS_FREEBUFF } from '../utils/constants'
 import { safeOpen } from '../utils/open-url'
 import React from 'react'

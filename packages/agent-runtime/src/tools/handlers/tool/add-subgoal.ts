@@ -1,12 +1,12 @@
-import { buildArray } from '@codebuff/common/util/array'
-import { jsonToolResult } from '@codebuff/common/util/messages'
+import { buildArray } from '@rivocode/common/util/array'
+import { jsonToolResult } from '@rivocode/common/util/messages'
 
 import type { CodebuffToolHandlerFunction } from '../handler-function-type'
 import type {
   CodebuffToolCall,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
-import type { Subgoal } from '@codebuff/common/types/session-state'
+} from '@rivocode/common/tools/list'
+import type { Subgoal } from '@rivocode/common/types/session-state'
 
 export const handleAddSubgoal = (async (params: {
   previousToolCallFinished: Promise<void>

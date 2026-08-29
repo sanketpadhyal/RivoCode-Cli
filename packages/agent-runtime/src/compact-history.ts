@@ -3,12 +3,12 @@ import type {
   FilePart,
   ImagePart,
   TextPart,
-} from '@codebuff/common/types/messages/content-part'
+} from '@rivocode/common/types/messages/content-part'
 import type {
   Message,
   ToolMessage,
-} from '@codebuff/common/types/messages/codebuff-message'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+} from '@rivocode/common/types/messages/codebuff-message'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 const SPAWN_AGENTS_OUTPUT_BLACKLIST = [
   'file-picker',

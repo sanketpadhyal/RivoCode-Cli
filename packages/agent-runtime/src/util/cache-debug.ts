@@ -4,12 +4,12 @@ import { dirname, join } from 'path'
 
 import {
   type CacheDebugCorrelation,
-} from '@codebuff/common/util/cache-debug'
-import type { CacheDebugUsageData } from '@codebuff/common/types/contracts/llm'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
-import type { ProviderMetadata } from '@codebuff/common/types/messages/provider-metadata'
-import type { JSONValue } from '@codebuff/common/types/json'
+} from '@rivocode/common/util/cache-debug'
+import type { CacheDebugUsageData } from '@rivocode/common/types/contracts/llm'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
+import type { ProviderMetadata } from '@rivocode/common/types/messages/provider-metadata'
+import type { JSONValue } from '@rivocode/common/types/json'
 
 type SerializableValue = JSONValue
 

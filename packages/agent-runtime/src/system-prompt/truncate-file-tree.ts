@@ -1,16 +1,16 @@
 import {
   printFileTree,
   printFileTreeWithTokens,
-} from '@codebuff/common/util/file'
-import { sampleSizeWithSeed } from '@codebuff/common/util/random'
+} from '@rivocode/common/util/file'
+import { sampleSizeWithSeed } from '@rivocode/common/util/random'
 
 import { countTokens, countTokensJson } from '../util/token-counter'
 
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 import type {
   FileTreeNode,
   ProjectFileContext,
-} from '@codebuff/common/util/file'
+} from '@rivocode/common/util/file'
 
 type TruncationLevel = 'none' | 'unimportant-files' | 'tokens' | 'depth-based'
 const DEBUG = false

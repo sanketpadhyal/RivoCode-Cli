@@ -1,11 +1,11 @@
-import { WEBSITE_URL } from '@codebuff/sdk'
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
-import { getAdUserAgent } from '@codebuff/common/util/ad-user-agent'
+import { WEBSITE_URL } from '@rivocode/sdk'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
+import { getAdUserAgent } from '@rivocode/common/util/ad-user-agent'
 import {
   acknowledgeFirstPartyView,
   type FirstPartyViewAckRequest,
-} from '@codebuff/common/ads/first-party-view-ack'
-import { createFirstPartyViewAckTelemetry } from '@codebuff/common/util/axiom-only-log'
+} from '@rivocode/common/ads/first-party-view-ack'
+import { createFirstPartyViewAckTelemetry } from '@rivocode/common/util/axiom-only-log'
 import { useEffect, useRef, useState } from 'react'
 
 import { useTerminalLayout } from './use-terminal-layout'
@@ -25,7 +25,7 @@ import {
   requestLazyResponseAds,
 } from '../utils/lazy-response-ads'
 
-import type { Message } from '@codebuff/sdk'
+import type { Message } from '@rivocode/sdk'
 import type { ChatMessage } from '../types/chat'
 
 const AD_ROTATION_INTERVAL_MS = 60 * 1000

@@ -1,6 +1,6 @@
-import { withTimeout } from '@codebuff/common/util/promise'
+import { withTimeout } from '@rivocode/common/util/promise'
 
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 export interface SerperEnv {
   SERPER_API_KEY?: string

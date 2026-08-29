@@ -1,13 +1,13 @@
 import { appendFileSync, mkdirSync } from 'fs'
 import path, { dirname } from 'path'
 
-import { IS_DEV } from '@codebuff/common/env'
+import { IS_DEV } from '@rivocode/common/env'
 
 import { getCliEnv } from './env'
 import { getCurrentChatDir, getProjectRoot } from '../project-files'
 
-import type { TraceWriter } from '@codebuff/common/types/contracts/trace'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
+import type { TraceWriter } from '@rivocode/common/types/contracts/trace'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
 
 const TRACE_FILENAME = 'trace.jsonl'
 

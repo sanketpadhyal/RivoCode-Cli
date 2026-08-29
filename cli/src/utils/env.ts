@@ -1,5 +1,5 @@
 
-import { getBaseEnv } from '@codebuff/common/env-process'
+import { getBaseEnv } from '@rivocode/common/env-process'
 
 import type { CliEnv } from '../types/env'
 

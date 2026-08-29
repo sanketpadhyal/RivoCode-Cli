@@ -2,13 +2,13 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { API_KEY_ENV_VAR } from '@codebuff/common/constants/paths'
-import { CodebuffClient, type AgentDefinition } from '@codebuff/sdk'
+import { API_KEY_ENV_VAR } from '@rivocode/common/constants/paths'
+import { CodebuffClient, type AgentDefinition } from '@rivocode/sdk'
 import { describe, expect, it } from 'bun:test'
 
 import base2Free from '../base2/base2-free'
 
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
 
 describe('Gravity Index SDK E2E', () => {
   it(

@@ -1,4 +1,4 @@
-import { AskUserBridge } from '@codebuff/common/utils/ask-user-bridge'
+import { AskUserBridge } from '@rivocode/common/utils/ask-user-bridge'
 import { describe, test, expect, beforeEach, afterEach, spyOn } from 'bun:test'
 
 import { useChatStore } from '../../state/chat-store'

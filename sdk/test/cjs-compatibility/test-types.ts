@@ -1,13 +1,13 @@
 import {
   CodebuffClient as ClientClass,
   getCustomToolDefinition,
-} from '@codebuff/sdk'
+} from '@rivocode/sdk'
 
 import type {
   CodebuffClient,
   CustomToolDefinition,
   RunState,
-} from '@codebuff/sdk'
+} from '@rivocode/sdk'
 
 const testClient: CodebuffClient = {} as any
 const testTool: CustomToolDefinition = {} as any
@@ -39,7 +39,7 @@ const toolTypeTest: MockTool = {} as any
 
 console.log('✅ Custom tool definition types work correctly')
 
-const SDKRequire = require('@codebuff/sdk')
+const SDKRequire = require('@rivocode/sdk')
 const ClientFromRequire: typeof ClientClass = SDKRequire.CodebuffClient
 
 console.log('✅ CommonJS require syntax works in TypeScript')

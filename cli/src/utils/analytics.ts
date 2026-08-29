@@ -2,23 +2,23 @@ import {
   createPostHogClient,
   type AnalyticsClientWithIdentify,
   type PostHogClientOptions,
-} from '@codebuff/common/analytics-core'
+} from '@rivocode/common/analytics-core'
 import {
   env as defaultEnv,
   IS_PROD as defaultIsProd,
   DEBUG_ANALYTICS,
-} from '@codebuff/common/env'
-import { shouldTrackAnalyticsEvent } from '@codebuff/common/util/analytics-sampling'
-import { shouldMirrorAnalyticsEvent } from '@codebuff/common/util/log-mirror'
+} from '@rivocode/common/env'
+import { shouldTrackAnalyticsEvent } from '@rivocode/common/util/analytics-sampling'
+import { shouldMirrorAnalyticsEvent } from '@rivocode/common/util/log-mirror'
 
 import { getOrCreatePersistentAnonymousId } from './anonymous-id'
 import { enqueueClientLog as defaultEnqueueClientLog } from './log-shipper'
 
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
 
-import type { LogRecordInput } from '@codebuff/common/schemas/logs'
+import type { LogRecordInput } from '@rivocode/common/schemas/logs'
 
-export type { AnalyticsClientWithIdentify as AnalyticsClient } from '@codebuff/common/analytics-core'
+export type { AnalyticsClientWithIdentify as AnalyticsClient } from '@rivocode/common/analytics-core'
 
 export enum AnalyticsErrorStage {
   Init = 'init',

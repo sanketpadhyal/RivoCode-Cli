@@ -7,7 +7,7 @@ import {
   SKILL_DESCRIPTION_MAX_LENGTH,
   SKILL_FILE_NAME,
   SKILL_NAME_MAX_LENGTH,
-} from '@codebuff/common/constants/skills'
+} from '@rivocode/common/constants/skills'
 
 import {
   loadSkills,

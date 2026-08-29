@@ -1,8 +1,9 @@
 {
-  "name": "@codebuff/sdk",
+  "name": "@rivocode/sdk",
   "private": false,
   "version": "0.10.7",
-  "description": "Official SDK for Codebuff — AI coding agent & framework",
+  "description": "Official SDK for RivoCode — AI coding assistant & framework",
+  "author": "Sanket Padhyal <mrsanketpadhyal@gmail.com>",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.cjs",

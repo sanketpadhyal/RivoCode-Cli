@@ -1,6 +1,7 @@
 {
-  "name": "@codebuff/code-map",
+  "name": "@rivocode/code-map",
   "version": "1.0.0",
+  "author": "Sanket Padhyal <mrsanketpadhyal@gmail.com>",
   "private": true,
   "type": "module",
   "exports": {

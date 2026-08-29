@@ -8,10 +8,10 @@
       "node"
     ],
     "paths": {
-      "@codebuff/sdk": [
+      "@rivocode/sdk": [
         "../sdk/src/index.ts"
       ],
-      "@codebuff/common/*": [
+      "@rivocode/common/*": [
         "../common/src/*"
       ]
     }

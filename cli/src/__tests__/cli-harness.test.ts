@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { FREEBUFF_DEEPSEEK_V4_FLASH_MODEL_ID } from '@codebuff/common/constants/freebuff-models'
+import { FREEBUFF_DEEPSEEK_V4_FLASH_MODEL_ID } from '@rivocode/common/constants/freebuff-models'
 
 import {
   AGENT_MODE_TO_ID,

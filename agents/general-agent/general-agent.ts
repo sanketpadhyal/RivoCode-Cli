@@ -1,4 +1,4 @@
-import { buildArray } from '@codebuff/common/util/array'
+import { buildArray } from '@rivocode/common/util/array'
 
 import { OPUS_MODEL, publisher } from '../constants'
 

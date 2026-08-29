@@ -2,9 +2,9 @@ import path from 'path'
 
 import { resolveFilePath } from './path-utils'
 
-import type { ApplyPatchOperation } from '@codebuff/common/tools/params/tool/apply-patch'
-import type { CodebuffToolOutput } from '@codebuff/common/tools/list'
-import type { CodebuffFileSystem } from '@codebuff/common/types/filesystem'
+import type { ApplyPatchOperation } from '@rivocode/common/tools/params/tool/apply-patch'
+import type { CodebuffToolOutput } from '@rivocode/common/tools/list'
+import type { CodebuffFileSystem } from '@rivocode/common/types/filesystem'
 
 type ApplyPatchResult = CodebuffToolOutput<'apply_patch'>
 type ApplyPatchJson = ApplyPatchResult[number] & { type: 'json' }

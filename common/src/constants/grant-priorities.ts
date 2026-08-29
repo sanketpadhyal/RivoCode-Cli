@@ -1,4 +1,4 @@
-import type { GrantType } from '@codebuff/common/types/grant'
+import type { GrantType } from '@rivocode/common/types/grant'
 
 export const GRANT_PRIORITIES: Record<GrantType, number> = {
   subscription: 10,

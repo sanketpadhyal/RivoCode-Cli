@@ -2,9 +2,9 @@ import { describe, expect, it } from 'bun:test'
 
 import { handleReadFiles } from '../tool/read-files'
 
-import type { CodebuffToolCall } from '@codebuff/common/tools/list'
-import type { AgentTemplate } from '@codebuff/common/types/agent-template'
-import type { FileReadWindow } from '@codebuff/common/types/contracts/client'
+import type { CodebuffToolCall } from '@rivocode/common/tools/list'
+import type { AgentTemplate } from '@rivocode/common/types/agent-template'
+import type { FileReadWindow } from '@rivocode/common/types/contracts/client'
 
 const agentTemplate = (windowedFileReads: boolean): AgentTemplate => ({
   id: 'test-agent',

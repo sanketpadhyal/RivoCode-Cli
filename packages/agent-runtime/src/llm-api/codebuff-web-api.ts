@@ -1,8 +1,8 @@
-import { withTimeout } from '@codebuff/common/util/promise'
+import { withTimeout } from '@rivocode/common/util/promise'
 
-import type { ClientEnv, CiEnv } from '@codebuff/common/types/contracts/env'
-import type { JSONObject } from '@codebuff/common/types/json'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { ClientEnv, CiEnv } from '@rivocode/common/types/contracts/env'
+import type { JSONObject } from '@rivocode/common/types/json'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 const FETCH_TIMEOUT_MS = 30_000
 const MAX_RETRIES = 3

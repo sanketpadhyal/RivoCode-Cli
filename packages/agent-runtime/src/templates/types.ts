@@ -1,12 +1,12 @@
-import { AgentTemplateTypes } from '@codebuff/common/types/session-state'
+import { AgentTemplateTypes } from '@rivocode/common/types/session-state'
 
-import type { ToolName } from '@codebuff/common/tools/constants'
+import type { ToolName } from '@rivocode/common/tools/constants'
 import type {
   AgentTemplate,
   StepGenerator,
   StepHandler,
-} from '@codebuff/common/types/agent-template'
-import type { AgentTemplateType } from '@codebuff/common/types/session-state'
+} from '@rivocode/common/types/agent-template'
+import type { AgentTemplateType } from '@rivocode/common/types/session-state'
 
 export type { AgentTemplate, StepGenerator, StepHandler }
 

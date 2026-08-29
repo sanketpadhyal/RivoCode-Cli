@@ -1,10 +1,10 @@
-import { getStubProjectFileContext } from '@codebuff/common/util/file'
+import { getStubProjectFileContext } from '@rivocode/common/util/file'
 import { describe, it, expect } from 'bun:test'
 
 import { handleReadSubtree } from '../tool/read-subtree'
 
-import type { CodebuffToolCall } from '@codebuff/common/tools/list'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { CodebuffToolCall } from '@rivocode/common/tools/list'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 interface ReadSubtreeResultEntry {
   type: 'directory' | 'file'

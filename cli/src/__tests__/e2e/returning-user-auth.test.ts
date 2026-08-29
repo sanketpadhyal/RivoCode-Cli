@@ -2,7 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { API_KEY_ENV_VAR } from '@codebuff/common/old-constants'
+import { API_KEY_ENV_VAR } from '@rivocode/common/old-constants'
 import {
   describe,
   test,
@@ -17,8 +17,8 @@ import { validateApiKey } from '../../hooks/use-auth-query'
 import * as AuthModule from '../../utils/auth'
 import { getAuthTokenDetails, saveUserCredentials } from '../../utils/auth'
 
-import type { GetUserInfoFromApiKeyFn } from '@codebuff/common/types/contracts/database'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { GetUserInfoFromApiKeyFn } from '@rivocode/common/types/contracts/database'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 type User = AuthModule.User
 

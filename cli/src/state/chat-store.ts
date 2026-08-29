@@ -9,7 +9,7 @@ import { loadModePreference, saveModePreference } from '../utils/settings'
 import type { ChatMessage, ContentBlock } from '../types/chat'
 import type { AgentMode } from '../utils/constants'
 import type { InputMode } from '../utils/input-modes'
-import type { RunState } from '@codebuff/sdk'
+import type { RunState } from '@rivocode/sdk'
 
 import type {
   TopBannerType,

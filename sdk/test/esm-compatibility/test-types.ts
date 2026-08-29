@@ -1,15 +1,15 @@
 import {
   CodebuffClient as ClientClass,
   getCustomToolDefinition,
-} from '@codebuff/sdk'
-import * as FullSDK from '@codebuff/sdk'
+} from '@rivocode/sdk'
+import * as FullSDK from '@rivocode/sdk'
 ;
 
 import type {
   CodebuffClient,
   CustomToolDefinition,
   RunState,
-} from '@codebuff/sdk'
+} from '@rivocode/sdk'
 (async () => {
   const testClient: CodebuffClient = {} as any
   const testTool: CustomToolDefinition = {} as any
@@ -41,7 +41,7 @@ import type {
 
   console.log('✅ Custom tool definition types work correctly')
 
-  const dynamicSDK = await import('@codebuff/sdk')
+  const dynamicSDK = await import('@rivocode/sdk')
   const ClientFromDynamic: typeof ClientClass = dynamicSDK.CodebuffClient
   console.log('✅ Dynamic imports work in TypeScript ESM')
 

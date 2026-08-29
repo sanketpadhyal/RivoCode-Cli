@@ -1,4 +1,4 @@
-import { createMockTimers } from '@codebuff/common/testing/mocks/timers'
+import { createMockTimers } from '@rivocode/common/testing/mocks/timers'
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test'
 
 import {
@@ -11,7 +11,7 @@ import {
 } from '../../components/copy-button'
 import { initializeThemeStore } from '../../hooks/use-theme'
 
-import type { MockTimers } from '@codebuff/common/testing/mocks/timers'
+import type { MockTimers } from '@rivocode/common/testing/mocks/timers'
 
 initializeThemeStore()
 

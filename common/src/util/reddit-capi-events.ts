@@ -1,4 +1,4 @@
-import type { FreebuffRedditRetentionMilestoneDays } from '@codebuff/common/util/reddit-freebuff-retention'
+import type { FreebuffRedditRetentionMilestoneDays } from '@rivocode/common/util/reddit-freebuff-retention'
 
 export type RedditConversionSurface = 'cli' | 'web' | 'cloud' | 'chat'
 

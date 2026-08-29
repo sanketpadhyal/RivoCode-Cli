@@ -6,16 +6,16 @@ import {
   SKILLS_DIR_NAME,
   SKILL_FILE_NAME,
   isValidSkillName,
-} from '@codebuff/common/constants/skills'
+} from '@rivocode/common/constants/skills'
 import {
   type SkillDefinition,
   type SkillsMap,
-} from '@codebuff/common/types/skill'
-import { parseSkillFileContent } from '@codebuff/common/util/parse-skill'
+} from '@rivocode/common/types/skill'
+import { parseSkillFileContent } from '@rivocode/common/util/parse-skill'
 
-export { formatAvailableSkillsXml } from '@codebuff/common/util/skills'
+export { formatAvailableSkillsXml } from '@rivocode/common/util/skills'
 
-export { parseSkillFileContent } from '@codebuff/common/util/parse-skill'
+export { parseSkillFileContent } from '@rivocode/common/util/parse-skill'
 
 function loadSkillFromFile(
   skillDir: string,

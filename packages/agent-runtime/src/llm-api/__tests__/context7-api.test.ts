@@ -6,7 +6,7 @@ import {
 } from '../context7-api'
 import { countTokens } from '../../util/token-counter'
 
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 import type { SearchResult } from '../context7-api'
 
 const websiteSearchResult = {

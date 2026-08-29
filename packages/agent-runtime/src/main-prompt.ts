@@ -1,4 +1,4 @@
-import { AgentTemplateTypes } from '@codebuff/common/types/session-state'
+import { AgentTemplateTypes } from '@rivocode/common/types/session-state'
 
 import { loopAgentSteps } from './run-agent-step'
 import {
@@ -7,20 +7,20 @@ import {
 } from './templates/agent-registry'
 
 import type { AgentTemplate } from './templates/types'
-import type { ClientAction } from '@codebuff/common/actions'
-import type { CostMode } from '@codebuff/common/old-constants'
+import type { ClientAction } from '@rivocode/common/actions'
+import type { CostMode } from '@rivocode/common/old-constants'
 import type {
   RequestToolCallFn,
   SendActionFn,
-} from '@codebuff/common/types/contracts/client'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { ParamsExcluding } from '@codebuff/common/types/function-params'
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
+} from '@rivocode/common/types/contracts/client'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { ParamsExcluding } from '@rivocode/common/types/function-params'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
 import type {
   SessionState,
   AgentTemplateType,
   AgentOutput,
-} from '@codebuff/common/types/session-state'
+} from '@rivocode/common/types/session-state'
 
 export async function mainPrompt(
   params: {

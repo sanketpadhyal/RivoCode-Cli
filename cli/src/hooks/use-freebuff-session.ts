@@ -5,13 +5,13 @@ import {
   isFreebuffLimitedOfferModelId,
   LIMITED_FREEBUFF_MODEL_ID,
   resolveFreebuffModelForAccessTier,
-} from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/freebuff-models'
 import {
   getLimitedModelOffers,
   getRateLimitsByModel,
   getReferralInfo,
   getSubscriptionInfo,
-} from '@codebuff/common/types/freebuff-session'
+} from '@rivocode/common/types/freebuff-session'
 import { useEffect } from 'react'
 
 import {
@@ -53,7 +53,7 @@ import type { FreebuffSessionResponse } from '../types/freebuff-session'
 import type {
   FreebuffCountryBlockReason,
   FreebuffIpPrivacySignal,
-} from '@codebuff/common/types/freebuff-session'
+} from '@rivocode/common/types/freebuff-session'
 
 const POLL_INTERVAL_ACTIVE_MS = 30_000
 

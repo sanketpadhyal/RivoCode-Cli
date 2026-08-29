@@ -1,4 +1,4 @@
-import { FREEBUFF_OX_ALPHA_MODEL_ID } from '@codebuff/common/constants/freebuff-models'
+import { FREEBUFF_OX_ALPHA_MODEL_ID } from '@rivocode/common/constants/freebuff-models'
 
 import { createBase3CliRoot } from './base3'
 

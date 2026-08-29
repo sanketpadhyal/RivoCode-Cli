@@ -5,7 +5,7 @@ import path from 'path'
 import {
   clearMockedModules,
   mockModule,
-} from '@codebuff/common/testing/mock-modules'
+} from '@rivocode/common/testing/mock-modules'
 import {
   describe,
   test,
@@ -125,7 +125,7 @@ describe('Credentials Storage Integration', () => {
     test('should use manicode-test directory in test environment', async () => {
       mock.restore()
 
-      await mockModule('@codebuff/common/env', () => ({
+      await mockModule('@rivocode/common/env', () => ({
         env: { NEXT_PUBLIC_CB_ENVIRONMENT: 'test' },
       }))
 
@@ -138,7 +138,7 @@ describe('Credentials Storage Integration', () => {
     test('should use manicode-dev directory in development environment', async () => {
       mock.restore()
 
-      await mockModule('@codebuff/common/env', () => ({
+      await mockModule('@rivocode/common/env', () => ({
         env: { NEXT_PUBLIC_CB_ENVIRONMENT: 'dev' },
       }))
 
@@ -151,7 +151,7 @@ describe('Credentials Storage Integration', () => {
     test('should use manicode directory in production environment', async () => {
       mock.restore()
 
-      await mockModule('@codebuff/common/env', () => ({
+      await mockModule('@rivocode/common/env', () => ({
         env: { NEXT_PUBLIC_CB_ENVIRONMENT: 'prod' },
       }))
 

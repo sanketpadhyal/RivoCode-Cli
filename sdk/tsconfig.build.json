@@ -25,16 +25,16 @@
     "stripInternal": true,
     "baseUrl": ".",
     "paths": {
-      "@codebuff/common/*": [
+      "@rivocode/common/*": [
         "../common/src/*"
       ],
-      "@codebuff/agent-runtime/*": [
+      "@rivocode/agent-runtime/*": [
         "../packages/agent-runtime/src/*"
       ],
-      "@codebuff/code-map": [
+      "@rivocode/code-map": [
         "../packages/code-map/src/index.ts"
       ],
-      "@codebuff/code-map/*": [
+      "@rivocode/code-map/*": [
         "../packages/code-map/src/*"
       ]
     }

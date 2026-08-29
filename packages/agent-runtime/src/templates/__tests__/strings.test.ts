@@ -1,4 +1,4 @@
-import { TEST_AGENT_RUNTIME_IMPL } from '@codebuff/common/testing/impl/agent-runtime'
+import { TEST_AGENT_RUNTIME_IMPL } from '@rivocode/common/testing/impl/agent-runtime'
 import { describe, test, expect, mock } from 'bun:test'
 
 import { PLACEHOLDER } from '../types'
@@ -6,8 +6,8 @@ import { formatCurrentDate, getAgentPrompt } from '../strings'
 import { getGitChangesPrompt } from '../../system-prompt/prompts'
 
 import type { AgentTemplate } from '../types'
-import type { AgentState } from '@codebuff/common/types/session-state'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+import type { AgentState } from '@rivocode/common/types/session-state'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 const createMockLogger = () => ({
   debug: mock(() => {}),

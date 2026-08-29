@@ -2,7 +2,7 @@ console.log('🧪 Testing ESM imports in ESM-only project...');
 
 try {
   console.log('\n1. Testing named ESM import...');
-  const { CodebuffClient } = await import('@codebuff/sdk');
+  const { CodebuffClient } = await import('@rivocode/sdk');
   console.log('✅ Named ESM import successful:', typeof CodebuffClient);
 
   if (typeof CodebuffClient !== 'function') {
@@ -10,7 +10,7 @@ try {
   }
 
   console.log('\n2. Testing namespace ESM import...');
-  const SDK = await import('@codebuff/sdk');
+  const SDK = await import('@rivocode/sdk');
   console.log('✅ Namespace ESM import successful:', typeof SDK);
 
   if (typeof SDK !== 'object' || SDK === null) {
@@ -30,7 +30,7 @@ try {
   }
 
   console.log('\n4. Testing access pattern consistency...');
-  const namedModule = await import('@codebuff/sdk');
+  const namedModule = await import('@rivocode/sdk');
   const ClientFromNamed = namedModule.CodebuffClient;
   const ClientFromNamespace = SDK.CodebuffClient;
 
@@ -45,7 +45,7 @@ try {
   }
 
   try {
-    eval('const { CodebuffClient } = require("@codebuff/sdk")');
+    eval('const { CodebuffClient } = require("@rivocode/sdk")');
     throw new Error('CommonJS require should not work in ESM environment');
   } catch (referenceError) {
     if (referenceError.message.includes('require is not defined')) {

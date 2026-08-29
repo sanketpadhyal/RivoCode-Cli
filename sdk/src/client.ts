@@ -1,4 +1,4 @@
-import { API_KEY_ENV_VAR } from '@codebuff/common/constants/paths'
+import { API_KEY_ENV_VAR } from '@rivocode/common/constants/paths'
 
 import { getWebsiteUrl } from './constants'
 import { getCodebuffApiKeyFromEnv } from './env'

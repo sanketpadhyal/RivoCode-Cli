@@ -1,4 +1,4 @@
-import { runTerminalCommand } from '@codebuff/sdk'
+import { runTerminalCommand } from '@rivocode/sdk'
 import { createCliRenderer } from '@opentui/core'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import path from 'path'
@@ -13,7 +13,7 @@ import { installTerminalProtocolController } from '../utils/terminal-protocol-co
 import { writeTerminalControlSync } from '../utils/terminal-io'
 
 import type { CliRenderer } from '@opentui/core'
-import type { CodebuffToolOutput } from '@codebuff/sdk'
+import type { CodebuffToolOutput } from '@rivocode/sdk'
 
 const WAIT_INTERVAL_MS = 25
 

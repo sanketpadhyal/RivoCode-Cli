@@ -1,14 +1,14 @@
 import {
   flattenTree,
   getLastReadFilePaths,
-} from '@codebuff/common/project-file-tree'
-import { createMarkdownFileBlock } from '@codebuff/common/util/file'
-import { closeXml } from '@codebuff/common/util/xml'
+} from '@rivocode/common/project-file-tree'
+import { createMarkdownFileBlock } from '@rivocode/common/util/file'
+import { closeXml } from '@rivocode/common/util/xml'
 
 import { truncateFileTreeBasedOnTokenBudget } from './truncate-file-tree'
 
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 export const knowledgeFilesPrompt = `
 # Knowledge files

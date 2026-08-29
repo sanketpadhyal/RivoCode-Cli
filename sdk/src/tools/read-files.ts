@@ -1,19 +1,19 @@
-import { countTokens } from '@codebuff/agent-runtime/util/token-counter'
-import { FILE_READ_STATUS } from '@codebuff/common/old-constants'
-import { isFileIgnored } from '@codebuff/common/project-file-tree'
+import { countTokens } from '@rivocode/agent-runtime/util/token-counter'
+import { FILE_READ_STATUS } from '@rivocode/common/old-constants'
+import { isFileIgnored } from '@rivocode/common/project-file-tree'
 import {
   isEnvTemplateFilePath,
   isSensitiveEnvFilePath,
-} from '@codebuff/common/util/env-file-path'
+} from '@rivocode/common/util/env-file-path'
 import {
   createFileReadLimiter,
   windowFileRead,
-} from '@codebuff/common/util/file-read-limits'
+} from '@rivocode/common/util/file-read-limits'
 
 import { resolveFilePath } from './path-utils'
 
-import type { FileReadWindow } from '@codebuff/common/types/contracts/client'
-import type { CodebuffFileSystem } from '@codebuff/common/types/filesystem'
+import type { FileReadWindow } from '@rivocode/common/types/contracts/client'
+import type { CodebuffFileSystem } from '@rivocode/common/types/filesystem'
 
 export type FileFilterResult = {
   status: 'blocked' | 'allow-example' | 'allow'

@@ -1,4 +1,4 @@
-import { jsonToolResult } from '@codebuff/common/util/messages'
+import { jsonToolResult } from '@rivocode/common/util/messages'
 
 import { getAgentTemplate } from '../../../templates/agent-registry'
 import { formatValueForError } from '../../../util/format-value'
@@ -7,13 +7,13 @@ import type { CodebuffToolHandlerFunction } from '../handler-function-type'
 import type {
   CodebuffToolCall,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
+} from '@rivocode/common/tools/list'
 import type {
   AgentTemplate,
   Logger,
-} from '@codebuff/common/types/agent-template'
-import type { FetchAgentFromDatabaseFn } from '@codebuff/common/types/contracts/database'
-import type { AgentState } from '@codebuff/common/types/session-state'
+} from '@rivocode/common/types/agent-template'
+import type { FetchAgentFromDatabaseFn } from '@rivocode/common/types/contracts/database'
+import type { AgentState } from '@rivocode/common/types/session-state'
 
 type ToolName = 'set_output'
 export const handleSetOutput = (async (params: {

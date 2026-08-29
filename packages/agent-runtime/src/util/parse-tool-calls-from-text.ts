@@ -2,7 +2,7 @@ import {
   startToolTag,
   endToolTag,
   toolNameParam,
-} from '@codebuff/common/tools/constants'
+} from '@rivocode/common/tools/constants'
 
 export type ParsedToolCallFromText = {
   type: 'tool_call'

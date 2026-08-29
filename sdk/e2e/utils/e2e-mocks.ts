@@ -1,5 +1,5 @@
-import { models } from '@codebuff/common/old-constants'
-import { promptSuccess } from '@codebuff/common/util/error'
+import { models } from '@rivocode/common/old-constants'
+import { promptSuccess } from '@rivocode/common/util/error'
 import { spyOn } from 'bun:test'
 import z from 'zod/v4'
 
@@ -7,14 +7,14 @@ import { CodebuffClient } from '../../src/client'
 import * as databaseModule from '../../src/impl/database'
 import * as llmModule from '../../src/impl/llm'
 
-import type { AgentTemplate } from '@codebuff/common/types/agent-template'
+import type { AgentTemplate } from '@rivocode/common/types/agent-template'
 import type {
   PromptAiSdkFn,
   PromptAiSdkStreamFn,
   PromptAiSdkStructuredInput,
-} from '@codebuff/common/types/contracts/llm'
-import type { ParamsOf } from '@codebuff/common/types/function-params'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
+} from '@rivocode/common/types/contracts/llm'
+import type { ParamsOf } from '@rivocode/common/types/function-params'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
 
 export const E2E_MOCK_API_KEY = 'codebuff-e2e-mock'
 

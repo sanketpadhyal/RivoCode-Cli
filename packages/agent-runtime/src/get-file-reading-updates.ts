@@ -3,7 +3,7 @@ import { uniq } from 'lodash'
 import type {
   FileReadWindow,
   RequestFilesFn,
-} from '@codebuff/common/types/contracts/client'
+} from '@rivocode/common/types/contracts/client'
 
 export async function getFileReadingUpdates(params: {
   requestFiles: RequestFilesFn

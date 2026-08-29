@@ -8,9 +8,9 @@ import {
   FREEBUFF_MIMO_V25_MODEL_ID,
   getFreebuffModelDefaultEffort,
   getFreebuffModelEfforts,
-} from '@codebuff/common/constants/freebuff-models'
+} from '@rivocode/common/constants/freebuff-models'
 
-import type { ReasoningEffort } from '@codebuff/common/constants/reasoning-effort'
+import type { ReasoningEffort } from '@rivocode/common/constants/reasoning-effort'
 
 const realHome = process.env.HOME
 const tempHome = mkdtempSync(join(tmpdir(), 'freebuff-reasoning-'))

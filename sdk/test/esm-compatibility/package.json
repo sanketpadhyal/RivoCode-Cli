@@ -12,7 +12,7 @@
     "test:all": "npm run setup && npm run test && npm run test:types && npm run test:compile"
   },
   "dependencies": {
-    "@codebuff/sdk": "file:../.."
+    "@rivocode/sdk": "file:../.."
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

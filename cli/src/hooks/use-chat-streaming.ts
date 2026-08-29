@@ -1,5 +1,5 @@
 
-import { RECONNECTION_MESSAGE_DURATION_MS } from '@codebuff/sdk'
+import { RECONNECTION_MESSAGE_DURATION_MS } from '@rivocode/sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState, useTransition } from 'react'
 

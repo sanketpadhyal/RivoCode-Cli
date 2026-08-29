@@ -11,7 +11,7 @@ import { createTextPasteHandler } from '../utils/strings'
 import { isPlainEnterKey } from '../utils/terminal-enter-detection'
 import { BORDER_CHARS } from '../utils/ui-constants'
 
-import type { FeedbackCategory } from '@codebuff/common/constants/feedback'
+import type { FeedbackCategory } from '@rivocode/common/constants/feedback'
 
 type CategoryHighlightKey = 'success' | 'error' | 'warning' | 'info'
 

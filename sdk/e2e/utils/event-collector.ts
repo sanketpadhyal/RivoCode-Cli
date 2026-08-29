@@ -1,5 +1,5 @@
 
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
 
 export type StreamChunk =
   | string

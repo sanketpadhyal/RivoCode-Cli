@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync, mkdirSync, realpathSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { validateAgents } from '@codebuff/sdk'
+import { validateAgents } from '@rivocode/sdk'
 import { describe, test, expect, beforeEach, afterEach, mock } from 'bun:test'
 
 mock.module('../../utils/logger', () => ({

@@ -1,7 +1,7 @@
-import { TEST_USER_ID } from '@codebuff/common/old-constants'
-import { TEST_AGENT_RUNTIME_IMPL } from '@codebuff/common/testing/impl/agent-runtime'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { assistantMessage } from '@codebuff/common/util/messages'
+import { TEST_USER_ID } from '@rivocode/common/old-constants'
+import { TEST_AGENT_RUNTIME_IMPL } from '@rivocode/common/testing/impl/agent-runtime'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { assistantMessage } from '@rivocode/common/util/messages'
 import {
   afterAll,
   beforeAll,
@@ -20,8 +20,8 @@ import { handleSpawnAgents } from '../tools/handlers/tool/spawn-agents'
 
 import type { AgentTemplate } from '../templates/types'
 import type { SendSubagentChunk } from '../tools/handlers/tool/spawn-agents'
-import type { CodebuffToolCall } from '@codebuff/common/tools/list'
-import type { ParamsExcluding } from '@codebuff/common/types/function-params'
+import type { CodebuffToolCall } from '@rivocode/common/tools/list'
+import type { ParamsExcluding } from '@rivocode/common/types/function-params'
 import type { Mock } from 'bun:test'
 
 describe('Subagent Streaming', () => {

@@ -1,8 +1,8 @@
-import { WEBSITE_URL } from '@codebuff/sdk'
+import { WEBSITE_URL } from '@rivocode/sdk'
 import type {
   PublishAgentsResponse,
-} from '@codebuff/common/types/api/agents/publish'
-import type { FeedbackRequest } from '@codebuff/common/schemas/feedback'
+} from '@rivocode/common/types/api/agents/publish'
+import type { FeedbackRequest } from '@rivocode/common/schemas/feedback'
 
 export type ApiResponse<T> =
   | { ok: true; status: number; data?: T }

@@ -1,16 +1,16 @@
-import { validateAgents } from '@codebuff/common/templates/agent-validation'
+import { validateAgents } from '@rivocode/common/templates/agent-validation'
 import {
   normalizeAgentIdForLookup,
   parsePublishedAgentId,
-} from '@codebuff/common/util/agent-id-parsing'
-import { DEFAULT_ORG_PREFIX } from '@codebuff/common/util/agent-name-normalization'
+} from '@rivocode/common/util/agent-id-parsing'
+import { DEFAULT_ORG_PREFIX } from '@rivocode/common/util/agent-name-normalization'
 
-import type { DynamicAgentValidationError } from '@codebuff/common/templates/agent-validation'
-import type { AgentTemplate } from '@codebuff/common/types/agent-template'
-import type { FetchAgentFromDatabaseFn } from '@codebuff/common/types/contracts/database'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { ParamsExcluding } from '@codebuff/common/types/function-params'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+import type { DynamicAgentValidationError } from '@rivocode/common/templates/agent-validation'
+import type { AgentTemplate } from '@rivocode/common/types/agent-template'
+import type { FetchAgentFromDatabaseFn } from '@rivocode/common/types/contracts/database'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { ParamsExcluding } from '@rivocode/common/types/function-params'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 export async function getAgentTemplate(
   params: {

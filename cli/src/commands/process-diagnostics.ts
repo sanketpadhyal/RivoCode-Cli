@@ -1,4 +1,4 @@
-import { getActiveTerminalCommandProcesses } from '@codebuff/sdk'
+import { getActiveTerminalCommandProcesses } from '@rivocode/sdk'
 
 import { getTerminalWatchdogDiagnostics } from '../utils/terminal-watchdog'
 import { getCliEnv } from '../utils/env'

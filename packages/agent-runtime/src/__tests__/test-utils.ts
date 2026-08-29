@@ -1,9 +1,9 @@
-import { promptSuccess } from '@codebuff/common/util/error'
-import { generateCompactId } from '@codebuff/common/util/string'
+import { promptSuccess } from '@rivocode/common/util/error'
+import { generateCompactId } from '@rivocode/common/util/string'
 
-import type { StreamChunk } from '@codebuff/common/types/contracts/llm'
-import type { PromptResult } from '@codebuff/common/util/error'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+import type { StreamChunk } from '@rivocode/common/types/contracts/llm'
+import type { PromptResult } from '@rivocode/common/util/error'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 export function createToolCallChunk<T extends string>(
   toolName: T,

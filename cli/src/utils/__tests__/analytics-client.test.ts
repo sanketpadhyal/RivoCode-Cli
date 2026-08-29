@@ -1,4 +1,4 @@
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
 import { describe, test, expect, beforeEach, mock } from 'bun:test'
 
 import {
@@ -9,7 +9,7 @@ import {
   type AnalyticsDeps,
 } from '../analytics'
 
-import type { AnalyticsClientWithIdentify } from '@codebuff/common/analytics-core'
+import type { AnalyticsClientWithIdentify } from '@rivocode/common/analytics-core'
 
 describe('analytics with PostHog alias', () => {
   let captureMock: ReturnType<typeof mock>

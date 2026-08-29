@@ -1,4 +1,4 @@
-import { FREEBUFF_SOLAR_PRO_4_MODEL_ID } from '@codebuff/common/constants/freebuff-models'
+import { FREEBUFF_SOLAR_PRO_4_MODEL_ID } from '@rivocode/common/constants/freebuff-models'
 
 import { createBase2 } from './base2'
 

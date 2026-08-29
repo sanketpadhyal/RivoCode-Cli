@@ -2,7 +2,7 @@
 import {
   toolNameParam,
   toolXmlName,
-} from '@codebuff/common/tools/constants'
+} from '@rivocode/common/tools/constants'
 
 const startToolTag = `<${toolXmlName}>`
 const endToolTag = `</${toolXmlName}>`

@@ -1,16 +1,16 @@
-import * as mainPromptModule from '@codebuff/agent-runtime/main-prompt'
-import { FILE_READ_STATUS } from '@codebuff/common/old-constants'
-import * as projectFileTree from '@codebuff/common/project-file-tree'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { getStubProjectFileContext } from '@codebuff/common/util/file'
-import { MAX_READ_FILES_CHARS } from '@codebuff/common/util/file-read-limits'
+import * as mainPromptModule from '@rivocode/agent-runtime/main-prompt'
+import { FILE_READ_STATUS } from '@rivocode/common/old-constants'
+import * as projectFileTree from '@rivocode/common/project-file-tree'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { getStubProjectFileContext } from '@rivocode/common/util/file'
+import { MAX_READ_FILES_CHARS } from '@rivocode/common/util/file-read-limits'
 import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test'
 
 import { CodebuffClient } from '../client'
 import * as databaseModule from '../impl/database'
 
 import type { FileFilter } from '../tools/read-files'
-import type { CodebuffFileSystem } from '@codebuff/common/types/filesystem'
+import type { CodebuffFileSystem } from '@rivocode/common/types/filesystem'
 import type { PathLike } from 'node:fs'
 
 interface NodeError extends Error {

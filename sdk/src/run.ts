@@ -1,38 +1,38 @@
 import path from 'path'
 
-import { callMainPrompt } from '@codebuff/agent-runtime/main-prompt'
-import { adjustContextTokenCountForHistoryEdit } from '@codebuff/agent-runtime/util/context-token-count'
+import { callMainPrompt } from '@rivocode/agent-runtime/main-prompt'
+import { adjustContextTokenCountForHistoryEdit } from '@rivocode/agent-runtime/util/context-token-count'
 import {
   buildUserMessageContent,
   withSystemTags,
-} from '@codebuff/agent-runtime/util/messages'
-import { MAX_AGENT_STEPS_DEFAULT } from '@codebuff/common/constants/agents'
-import { toRepoSnapshot } from '@codebuff/common/util/file'
-import { dropUnansweredToolCalls } from '@codebuff/common/util/messages'
+} from '@rivocode/agent-runtime/util/messages'
+import { MAX_AGENT_STEPS_DEFAULT } from '@rivocode/common/constants/agents'
+import { toRepoSnapshot } from '@rivocode/common/util/file'
+import { dropUnansweredToolCalls } from '@rivocode/common/util/messages'
 import {
   FILE_READ_STATUS,
   toOptionalFile,
-} from '@codebuff/common/constants/paths'
+} from '@rivocode/common/constants/paths'
 import {
   getMCPClient,
   listMCPTools,
   callMCPTool,
-} from '@codebuff/common/mcp/client'
+} from '@rivocode/common/mcp/client'
 import {
   COMPOSIO_META_TOOL_NAMES,
   isComposioMetaToolName,
-} from '@codebuff/common/constants/composio'
-import { toolNames } from '@codebuff/common/tools/constants'
-import { clientToolCallSchema } from '@codebuff/common/tools/list'
-import { AgentOutputSchema } from '@codebuff/common/types/session-state'
+} from '@rivocode/common/constants/composio'
+import { toolNames } from '@rivocode/common/tools/constants'
+import { clientToolCallSchema } from '@rivocode/common/tools/list'
+import { AgentOutputSchema } from '@rivocode/common/types/session-state'
 import {
   FETCH_IDLE_TIMEOUT_USER_MESSAGE,
   TRANSIENT_NETWORK_ERROR_USER_MESSAGE,
   extractApiErrorDetails,
   isFetchIdleTimeoutError,
   isTransientNetworkError,
-} from '@codebuff/common/util/error'
-import { isSensitiveEnvFilePath } from '@codebuff/common/util/env-file-path'
+} from '@rivocode/common/util/error'
+import { isSensitiveEnvFilePath } from '@rivocode/common/util/env-file-path'
 import { cloneDeep } from 'lodash'
 
 import { executeComposioToolViaServer } from './composio'
@@ -55,28 +55,28 @@ import type { TerminalCommandBroker } from './tools/run-terminal-command'
 import type { CustomToolDefinition } from './custom-tool'
 import type { RunState } from './run-state'
 import type { FileFilter } from './tools/read-files'
-import type { ServerAction } from '@codebuff/common/actions'
-import type { FileReadWindow } from '@codebuff/common/types/contracts/client'
-import type { AgentDefinition } from '@codebuff/common/templates/initial-agents-dir/types/agent-definition'
-import type { ToolName } from '@codebuff/common/tools/constants'
-import type { PublishedClientToolName } from '@codebuff/common/tools/list'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { ServerAction } from '@rivocode/common/actions'
+import type { FileReadWindow } from '@rivocode/common/types/contracts/client'
+import type { AgentDefinition } from '@rivocode/common/templates/initial-agents-dir/types/agent-definition'
+import type { ToolName } from '@rivocode/common/tools/constants'
+import type { PublishedClientToolName } from '@rivocode/common/tools/list'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 import type {
   AgentUsageData,
   ContextCompactionData,
-} from '@codebuff/common/types/contracts/llm'
-import type { TraceWriter } from '@codebuff/common/types/contracts/trace'
-import type { CodebuffFileSystem } from '@codebuff/common/types/filesystem'
+} from '@rivocode/common/types/contracts/llm'
+import type { TraceWriter } from '@rivocode/common/types/contracts/trace'
+import type { CodebuffFileSystem } from '@rivocode/common/types/filesystem'
 import type {
   Message,
   ToolMessage,
-} from '@codebuff/common/types/messages/codebuff-message'
-import type { ToolResultOutput } from '@codebuff/common/types/messages/content-part'
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
-import type { SessionState } from '@codebuff/common/types/session-state'
-import type { SkillsMap } from '@codebuff/common/types/skill'
-import type { Source } from '@codebuff/common/types/source'
-import type { CodebuffSpawn } from '@codebuff/common/types/spawn'
+} from '@rivocode/common/types/messages/codebuff-message'
+import type { ToolResultOutput } from '@rivocode/common/types/messages/content-part'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
+import type { SessionState } from '@rivocode/common/types/session-state'
+import type { SkillsMap } from '@rivocode/common/types/skill'
+import type { Source } from '@rivocode/common/types/source'
+import type { CodebuffSpawn } from '@rivocode/common/types/spawn'
 
 type OverrideToolHandlers = {
   [K in PublishedClientToolName]?: (input: any) => Promise<ToolResultOutput[]>

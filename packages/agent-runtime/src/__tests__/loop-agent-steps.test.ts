@@ -1,14 +1,14 @@
-import * as analytics from '@codebuff/common/analytics'
-import { TEST_USER_ID } from '@codebuff/common/old-constants'
-import { createTestAgentRuntimeParams } from '@codebuff/common/testing/fixtures/agent-runtime'
-import { clearMockedModules } from '@codebuff/common/testing/mock-modules'
+import * as analytics from '@rivocode/common/analytics'
+import { TEST_USER_ID } from '@rivocode/common/old-constants'
+import { createTestAgentRuntimeParams } from '@rivocode/common/testing/fixtures/agent-runtime'
+import { clearMockedModules } from '@rivocode/common/testing/mock-modules'
 import {
   createMockDbOperations,
   setupDbSpies,
-} from '@codebuff/common/testing/mocks/database'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { AbortError, promptSuccess } from '@codebuff/common/util/error'
-import { assistantMessage, userMessage } from '@codebuff/common/util/messages'
+} from '@rivocode/common/testing/mocks/database'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { AbortError, promptSuccess } from '@rivocode/common/util/error'
+import { assistantMessage, userMessage } from '@rivocode/common/util/messages'
 import {
   afterAll,
   afterEach,
@@ -35,9 +35,9 @@ import {
 import { createToolCallChunk, mockFileContext } from './test-utils'
 
 import type { AgentTemplate } from '../templates/types'
-import type { DbSpies } from '@codebuff/common/testing/mocks/database'
-import type { StepGenerator } from '@codebuff/common/types/agent-template'
-import type { AgentState } from '@codebuff/common/types/session-state'
+import type { DbSpies } from '@rivocode/common/testing/mocks/database'
+import type { StepGenerator } from '@rivocode/common/types/agent-template'
+import type { AgentState } from '@rivocode/common/types/session-state'
 
 describe('loopAgentSteps - runAgentStep vs runProgrammaticStep behavior', () => {
   let mockTemplate: AgentTemplate

@@ -23,7 +23,7 @@ import {
 } from '../utils/markdown-renderer'
 
 import type { ChatMessage } from '../types/chat'
-import type { FeedbackCategory } from '@codebuff/common/constants/feedback'
+import type { FeedbackCategory } from '@rivocode/common/constants/feedback'
 
 interface AgentChildrenGridProps {
   agentChildren: ChatMessage[]

@@ -1,4 +1,4 @@
-import { jsonToolResult } from '@codebuff/common/util/messages'
+import { jsonToolResult } from '@rivocode/common/util/messages'
 
 import { callGravityIndexAPI } from '../../../llm-api/codebuff-web-api'
 
@@ -6,11 +6,11 @@ import type { CodebuffToolHandlerFunction } from '../handler-function-type'
 import type {
   CodebuffToolCall,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
-import type { AgentTemplate } from '@codebuff/common/types/agent-template'
-import type { ClientEnv, CiEnv } from '@codebuff/common/types/contracts/env'
-import type { JSONObject, JSONValue } from '@codebuff/common/types/json'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+} from '@rivocode/common/tools/list'
+import type { AgentTemplate } from '@rivocode/common/types/agent-template'
+import type { ClientEnv, CiEnv } from '@rivocode/common/types/contracts/env'
+import type { JSONObject, JSONValue } from '@rivocode/common/types/json'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 const omitUndefined = (value: Record<string, JSONValue | undefined>) => {
   const result: JSONObject = {}

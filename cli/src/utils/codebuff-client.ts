@@ -1,6 +1,6 @@
-import { API_KEY_ENV_VAR } from '@codebuff/common/old-constants'
-import { AskUserBridge } from '@codebuff/common/utils/ask-user-bridge'
-import { CodebuffClient } from '@codebuff/sdk'
+import { API_KEY_ENV_VAR } from '@rivocode/common/old-constants'
+import { AskUserBridge } from '@rivocode/common/utils/ask-user-bridge'
+import { CodebuffClient } from '@rivocode/sdk'
 
 import { getAuthTokenDetails } from './auth'
 import { getCliEnv, getSystemProcessEnv } from './env'
@@ -11,7 +11,7 @@ import { terminalCommandBroker } from './terminal-command-broker'
 import { getRgPath } from '../native/ripgrep'
 import { getProjectRoot } from '../project-files'
 
-import type { ClientToolCall } from '@codebuff/common/tools/list'
+import type { ClientToolCall } from '@rivocode/common/tools/list'
 
 let clientInstance: CodebuffClient | null = null
 

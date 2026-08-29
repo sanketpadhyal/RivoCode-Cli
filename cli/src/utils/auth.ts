@@ -1,14 +1,14 @@
 import fs from 'fs'
 import path from 'path'
 
-import { getCiEnv } from '@codebuff/common/env-ci'
+import { getCiEnv } from '@rivocode/common/env-ci'
 import { z } from 'zod'
 
 import { getApiClient, setApiClientAuthToken } from './codebuff-api'
 import { getConfigDir as getConfigDirBase } from './config-dir'
 import { logger } from './logger'
 
-import type { CiEnv } from '@codebuff/common/types/contracts/env'
+import type { CiEnv } from '@rivocode/common/types/contracts/env'
 
 const userSchema = z.object({
   id: z.string().optional(),

@@ -1,5 +1,5 @@
-import type { ToolName } from '@codebuff/common/tools/constants'
-import type { ToolResultOutput } from '@codebuff/common/types/messages/content-part'
+import type { ToolName } from '@rivocode/common/tools/constants'
+import type { ToolResultOutput } from '@rivocode/common/types/messages/content-part'
 import type { z } from 'zod/v4'
 
 export type CustomToolDefinition<

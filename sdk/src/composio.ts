@@ -1,7 +1,7 @@
 import { getWebsiteUrl } from './constants'
 
-import type { ComposioMetaToolName } from '@codebuff/common/constants/composio'
-import type { ToolResultOutput } from '@codebuff/common/types/messages/content-part'
+import type { ComposioMetaToolName } from '@rivocode/common/constants/composio'
+import type { ToolResultOutput } from '@rivocode/common/types/messages/content-part'
 
 type ComposioExecuteResponse = {
   output: ToolResultOutput[]

@@ -9,7 +9,7 @@ import {
   promptCacheGapMs,
 } from '../compact-history'
 
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
 
 const MINUTE = 60 * 1000
 

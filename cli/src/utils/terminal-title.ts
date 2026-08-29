@@ -4,7 +4,7 @@ import { getCliEnv } from './env'
 import { writeTerminalControlSync } from './terminal-io'
 
 const MAX_TITLE_LENGTH = 60
-const TITLE_PREFIX = IS_FREEBUFF ? 'Freebuff: ' : 'Codebuff: '
+const TITLE_PREFIX = 'RivoCode: '
 const OSC_TERMINATOR = '\x07'
 
 function isInTmux(env: ReturnType<typeof getCliEnv>): boolean {

@@ -1,4 +1,4 @@
-import { getFreebuffModel } from '@codebuff/common/constants/freebuff-models'
+import { getFreebuffModel } from '@rivocode/common/constants/freebuff-models'
 import { TextAttributes } from '@opentui/core'
 import React, { useEffect, useState } from 'react'
 

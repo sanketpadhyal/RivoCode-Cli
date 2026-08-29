@@ -3,12 +3,12 @@ import { readFileSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
 import type {
   TerminalCommandBroker,
   TerminalCommandProcess,
   TerminalCommandSpawnRequest,
-} from '@codebuff/sdk'
+} from '@rivocode/sdk'
 import type { ChildProcess } from 'child_process'
 
 import { getCliEnv, getSystemProcessEnv } from './env'

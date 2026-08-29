@@ -2,7 +2,7 @@ console.log('🧪 Testing CommonJS imports in CommonJS-only project...')
 
 try {
   console.log('\n1. Testing named destructuring import...')
-  const { CodebuffClient } = require('@codebuff/sdk')
+  const { CodebuffClient } = require('@rivocode/sdk')
   console.log('✅ Named destructuring successful:', typeof CodebuffClient)
 
   if (typeof CodebuffClient !== 'function') {
@@ -12,7 +12,7 @@ try {
   }
 
   console.log('\n2. Testing default require...')
-  const SDK = require('@codebuff/sdk')
+  const SDK = require('@rivocode/sdk')
   console.log('✅ Default require successful:', typeof SDK)
 
   if (typeof SDK !== 'object' || SDK === null) {
@@ -36,8 +36,8 @@ try {
   }
 
   console.log('\n4. Testing access pattern consistency...')
-  const ClientFromDestructure = require('@codebuff/sdk').CodebuffClient
-  const ClientFromDefault = require('@codebuff/sdk').CodebuffClient
+  const ClientFromDestructure = require('@rivocode/sdk').CodebuffClient
+  const ClientFromDefault = require('@rivocode/sdk').CodebuffClient
 
   if (ClientFromDestructure !== ClientFromDefault) {
     throw new Error('Inconsistent access patterns')
@@ -52,7 +52,7 @@ try {
   }
 
   try {
-    eval('import { CodebuffClient } from "@codebuff/sdk"')
+    eval('import { CodebuffClient } from "@rivocode/sdk"')
     throw new Error('ESM imports should not work in CommonJS environment')
   } catch (syntaxError) {
     if (

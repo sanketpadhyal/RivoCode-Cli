@@ -1,15 +1,15 @@
-import { FREEBUFF_PROVIDER_USAGE_ERROR_PATTERN } from '@codebuff/common/constants/freebuff-errors'
-import { env } from '@codebuff/common/env'
-import { extractApiErrorDetails } from '@codebuff/common/util/error'
-import { formatFreebuffHardBlockedPrivacySignals } from '@codebuff/common/util/freebuff-privacy'
-import { getFreebuffGateCode } from '@codebuff/common/types/freebuff-session'
+import { FREEBUFF_PROVIDER_USAGE_ERROR_PATTERN } from '@rivocode/common/constants/freebuff-errors'
+import { env } from '@rivocode/common/env'
+import { extractApiErrorDetails } from '@rivocode/common/util/error'
+import { formatFreebuffHardBlockedPrivacySignals } from '@rivocode/common/util/freebuff-privacy'
+import { getFreebuffGateCode } from '@rivocode/common/types/freebuff-session'
 
 import type { ChatMessage } from '../types/chat'
 import type {
   FreebuffCountryBlockReason,
   FreebuffGateCode,
   FreebuffIpPrivacySignal,
-} from '@codebuff/common/types/freebuff-session'
+} from '@rivocode/common/types/freebuff-session'
 
 import { IS_FREEBUFF } from './constants'
 

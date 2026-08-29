@@ -1,15 +1,15 @@
-import { models, PROFIT_MARGIN } from '@codebuff/common/old-constants'
-import { buildArray } from '@codebuff/common/util/array'
-import { STREAM_RECOVERY_EVENT } from '@codebuff/common/util/axiom-only-log'
-import { normalizeProviderRequestBodyForCacheDebug } from '@codebuff/common/util/cache-debug'
+import { models, PROFIT_MARGIN } from '@rivocode/common/old-constants'
+import { buildArray } from '@rivocode/common/util/array'
+import { STREAM_RECOVERY_EVENT } from '@rivocode/common/util/axiom-only-log'
+import { normalizeProviderRequestBodyForCacheDebug } from '@rivocode/common/util/cache-debug'
 import {
   getErrorObject,
   promptAborted,
   promptSuccess,
-} from '@codebuff/common/util/error'
-import { convertCbToModelMessages } from '@codebuff/common/util/messages'
-import { isExplicitlyDefinedModel } from '@codebuff/common/util/model-utils'
-import { StopSequenceHandler } from '@codebuff/common/util/stop-sequence'
+} from '@rivocode/common/util/error'
+import { convertCbToModelMessages } from '@rivocode/common/util/messages'
+import { isExplicitlyDefinedModel } from '@rivocode/common/util/model-utils'
+import { StopSequenceHandler } from '@rivocode/common/util/stop-sequence'
 import {
   streamText,
   generateText,
@@ -33,15 +33,15 @@ import {
 import type {
   OpenRouterProviderOptions,
   OpenRouterProviderRoutingOptions,
-} from '@codebuff/common/types/agent-template'
+} from '@rivocode/common/types/agent-template'
 import type {
   PromptAiSdkFn,
   PromptAiSdkStreamFn,
   PromptAiSdkStructuredInput,
   PromptAiSdkStructuredOutput,
-} from '@codebuff/common/types/contracts/llm'
-import type { ParamsOf } from '@codebuff/common/types/function-params'
-import type { ProviderMetadata } from '@codebuff/common/types/messages/provider-metadata'
+} from '@rivocode/common/types/contracts/llm'
+import type { ParamsOf } from '@rivocode/common/types/function-params'
+import type { ProviderMetadata } from '@rivocode/common/types/messages/provider-metadata'
 import type { LanguageModel } from 'ai'
 
 const providerOrder = {

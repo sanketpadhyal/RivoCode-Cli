@@ -1,23 +1,23 @@
 import type { FileProcessingState } from './tool/write-file'
-import type { ToolName } from '@codebuff/common/tools/constants'
+import type { ToolName } from '@rivocode/common/tools/constants'
 import type {
   ClientToolCall,
   ClientToolName,
   CodebuffToolCall,
   CodebuffToolMessage,
   CodebuffToolOutput,
-} from '@codebuff/common/tools/list'
-import type { AgentTemplate } from '@codebuff/common/types/agent-template'
+} from '@rivocode/common/tools/list'
+import type { AgentTemplate } from '@rivocode/common/types/agent-template'
 import type {
   AgentRuntimeDeps,
   AgentRuntimeScopedDeps,
-} from '@codebuff/common/types/contracts/agent-runtime'
-import type { TrackEventFn } from '@codebuff/common/types/contracts/analytics'
-import type { SendSubagentChunkFn } from '@codebuff/common/types/contracts/client'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
-import type { AgentState, Subgoal } from '@codebuff/common/types/session-state'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+} from '@rivocode/common/types/contracts/agent-runtime'
+import type { TrackEventFn } from '@rivocode/common/types/contracts/analytics'
+import type { SendSubagentChunkFn } from '@rivocode/common/types/contracts/client'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
+import type { AgentState, Subgoal } from '@rivocode/common/types/session-state'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 import type { ToolSet } from 'ai'
 
 type PresentOrAbsent<K extends PropertyKey, V> =

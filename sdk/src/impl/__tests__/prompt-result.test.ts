@@ -5,7 +5,7 @@ import {
   promptSuccess,
   unwrapPromptResult,
   type PromptResult,
-} from '@codebuff/common/util/error'
+} from '@rivocode/common/util/error'
 import { describe, expect, it } from 'bun:test'
 
 describe('PromptResult type and helpers', () => {

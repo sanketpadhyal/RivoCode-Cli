@@ -1,1 +1,1 @@
-export * from '@codebuff/common/util/lazy-response-ads'
+export * from '@rivocode/common/util/lazy-response-ads'

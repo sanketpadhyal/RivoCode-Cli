@@ -1,6 +1,7 @@
 {
-  "name": "@codebuff/agents",
+  "name": "@rivocode/agents",
   "version": "0.0.0",
+  "author": "Sanket Padhyal <mrsanketpadhyal@gmail.com>",
   "private": true,
   "type": "module",
   "scripts": {

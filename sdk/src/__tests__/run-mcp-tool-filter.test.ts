@@ -1,14 +1,14 @@
-import * as mainPromptModule from '@codebuff/agent-runtime/main-prompt'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { getStubProjectFileContext } from '@codebuff/common/util/file'
+import * as mainPromptModule from '@rivocode/agent-runtime/main-prompt'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { getStubProjectFileContext } from '@rivocode/common/util/file'
 import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test'
 
 import { CodebuffClient } from '../client'
-import * as mcpClientModule from '@codebuff/common/mcp/client'
+import * as mcpClientModule from '@rivocode/common/mcp/client'
 import * as databaseModule from '../impl/database'
 
-import type { AgentDefinition } from '@codebuff/common/templates/initial-agents-dir/types/agent-definition'
-import type { MCPConfig } from '@codebuff/common/types/mcp'
+import type { AgentDefinition } from '@rivocode/common/templates/initial-agents-dir/types/agent-definition'
+import type { MCPConfig } from '@rivocode/common/types/mcp'
 
 const browserMcpConfig: MCPConfig = {
   type: 'stdio',

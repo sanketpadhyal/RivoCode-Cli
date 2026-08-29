@@ -2,9 +2,9 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { CodebuffClient, loadLocalAgents } from '@codebuff/sdk'
+import { CodebuffClient, loadLocalAgents } from '@rivocode/sdk'
 
-import type { AgentDefinition } from '@codebuff/sdk'
+import type { AgentDefinition } from '@rivocode/sdk'
 
 const TRACE_DIR = path.join(process.cwd(), 'debug', 'browser-agent-traces')
 

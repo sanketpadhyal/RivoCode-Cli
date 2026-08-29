@@ -1,10 +1,10 @@
-import { contextPrunerBudgetForModel } from '@codebuff/common/constants/model-config'
+import { contextPrunerBudgetForModel } from '@rivocode/common/constants/model-config'
 import {
   supportsAssistantPrefill,
   supportsCacheControl,
-} from '@codebuff/common/old-constants'
-import { TOOLS_WHICH_WONT_FORCE_NEXT_STEP } from '@codebuff/common/tools/constants'
-import { buildArray } from '@codebuff/common/util/array'
+} from '@rivocode/common/old-constants'
+import { TOOLS_WHICH_WONT_FORCE_NEXT_STEP } from '@rivocode/common/tools/constants'
+import { buildArray } from '@rivocode/common/util/array'
 import {
   AbortError,
   FETCH_IDLE_TIMEOUT_USER_MESSAGE,
@@ -14,13 +14,13 @@ import {
   isAbortError,
   isFetchIdleTimeoutError,
   isTransientNetworkError,
-} from '@codebuff/common/util/error'
-import { serializeCacheDebugCorrelation } from '@codebuff/common/util/cache-debug'
+} from '@rivocode/common/util/error'
+import { serializeCacheDebugCorrelation } from '@rivocode/common/util/cache-debug'
 import {
   dropUnansweredToolCalls,
   systemMessage,
   userMessage,
-} from '@codebuff/common/util/messages'
+} from '@rivocode/common/util/messages'
 import { type ToolSet } from 'ai'
 import { cloneDeep, mapValues } from 'lodash'
 import z from 'zod/v4'
@@ -59,41 +59,41 @@ import {
   countTokensMessages,
 } from './util/token-counter'
 
-import type { AgentTemplate } from '@codebuff/common/types/agent-template'
-import type { TrackEventFn } from '@codebuff/common/types/contracts/analytics'
+import type { AgentTemplate } from '@rivocode/common/types/agent-template'
+import type { TrackEventFn } from '@rivocode/common/types/contracts/analytics'
 import type {
   AddAgentStepFn,
   FinishAgentRunFn,
   StartAgentRunFn,
-} from '@codebuff/common/types/contracts/database'
+} from '@rivocode/common/types/contracts/database'
 import type {
   AgentUsageData,
   CacheDebugUsageData,
   ContextCompactionData,
   ModelUsageData,
   PromptAiSdkFn,
-} from '@codebuff/common/types/contracts/llm'
-import type { Logger } from '@codebuff/common/types/contracts/logger'
-import type { TraceWriter } from '@codebuff/common/types/contracts/trace'
-import type { ParamsExcluding } from '@codebuff/common/types/function-params'
+} from '@rivocode/common/types/contracts/llm'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
+import type { TraceWriter } from '@rivocode/common/types/contracts/trace'
+import type { ParamsExcluding } from '@rivocode/common/types/function-params'
 import type {
   Message,
   ToolMessage,
-} from '@codebuff/common/types/messages/codebuff-message'
+} from '@rivocode/common/types/messages/codebuff-message'
 import type {
   TextPart,
   ImagePart,
-} from '@codebuff/common/types/messages/content-part'
-import type { PrintModeEvent } from '@codebuff/common/types/print-mode'
+} from '@rivocode/common/types/messages/content-part'
+import type { PrintModeEvent } from '@rivocode/common/types/print-mode'
 import type {
   AgentTemplateType,
   AgentState,
   AgentOutput,
-} from '@codebuff/common/types/session-state'
+} from '@rivocode/common/types/session-state'
 import type {
   CustomToolDefinitions,
   ProjectFileContext,
-} from '@codebuff/common/util/file'
+} from '@rivocode/common/util/file'
 
 export function toTokenCountInputSchema(
   inputSchema: unknown,

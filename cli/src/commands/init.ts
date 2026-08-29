@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import path from 'path'
 
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
-import { KNOWLEDGE_FILE_NAMES } from '@codebuff/common/constants/knowledge'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
+import { KNOWLEDGE_FILE_NAMES } from '@rivocode/common/constants/knowledge'
 
 import agentDefinitionSource from '../../../common/src/templates/initial-agents-dir/types/agent-definition' with { type: 'text' }
 import toolsSource from '../../../common/src/templates/initial-agents-dir/types/tools' with { type: 'text' }

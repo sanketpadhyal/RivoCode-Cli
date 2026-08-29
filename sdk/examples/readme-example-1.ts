@@ -1,4 +1,4 @@
-import { CodebuffClient } from '@codebuff/sdk'
+import { CodebuffClient } from '@rivocode/sdk'
 
 async function main() {
   const client = new CodebuffClient({

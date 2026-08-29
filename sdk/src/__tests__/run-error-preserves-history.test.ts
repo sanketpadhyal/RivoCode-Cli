@@ -1,7 +1,7 @@
-import * as mainPromptModule from '@codebuff/agent-runtime/main-prompt'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { getStubProjectFileContext } from '@codebuff/common/util/file'
-import { assistantMessage, userMessage } from '@codebuff/common/util/messages'
+import * as mainPromptModule from '@rivocode/agent-runtime/main-prompt'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { getStubProjectFileContext } from '@rivocode/common/util/file'
+import { assistantMessage, userMessage } from '@rivocode/common/util/messages'
 import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test'
 
 import { CodebuffClient } from '../client'

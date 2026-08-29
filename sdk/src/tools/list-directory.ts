@@ -1,7 +1,7 @@
 import * as path from 'path'
 
-import type { CodebuffToolOutput } from '@codebuff/common/tools/list'
-import type { CodebuffFileSystem } from '@codebuff/common/types/filesystem'
+import type { CodebuffToolOutput } from '@rivocode/common/tools/list'
+import type { CodebuffFileSystem } from '@rivocode/common/types/filesystem'
 
 export async function listDirectory(params: {
   directoryPath: string

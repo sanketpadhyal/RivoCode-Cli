@@ -1,5 +1,5 @@
 
-import type { BaseEnv, ClientEnv } from '@codebuff/common/types/contracts/env'
+import type { BaseEnv, ClientEnv } from '@rivocode/common/types/contracts/env'
 
 export type CliEnv = BaseEnv & {
   SystemRoot?: string

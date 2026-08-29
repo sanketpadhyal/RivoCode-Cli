@@ -1,13 +1,13 @@
-import * as analytics from '@codebuff/common/analytics'
-import { TEST_USER_ID } from '@codebuff/common/old-constants'
-import { TEST_AGENT_RUNTIME_IMPL } from '@codebuff/common/testing/impl/agent-runtime'
+import * as analytics from '@rivocode/common/analytics'
+import { TEST_USER_ID } from '@rivocode/common/old-constants'
+import { TEST_AGENT_RUNTIME_IMPL } from '@rivocode/common/testing/impl/agent-runtime'
 import {
   createMockDbOperations,
   setupDbSpies,
-} from '@codebuff/common/testing/mocks/database'
-import { getInitialSessionState } from '@codebuff/common/types/session-state'
-import { promptSuccess } from '@codebuff/common/util/error'
-import { assistantMessage, userMessage } from '@codebuff/common/util/messages'
+} from '@rivocode/common/testing/mocks/database'
+import { getInitialSessionState } from '@rivocode/common/types/session-state'
+import { promptSuccess } from '@rivocode/common/util/error'
+import { assistantMessage, userMessage } from '@rivocode/common/util/messages'
 import {
   afterEach,
   beforeEach,
@@ -21,14 +21,14 @@ import {
 import { runAgentStep } from '../run-agent-step'
 
 import type { AgentTemplate } from '../templates/types'
-import type { DbSpies } from '@codebuff/common/testing/mocks/database'
+import type { DbSpies } from '@rivocode/common/testing/mocks/database'
 import type {
   AgentRuntimeDeps,
   AgentRuntimeScopedDeps,
-} from '@codebuff/common/types/contracts/agent-runtime'
-import type { Message } from '@codebuff/common/types/messages/codebuff-message'
-import type { ParamsExcluding } from '@codebuff/common/types/function-params'
-import type { ProjectFileContext } from '@codebuff/common/util/file'
+} from '@rivocode/common/types/contracts/agent-runtime'
+import type { Message } from '@rivocode/common/types/messages/codebuff-message'
+import type { ParamsExcluding } from '@rivocode/common/types/function-params'
+import type { ProjectFileContext } from '@rivocode/common/util/file'
 
 const mockFileContext: ProjectFileContext = {
   projectRoot: '/test',

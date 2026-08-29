@@ -1,4 +1,4 @@
-import { pluralize } from '@codebuff/common/util/string'
+import { pluralize } from '@rivocode/common/util/string'
 import React, { useState } from 'react'
 
 import { Button } from './button'
@@ -10,7 +10,7 @@ import { formatValidationError } from '../utils/validation-error-formatting'
 import { NETWORK_ERROR_ID } from '../utils/validation-error-helpers'
 
 import type { LocalAgentInfo } from '../utils/local-agent-registry'
-import type { FeedbackCategory } from '@codebuff/common/constants/feedback'
+import type { FeedbackCategory } from '@rivocode/common/constants/feedback'
 
 interface ValidationErrorPopoverProps {
   errors: Array<{ id: string; message: string }>

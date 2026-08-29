@@ -3,8 +3,8 @@ import {
   isFreebuffPremiumModelId,
   SUPPORTED_FREEBUFF_MODELS,
   type FreebuffModelOption,
-} from '@codebuff/common/constants/freebuff-models'
-import { getRateLimitsByModel } from '@codebuff/common/types/freebuff-session'
+} from '@rivocode/common/constants/freebuff-models'
+import { getRateLimitsByModel } from '@rivocode/common/types/freebuff-session'
 import { TextAttributes } from '@opentui/core'
 import { useKeyboard } from '@opentui/react'
 import React, { useCallback, useState } from 'react'

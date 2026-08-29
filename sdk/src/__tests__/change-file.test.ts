@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import type { Stats } from 'node:fs'
 
-import { createMockFs } from '@codebuff/common/testing/mocks/filesystem'
+import { createMockFs } from '@rivocode/common/testing/mocks/filesystem'
 
 import { changeFile } from '../tools/change-file'
 

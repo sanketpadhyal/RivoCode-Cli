@@ -17,7 +17,7 @@ import { classifyStringifyError, serializeForPersistence } from './safe-json'
 import { writeFileAtomic, writeFileAtomicAsync } from './write-file-atomic'
 
 import type { ChatMessage, ContentBlock } from '../types/chat'
-import type { RunState } from '@codebuff/sdk'
+import type { RunState } from '@rivocode/sdk'
 
 const RUN_STATE_FILENAME = 'run-state.json'
 

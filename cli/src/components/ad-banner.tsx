@@ -8,8 +8,8 @@ import {
   getInlineAdLayout,
   truncateToLines,
   truncateToWidth,
-} from '@codebuff/common/ads/inline-ad-layout'
-import { visibleWaitingRoomPlacementIds } from '@codebuff/common/ads/waiting-room-placements'
+} from '@rivocode/common/ads/inline-ad-layout'
+import { visibleWaitingRoomPlacementIds } from '@rivocode/common/ads/waiting-room-placements'
 import { safeOpen } from '../utils/open-url'
 import React, { useState, useMemo, useEffect } from 'react'
 
@@ -34,7 +34,7 @@ export {
   extractDomain,
   getAdDisplayLabel,
   getInlineAdLayout,
-} from '@codebuff/common/ads/inline-ad-layout'
+} from '@rivocode/common/ads/inline-ad-layout'
 
 export function getCardAdLayout(
   ad: Pick<AdResponse, 'adText' | 'title' | 'cta' | 'url'>,

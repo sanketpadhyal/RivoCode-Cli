@@ -6,7 +6,7 @@ import { formatCodeSearchOutput } from '../../../common/src/util/format-code-sea
 import { getBundledRgPath } from '../native/ripgrep'
 
 import type { CodebuffToolOutput } from '../../../common/src/tools/list'
-import { Logger } from '@codebuff/common/types/contracts/logger'
+import { Logger } from '@rivocode/common/types/contracts/logger'
 
 const INCLUDED_HIDDEN_DIRS = [
   '.agents',
@@ -392,7 +392,7 @@ export function codeSearch({
     childProcess.once('error', (error) => {
       if (isResolved) return
       settle({
-        errorMessage: `Failed to execute ripgrep: ${error.message}. Vendored ripgrep not found; ensure @codebuff/sdk is up-to-date or set CODEBUFF_RG_PATH.`,
+        errorMessage: `Failed to execute ripgrep: ${error.message}. Vendored ripgrep not found; ensure @rivocode/sdk is up-to-date or set CODEBUFF_RG_PATH.`,
       })
     })
   })

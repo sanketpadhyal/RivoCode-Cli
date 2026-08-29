@@ -1,4 +1,4 @@
-import { API_KEY_ENV_VAR } from '@codebuff/common/old-constants'
+import { API_KEY_ENV_VAR } from '@rivocode/common/old-constants'
 import {
   CodebuffClient,
   initialSessionState,
@@ -7,10 +7,10 @@ import {
   type Message,
   type ToolMessage,
   type JSONValue,
-} from '@codebuff/sdk'
+} from '@rivocode/sdk'
 import { describe, expect, it } from 'bun:test'
 
-import type { ToolCallPart } from '@codebuff/common/types/messages/content-part'
+import type { ToolCallPart } from '@rivocode/common/types/messages/content-part'
 
 function isToolCallPart(part: unknown): part is ToolCallPart {
   return (

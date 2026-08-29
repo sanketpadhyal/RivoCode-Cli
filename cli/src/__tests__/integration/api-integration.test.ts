@@ -1,7 +1,7 @@
-import { getUserInfoFromApiKey } from '@codebuff/sdk'
+import { getUserInfoFromApiKey } from '@rivocode/sdk'
 import { describe, test, expect, beforeEach, afterEach, mock } from 'bun:test'
 
-import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { Logger } from '@rivocode/common/types/contracts/logger'
 
 describe('API Integration', () => {
   const originalFetch = globalThis.fetch

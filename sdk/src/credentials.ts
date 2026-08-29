@@ -2,12 +2,12 @@ import fs from 'fs'
 import path from 'node:path'
 import os from 'os'
 
-import { env } from '@codebuff/common/env'
-import { userSchema } from '@codebuff/common/util/credentials'
+import { env } from '@rivocode/common/env'
+import { userSchema } from '@rivocode/common/util/credentials'
 import { z } from 'zod/v4'
 
-import type { ClientEnv } from '@codebuff/common/types/contracts/env'
-import type { User } from '@codebuff/common/util/credentials'
+import type { ClientEnv } from '@rivocode/common/types/contracts/env'
+import type { User } from '@rivocode/common/util/credentials'
 
 const credentialsFileSchema = z.object({
   default: userSchema.optional(),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import { clientToolCallSchema } from '@codebuff/common/tools/list'
+import { clientToolCallSchema } from '@rivocode/common/tools/list'
 
 import { readUrl } from '../tools/read-url'
 import { isBlockedAddress } from '../tools/ssrf'

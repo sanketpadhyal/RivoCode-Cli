@@ -6,8 +6,8 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
-import { getProjectFileTree } from '@codebuff/common/project-file-tree'
+import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
+import { getProjectFileTree } from '@rivocode/common/project-file-tree'
 import { createCliRenderer } from '@opentui/core'
 import { createRoot } from '@opentui/react'
 import {
@@ -46,7 +46,7 @@ import { initializeSkillRegistry } from './utils/skill-registry'
 import { detectTerminalTheme } from './utils/terminal-color-detection'
 import { setOscDetectedTheme } from './utils/theme-system'
 
-import type { FileTreeNode } from '@codebuff/common/util/file'
+import type { FileTreeNode } from '@rivocode/common/util/file'
 
 focusManager.setEventListener(() => {
   return () => {}

@@ -1,5 +1,5 @@
 import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test'
-import { FREEBUFF_PROVIDER_USAGE_MESSAGE } from '@codebuff/common/constants/freebuff-errors'
+import { FREEBUFF_PROVIDER_USAGE_MESSAGE } from '@rivocode/common/constants/freebuff-errors'
 
 import type { ChatMessage } from '../../../types/chat'
 import type { SendMessageTimerController } from '../../../utils/send-message-timer'
@@ -38,8 +38,8 @@ const {
 } = await import('../send-message')
 const { createBatchedMessageUpdater } =
   await import('../../../utils/message-updater')
-import { createPaymentRequiredError } from '@codebuff/sdk'
-import type { RunState } from '@codebuff/sdk'
+import { createPaymentRequiredError } from '@rivocode/sdk'
+import type { RunState } from '@rivocode/sdk'
 
 const createMockTimerController = (): SendMessageTimerController & {
   startCalls: string[]
