@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export PATH="$HOME/.bun/bin:$PATH"
+
+if [ -f "$SCRIPT_DIR/cli/bin/rivocode" ]; then
+  exec "$SCRIPT_DIR/cli/bin/rivocode" "$@"
+else
+  exec bun --cwd "$SCRIPT_DIR/cli" dev "$@"
+fi

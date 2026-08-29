@@ -14,9 +14,14 @@
     "packages/llm-providers",
     "sdk"
   ],
+  "bin": {
+    "rivocode": "./cli/src/entry.ts"
+  },
   "scripts": {
-    "start-cli": "bun --cwd cli dev",
-    "dev": "bun start-cli",
+    "rivocode": "bun --cwd cli dev",
+    "start": "bun run rivocode",
+    "start-cli": "bun run rivocode",
+    "dev": "bun run rivocode",
     "release:cli": "bun run --cwd=cli release",
     "release:sdk": "bun run --cwd=sdk release",
     "build:sdk": "cd sdk && bun run build",

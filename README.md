@@ -59,17 +59,16 @@ bun install
 
 ### 3. Launching RivoCode (Opening the CLI)
 
-To start RivoCode in development mode:
+To start RivoCode:
 
 ```bash
-bun start-cli
-```
+# Directly with the executable launcher:
+./rivocode
 
-Or run directly inside the `cli/` directory:
-
-```bash
-cd cli
-bun dev
+# Or with Bun:
+bun run rivocode
+# or:
+bun start
 ```
 
 You can also pass a prompt directly when starting:
