@@ -8,6 +8,9 @@ import { ChatRuntimeProvider } from './contexts/chat-runtime-context'
 import { FreebuffSupersededScreen } from './components/freebuff-superseded-screen'
 import { LoginModal } from './components/login-modal'
 import { ProjectPickerScreen } from './components/project-picker-screen'
+import { SigningInScreen } from './components/signing-in-screen'
+import { WorkspaceTrustScreen } from './components/workspace-trust-screen'
+import { DEFAULT_BYPASS_USER, saveUserCredentials } from './utils/auth'
 import { FreebuffLandingScreen } from './components/freebuff-landing-screen'
 import { useAuthQuery } from './hooks/use-auth-query'
 import { useAuthState } from './hooks/use-auth-state'
@@ -192,24 +195,37 @@ export const App = ({
     }
   }
 
+  const [signingInComplete, setSigningInComplete] = useState(false)
+  const [isWorkspaceTrusted, setIsWorkspaceTrusted] = useState(false)
+
+  if (!signingInComplete) {
+    return (
+      <SigningInScreen
+        onComplete={() => {
+          saveUserCredentials(DEFAULT_BYPASS_USER)
+          handleLoginSuccess(DEFAULT_BYPASS_USER)
+          setSigningInComplete(true)
+        }}
+      />
+    )
+  }
+
+  if (!isWorkspaceTrusted) {
+    return (
+      <WorkspaceTrustScreen
+        workspacePath={projectRoot}
+        onTrust={() => {
+          setIsWorkspaceTrusted(true)
+        }}
+      />
+    )
+  }
+
   if (showProjectPicker) {
     return (
       <ProjectPickerScreen
         onSelectProject={onProjectChange}
         initialPath={projectRoot}
-      />
-    )
-  }
-
-  if (
-    requireAuth !== null &&
-    isAuthenticated === false &&
-    authStatus === 'ok'
-  ) {
-    return (
-      <LoginModal
-        onLoginSuccess={handleLoginSuccess}
-        hasInvalidCredentials={hasInvalidCredentials}
       />
     )
   }

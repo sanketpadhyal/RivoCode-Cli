@@ -41,37 +41,34 @@ export const ChatHeader = memo(function ChatHeader({
   return (
     <box
       style={{
-        flexDirection: 'column',
-        gap: 0,
+        flexDirection: 'row',
+        gap: 2,
         paddingLeft: 1,
         paddingRight: 1,
+        marginBottom: 1,
+        marginTop: 1,
+        alignItems: 'center',
       }}
     >
-      <box
-        style={{
-          flexDirection: 'column',
-          marginBottom: 1,
-          marginTop: 2,
-        }}
-      >
+      <box style={{ flexShrink: 0 }}>
         {logoComponent}
       </box>
-      <text style={{ wrapMode: 'word', marginBottom: 0, fg: theme.muted }}>
-        Created by Sanket Padhyal
-      </text>
-      <text style={{ wrapMode: 'word', marginBottom: 1, fg: theme.foreground }}>
-        RivoCode will run commands on your behalf to help you build.
-      </text>
-      <text style={{ wrapMode: 'word', marginBottom: 1, fg: theme.foreground }}>
-        Directory{' '}
-        <TerminalLink
-          text={formatCwd(projectRoot)}
-          color={theme.muted}
-          inline={true}
-          underlineOnHover={true}
-          onActivate={() => openFileAtPath(projectRoot)}
-        />
-      </text>
+      <box style={{ flexDirection: 'column', gap: 0 }}>
+        <text style={{ wrapMode: 'none' }}>
+          <b>
+            <span fg={theme.primary}>RivoCode CLI 1.0.0</span>
+          </b>
+        </text>
+        <text style={{ wrapMode: 'none', fg: theme.muted }}>
+          <span>sanketpadhyal@gmail.com (Created by Sanket Padhyal)</span>
+        </text>
+        <text style={{ wrapMode: 'none', fg: theme.muted }}>
+          <span>Gemini 3.7 Flash (High)</span>
+        </text>
+        <text style={{ wrapMode: 'none', fg: theme.secondary }}>
+          <span>{formatCwd(projectRoot)}</span>
+        </text>
+      </box>
     </box>
   )
 })
