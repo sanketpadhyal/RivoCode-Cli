@@ -1,8 +1,6 @@
 import { useKeyboard } from '@opentui/react'
 import React, { useCallback, useState } from 'react'
 
-import { useLogo } from '../hooks/use-logo'
-import { useTerminalDimensions } from '../hooks/use-terminal-dimensions'
 import { useTheme } from '../hooks/use-theme'
 import { exitCliCleanly } from '../utils/exit-cleanly'
 import { isPlainEnterKey } from '../utils/terminal-enter-detection'
@@ -19,22 +17,12 @@ export const WorkspaceTrustScreen = ({
   onTrust,
 }: WorkspaceTrustScreenProps) => {
   const theme = useTheme()
-  const { contentMaxWidth } = useTerminalDimensions()
   const [selectedIndex, setSelectedIndex] = useState(0)
 
-  const { component: logoComponent } = useLogo({
-    availableWidth: contentMaxWidth,
-  })
-
   const options = [
+    { label: 'Yes, I trust this folder', action: onTrust },
     {
-      title: 'Trust & Launch RivoCode',
-      desc: 'Grant file read, write, and command execution in this workspace',
-      action: onTrust,
-    },
-    {
-      title: 'Cancel and Exit',
-      desc: 'Close the CLI session safely',
+      label: 'No, exit',
       action: () => {
         void exitCliCleanly()
       },
@@ -87,87 +75,61 @@ export const WorkspaceTrustScreen = ({
         height: '100%',
         width: '100%',
         paddingLeft: 2,
-        paddingRight: 2,
         paddingTop: 1,
         paddingBottom: 1,
       }}
     >
       <box style={{ flexDirection: 'column', gap: 1 }}>
-        <box style={{ flexDirection: 'row', alignItems: 'center', gap: 2, marginBottom: 1 }}>
-          <box style={{ flexShrink: 0 }}>
-            {logoComponent}
-          </box>
-          <box style={{ flexDirection: 'column', gap: 0 }}>
-            <text style={{ wrapMode: 'none' }}>
-              <b>
-                <span fg={theme.primary}>RivoCode</span>
-                <span fg={theme.foreground}> · Workspace Security</span>
-              </b>
-            </text>
-            <text style={{ wrapMode: 'none', fg: theme.muted }}>
-              <span>Created by Sanket Padhyal</span>
-            </text>
-          </box>
+        <box style={{ flexDirection: 'column' }}>
+          <text style={{ wrapMode: 'none' }}>
+            <span fg="#ffb703">
+              <b>Accessing workspace:</b>
+            </span>
+          </text>
+          <text style={{ wrapMode: 'none', fg: theme.foreground }}>
+            <b>{workspacePath}</b>
+          </text>
         </box>
 
-        <box
-          style={{
-            flexDirection: 'column',
-            borderStyle: 'single',
-            borderColor: theme.border,
-            padding: 1,
-            gap: 1,
-            maxWidth: 68,
-          }}
-        >
-          <box style={{ flexDirection: 'column' }}>
-            <text style={{ wrapMode: 'none', fg: theme.secondary }}>
-              <span>Target Directory:</span>
-            </text>
-            <text style={{ wrapMode: 'none' }}>
-              <b>
-                <span fg={theme.primary}>{workspacePath}</span>
-              </b>
-            </text>
-          </box>
+        <box style={{ flexDirection: 'column', marginTop: 1 }}>
+          <text style={{ wrapMode: 'none', fg: theme.foreground }}>
+            <b>Do you trust the contents of this project?</b>
+          </text>
+          <text style={{ wrapMode: 'word' }}>
+            <span fg="#55ff55">RivoCode CLI</span>
+            <span fg={theme.secondary}> requires permission to read, edit, and execute files here.</span>
+          </text>
+        </box>
 
-          <box style={{ flexDirection: 'column', gap: 1, marginTop: 1 }}>
-            {options.map((opt, idx) => {
-              const isSelected = idx === selectedIndex
-              return (
-                <box
-                  key={idx}
-                  style={{
-                    flexDirection: 'column',
-                    paddingLeft: 1,
-                    borderStyle: isSelected ? 'single' : 'none',
-                    borderColor: theme.primary,
-                    backgroundColor: isSelected ? theme.background : undefined,
-                  }}
-                >
-                  <text style={{ wrapMode: 'none' }}>
-                    <span fg={isSelected ? theme.primary : theme.muted}>
-                      {isSelected ? '● ' : '○ '}
-                    </span>
+        <box style={{ flexDirection: 'column', marginTop: 1, gap: 0 }}>
+          {options.map((opt, idx) => {
+            const isSelected = idx === selectedIndex
+            return (
+              <text key={idx} style={{ wrapMode: 'none' }}>
+                {isSelected ? (
+                  <>
+                    <span fg="#55ff55">&gt; </span>
                     <b>
-                      <span fg={isSelected ? theme.primary : theme.foreground}>
-                        {opt.title}
-                      </span>
+                      <span fg="#55ff55">{opt.label}</span>
                     </b>
-                  </text>
-                  <text style={{ wrapMode: 'none', fg: theme.muted, paddingLeft: 2 }}>
-                    <span>{opt.desc}</span>
-                  </text>
-                </box>
-              )
-            })}
-          </box>
+                  </>
+                ) : (
+                  <>
+                    <span>  </span>
+                    <span fg={theme.muted}>{opt.label}</span>
+                  </>
+                )}
+              </text>
+            )
+          })}
+        </box>
 
-          <box style={{ marginTop: 1, paddingTop: 1, borderTop: true, borderColor: theme.border }}>
-            <text style={{ wrapMode: 'none', fg: theme.muted }}>
-              <span>[↑/↓] Select option  ·  [Enter] Confirm</span>
-            </text>
-          </box>
+        <box style={{ marginTop: 1 }}>
+          <text style={{ wrapMode: 'none', fg: theme.muted }}>
+            <span>↑/↓ Navigate · </span>
+            <span fg={theme.foreground}>enter</span>
+            <span> Confirm</span>
+          </text>
         </box>
       </box>
 
@@ -176,6 +138,7 @@ export const WorkspaceTrustScreen = ({
           flexDirection: 'row',
           justifyContent: 'flex-end',
           width: '100%',
+          paddingRight: 2,
         }}
       >
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
