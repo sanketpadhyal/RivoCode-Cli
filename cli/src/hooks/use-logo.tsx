@@ -44,7 +44,8 @@ export const useLogo = ({
     const base64 = getRivoImageBase64()
     if (!base64) return null
     return renderInlineImage(base64, {
-      width: Math.min(availableWidth, 32),
+      width: Math.min(availableWidth, 14),
+      height: 6,
       filename: 'rivo.png',
     })
   }, [availableWidth])
@@ -58,82 +59,53 @@ export const useLogo = ({
       )
     }
 
-    // High-resolution Rivo Icon character rendering
+    // Small, compact Rivo Icon rendering
     return (
       <box style={{ flexDirection: 'column', marginBottom: 1 }}>
-        <text style={{ wrapMode: 'none' }}>
+        <text key="line-0" style={{ wrapMode: 'none' }}>
           <span>     </span>
+          <span fg="#ffffff">▄▄</span>
+          <span>  </span>
+          <span fg="#ffffff">▄▄▄▄</span>
+          <span> </span>
+        </text>
+        <text key="line-1" style={{ wrapMode: 'none' }}>
+          <span>  </span>
           <span fg="#ffffff">▄</span>
+          <span fg="#ffffff" bg="#ffffff">▀▀▀▀</span>
+          <span> </span>
           <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀</span>
           <span> </span>
-          <span fg="#ffffff">▄</span>
-          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀▀▀▀</span>
+        </text>
+        <text key="line-2" style={{ wrapMode: 'none' }}>
+          <span>  </span>
+          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀</span>
+          <span> </span>
+          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀</span>
           <span> </span>
         </text>
-        <text style={{ wrapMode: 'none' }}>
-          <span>   </span>
-          <span fg="#ffffff">▄</span>
-          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀▀▀</span>
+        <text key="line-3" style={{ wrapMode: 'none' }}>
+          <span>  </span>
+          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀</span>
           <span> </span>
-          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀▀▀▀▀</span>
-          <span> </span>
-        </text>
-        <text style={{ wrapMode: 'none' }}>
-          <span>   </span>
-          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀▀▀▀</span>
-          <span> </span>
-          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀▀▀▀▀</span>
+          <span fg="#c6ff00">▄▄▄▄▄</span>
           <span> </span>
         </text>
-        <text style={{ wrapMode: 'none' }}>
-          <span>   </span>
-          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀▀▀▀</span>
+        <text key="line-4" style={{ wrapMode: 'none' }}>
+          <span>  </span>
+          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀</span>
           <span> </span>
-          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀▀▀▀</span>
+          <span fg="#c6ff00" bg="#c6ff00">▀▀▀▀▀</span>
+          <span> </span>
+        </text>
+        <text key="line-5" style={{ wrapMode: 'none' }}>
+          <span>  </span>
+          <span fg="#ffffff" bg="#ffffff">▀▀▀</span>
           <span fg="#ffffff">▀</span>
-          <span> </span>
-        </text>
-        <text style={{ wrapMode: 'none' }}>
-          <span>   </span>
-          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀▀▀▀</span>
-          <span> </span>
-          <span fg="#c6ff00">▄▄▄▄▄▄▄▄</span>
           <span>  </span>
-        </text>
-        <text style={{ wrapMode: 'none' }}>
-          <span>   </span>
-          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀▀▀▀</span>
+          <span fg="#c6ff00">▀</span>
+          <span fg="#c6ff00" bg="#c6ff00">▀▀▀▀</span>
           <span> </span>
-          <span fg="#c6ff00" bg="#c6ff00">▀▀▀▀▀▀▀▀▀</span>
-          <span> </span>
-        </text>
-        <text style={{ wrapMode: 'none' }}>
-          <span>   </span>
-          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀▀▀▀</span>
-          <span> </span>
-          <span fg="#c6ff00" bg="#c6ff00">▀▀▀▀▀▀▀▀▀</span>
-          <span> </span>
-        </text>
-        <text style={{ wrapMode: 'none' }}>
-          <span>   </span>
-          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀▀▀▀</span>
-          <span> </span>
-          <span fg="#c6ff00" bg="#c6ff00">▀▀▀▀▀▀▀▀▀</span>
-          <span> </span>
-        </text>
-        <text style={{ wrapMode: 'none' }}>
-          <span>   </span>
-          <span fg="#ffffff" bg="#ffffff">▀▀▀▀▀▀▀</span>
-          <span>  </span>
-          <span fg="#c6ff00" bg="#c6ff00">▀▀▀▀▀▀▀▀▀</span>
-          <span> </span>
-        </text>
-        <text style={{ wrapMode: 'none' }}>
-          <span>   </span>
-          <span fg="#ffffff">▀▀▀▀</span>
-          <span>       </span>
-          <span fg="#c6ff00">▀▀▀▀▀▀▀</span>
-          <span>  </span>
         </text>
       </box>
     )
