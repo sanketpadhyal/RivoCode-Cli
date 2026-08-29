@@ -1455,7 +1455,7 @@ export const Chat = ({
             flexDirection: 'column',
             gap: 0,
             shouldFill: true,
-            justifyContent: 'flex-end',
+            justifyContent: 'flex-start',
             backgroundColor: 'transparent',
             paddingLeft: 1,
             paddingRight: 2,

@@ -46,7 +46,7 @@ export const ChatHeader = memo(function ChatHeader({
         paddingLeft: 1,
         paddingRight: 1,
         marginBottom: 1,
-        marginTop: 1,
+        marginTop: 0,
         alignItems: 'center',
       }}
     >
