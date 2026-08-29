@@ -84,20 +84,11 @@ export function useHoverToggle() {
 }
 
 export function buildExpandedSegments(currentMode: AgentMode): Segment[] {
-  return [
-    ...AGENT_MODES.map((m) => ({
-      id: m,
-      label: m,
-      isBold: false,
-      disabled: m === currentMode,
-    })),
-    {
-      id: `active-${currentMode}`,
-      label: `> ${currentMode}`,
-      isSelected: true,
-      defaultHighlighted: true,
-    },
-  ]
+  return AGENT_MODES.map((m) => ({
+    id: m,
+    label: m,
+    isSelected: m === currentMode,
+  }))
 }
 
 export type AgentModeClickAction =
@@ -110,8 +101,8 @@ export const resolveAgentModeClick = (
   clickedId: string,
   hasOnSelectMode: boolean,
 ): AgentModeClickAction => {
-  if (clickedId.startsWith('active-')) return { type: 'closeActive' }
   const target = clickedId as AgentMode
+  if (target === currentMode) return { type: 'closeActive' }
   if (hasOnSelectMode) {
     return { type: 'selectMode', mode: target }
   }
@@ -170,7 +161,7 @@ export const AgentModeToggle = ({
           paddingLeft: 1,
           paddingRight: 1,
           borderStyle: 'single',
-          borderColor: isCollapsedHovered ? theme.foreground : theme.border,
+          borderColor: isCollapsedHovered ? theme.primary : theme.border,
           customBorderChars: BORDER_CHARS,
         }}
         onClick={() => {
@@ -188,9 +179,13 @@ export const AgentModeToggle = ({
       >
         <text
           wrapMode="none"
-          fg={isCollapsedHovered ? theme.foreground : theme.muted}
+          fg={isCollapsedHovered ? theme.primary : theme.muted}
         >
-          {isCollapsedHovered ? <b>{`< ${mode}`}</b> : `< ${mode}`}
+          {isCollapsedHovered ? (
+            <b>{`⚡ ${mode}`}</b>
+          ) : (
+            `⚡ ${mode}`
+          )}
         </text>
       </Button>
     )

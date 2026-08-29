@@ -1,10 +1,7 @@
 import React, { useState } from 'react'
-import stringWidth from 'string-width'
 
 import { Button } from './button'
 import { useTheme } from '../hooks/use-theme'
-
-import type { ChatTheme } from '../types/theme-system'
 
 export interface Segment {
   id: string
@@ -30,139 +27,65 @@ export const SegmentedControl = ({
 }: SegmentedControlProps) => {
   const theme = useTheme()
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const [hasHoveredSinceOpen, setHasHoveredSinceOpen] = useState(false)
-
-  const processedSegments = processSegments(
-    segments,
-    hoveredId,
-    hasHoveredSinceOpen,
-    theme,
-  )
-  const hoveredIndex = hoveredId
-    ? processedSegments.findIndex((s) => s.id === hoveredId)
-    : processedSegments.length - 1
 
   return (
     <box
       style={{
         flexDirection: 'row',
-        gap: 0,
-        backgroundColor: 'transparent',
+        gap: 1,
+        alignItems: 'center',
       }}
       onMouseOver={onMouseOver}
       onMouseOut={() => {
         setHoveredId(null)
-        onMouseOut && onMouseOut()
+        onMouseOut?.()
       }}
     >
-      {processedSegments.map((seg, idx) => {
-        const leftOfHovered = idx <= hoveredIndex
-        const rightOfHovered = idx >= hoveredIndex
+      {segments.map((seg) => {
+        const isSelected = !!seg.isSelected
+        const isHovered = hoveredId === seg.id
 
         return (
-          <React.Fragment key={seg.id}>
-            {leftOfHovered ? (
-              <box style={{ flexDirection: 'column', gap: 0 }}>
-                <text fg={seg.frameColor} selectable={false}>╭</text>
-                <text fg={seg.frameColor} selectable={false}>│</text>
-                <text fg={seg.frameColor} selectable={false}>╰</text>
-              </box>
-            ) : null}
-
-            <Button
-              onClick={() => onSegmentClick && onSegmentClick(seg.id)}
-              onMouseOver={() => {
-                setHoveredId(seg.id)
-                setHasHoveredSinceOpen(true)
-              }}
-              style={{
-                flexDirection: 'column',
-                gap: 0,
-                width: seg.width,
-                minWidth: seg.width,
-              }}
-            >
-              <text fg={seg.frameColor}>{seg.topBorder}</text>
-              <text fg={seg.textColor}>
-                {seg.isItalic ? (
-                  <i>{seg.content}</i>
-                ) : seg.isBold ? (
-                  <b>{seg.content}</b>
-                ) : (
-                  seg.content
-                )}
-              </text>
-              <text fg={seg.frameColor}>{seg.bottomBorder}</text>
-            </Button>
-
-            {rightOfHovered ? (
-              <box style={{ flexDirection: 'column', gap: 0 }}>
-                <text fg={seg.frameColor} selectable={false}>╮</text>
-                <text fg={seg.frameColor} selectable={false}>│</text>
-                <text fg={seg.frameColor} selectable={false}>╯</text>
-              </box>
-            ) : null}
-          </React.Fragment>
+          <Button
+            key={seg.id}
+            onClick={() => onSegmentClick?.(seg.id)}
+            onMouseOver={() => setHoveredId(seg.id)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingLeft: 1,
+              paddingRight: 1,
+              borderStyle: 'single',
+              borderColor: isSelected
+                ? theme.primary
+                : isHovered
+                  ? theme.foreground
+                  : theme.border,
+            }}
+          >
+            <text style={{ wrapMode: 'none' }}>
+              {isSelected ? (
+                <>
+                  <span fg={theme.primary}>● </span>
+                  <b>
+                    <span fg={theme.primary}>{seg.label}</span>
+                  </b>
+                </>
+              ) : isHovered ? (
+                <>
+                  <span fg={theme.foreground}>○ </span>
+                  <span fg={theme.foreground}>{seg.label}</span>
+                </>
+              ) : (
+                <>
+                  <span fg={theme.muted}>○ </span>
+                  <span fg={theme.muted}>{seg.label}</span>
+                </>
+              )}
+            </text>
+          </Button>
         )
       })}
     </box>
   )
-}
-
-export type ProcessedSegment = {
-  id: string
-  topBorder: string
-  content: string
-  bottomBorder: string
-  frameColor: string
-  leftBorderColor: string
-  textColor: string
-  isHovered: boolean
-  isBold: boolean
-  isItalic: boolean
-  label: string
-  width: number
-}
-
-export const processSegments = (
-  segments: Segment[],
-  hoveredId: string | null,
-  hasHoveredSinceOpen: boolean,
-  theme: ChatTheme,
-): ProcessedSegment[] => {
-  return segments.map((seg) => {
-    const isDisabled = !!seg.disabled
-    const isSelected = !!seg.isSelected
-    const defaultHL = !!seg.defaultHighlighted
-
-    const canHover = !isSelected || defaultHL
-    const isHovered = hoveredId === seg.id && canHover
-    const isDefaultHighlighted = defaultHL && !hasHoveredSinceOpen
-    const isHighlighted = isHovered || isDefaultHighlighted
-
-    const isBold = !!(seg.isBold || isHovered || (isSelected && isHighlighted))
-
-    const frameColor = isHighlighted ? theme.foreground : theme.border
-    const textMuted = isDisabled || (isSelected && !isHighlighted)
-    const textColor = textMuted ? theme.muted : theme.foreground
-
-    const content = ` ${seg.label} `
-    const width = stringWidth(content)
-    const horizontal = '─'.repeat(width)
-
-    return {
-      id: seg.id,
-      topBorder: horizontal,
-      content,
-      bottomBorder: horizontal,
-      frameColor,
-      leftBorderColor: frameColor,
-      textColor,
-      isHovered,
-      isBold,
-      isItalic: isDisabled,
-      label: seg.label,
-      width,
-    }
-  })
 }
