@@ -1,8 +1,10 @@
+import fs from 'fs'
+import path from 'path'
 import React, { useMemo } from 'react'
 
 import { LOGO, LOGO_SMALL, SHADOW_CHARS } from '../login/constants'
 import { parseLogoLines } from '../login/utils'
-import { IS_FREEBUFF } from '../utils/constants'
+import { renderInlineImage, supportsInlineImages } from '../utils/terminal-images'
 
 interface UseLogoOptions {
   availableWidth: number
@@ -18,6 +20,24 @@ interface LogoResult {
   textBlock: string
 }
 
+function getRivoImageBase64(): string | null {
+  const possiblePaths = [
+    '/Users/sanketpadhyal/Desktop/Cli/freebuff/assets/rivo.png',
+    path.join(process.cwd(), 'assets/rivo.png'),
+    path.join(process.cwd(), '../assets/rivo.png'),
+    path.join(__dirname, '../../assets/rivo.png'),
+    path.join(__dirname, '../assets/rivo.png'),
+  ]
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      try {
+        return fs.readFileSync(p).toString('base64')
+      } catch {}
+    }
+  }
+  return null
+}
+
 export const useLogo = ({
   availableWidth,
   applySheenToChar,
@@ -27,6 +47,17 @@ export const useLogo = ({
   maxHeight,
 }: UseLogoOptions): LogoResult => {
   const ASCII_LOGO_LINES = 6
+
+  const inlineImageSequence = useMemo(() => {
+    if (!supportsInlineImages()) return null
+    const base64 = getRivoImageBase64()
+    if (!base64) return null
+    return renderInlineImage(base64, {
+      width: Math.min(availableWidth, 64),
+      filename: 'rivo.png',
+    })
+  }, [availableWidth])
+
   const rawLogoString = useMemo(() => {
     if (maxHeight != null && maxHeight < ASCII_LOGO_LINES) {
       return 'RIVOCODE'
@@ -46,6 +77,14 @@ export const useLogo = ({
   }, [rawLogoString, availableWidth])
 
   const component = useMemo(() => {
+    if (inlineImageSequence) {
+      return (
+        <box style={{ flexDirection: 'column', marginBottom: 1 }}>
+          <text style={{ wrapMode: 'none' }}>{inlineImageSequence}</text>
+        </box>
+      )
+    }
+
     if (rawLogoString === 'RIVOCODE') {
       const brandName = 'RivoCode'
       const forcedByHeight = maxHeight != null && maxHeight < ASCII_LOGO_LINES
@@ -98,7 +137,7 @@ export const useLogo = ({
         ))}
       </>
     )
-  }, [rawLogoString, availableWidth, applySheenToChar, textColor, accentColor, blockColor, maxHeight])
+  }, [inlineImageSequence, rawLogoString, availableWidth, applySheenToChar, textColor, accentColor, blockColor, maxHeight])
 
   return { component, textBlock }
 }
