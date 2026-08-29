@@ -81,6 +81,5 @@
     "adm-zip": "^0.5.12",
     "dts-bundle-generator": "^9.5.1",
     "node-fetch": "^3.3.2"
-  },
-  "author": ""
+  }
 }
