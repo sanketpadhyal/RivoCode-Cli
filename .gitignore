@@ -22,6 +22,7 @@ npm-app/src/__tests__/data/
 .codebuff*
 **.log
 
+.rivocode/
 debug/
 .context/
 docs/bot-detection.md

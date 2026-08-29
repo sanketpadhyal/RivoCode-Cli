@@ -94,7 +94,7 @@ function setLogPath(p: string): void {
 
 export function clearLogFile(): void {
   const projectRoot = getProjectRoot()
-  const debugDir = path.join(projectRoot, 'debug')
+  const debugDir = path.join(projectRoot, '.rivocode')
   const targets = new Set<string>()
 
   if (logPath) {
@@ -132,7 +132,7 @@ function sendAnalyticsAndLog(
     if (projectRoot) {
       const logTarget =
         IS_DEV
-          ? path.join(projectRoot, 'debug', 'cli.jsonl')
+          ? path.join(projectRoot, '.rivocode', 'cli.jsonl')
           : path.join(getCurrentChatDir(), CHAT_LOG_FILENAME)
 
       setLogPath(logTarget)

@@ -25,7 +25,7 @@ export function isTraceEnabled(): boolean {
 function getTraceFilePath(): string | null {
   try {
     return IS_DEV
-      ? path.join(getProjectRoot(), 'debug', TRACE_FILENAME)
+      ? path.join(getProjectRoot(), '.rivocode', TRACE_FILENAME)
       : path.join(getCurrentChatDir(), TRACE_FILENAME)
   } catch {
     return null
