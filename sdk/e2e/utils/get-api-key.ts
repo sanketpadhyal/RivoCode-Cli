@@ -1,0 +1,52 @@
+import { E2E_MOCK_API_KEY, setupE2eMocks } from './e2e-mocks'
+
+const shouldRunLiveE2e = process.env.RUN_CODEBUFF_E2E === 'true'
+
+export function getApiKey(): string {
+  if (shouldRunLiveE2e) {
+    const apiKey = process.env.CODEBUFF_API_KEY
+    if (!apiKey) {
+      throw new Error(
+        'CODEBUFF_API_KEY environment variable is required for live e2e tests. ' +
+          'Get your API key at https://www.codebuff.com/api-keys',
+      )
+    }
+    return apiKey
+  }
+
+  setupE2eMocks()
+  process.env.CODEBUFF_API_KEY = E2E_MOCK_API_KEY
+  return E2E_MOCK_API_KEY
+}
+
+export function skipIfNoApiKey(): boolean {
+  return false
+}
+
+export function isAuthError(output: {
+  type: string
+  message?: string
+}): boolean {
+  if (output.type !== 'error') return false
+  const msg = output.message?.toLowerCase() ?? ''
+  return (
+    msg.includes('authentication') ||
+    msg.includes('api key') ||
+    msg.includes('unauthorized')
+  )
+}
+
+export function isNetworkError(output: {
+  type: string
+  message?: string
+  statusCode?: number
+}): boolean {
+  if (output.type !== 'error') return false
+  const msg = output.message?.toLowerCase() ?? ''
+  const isRetryableStatusCode =
+    output.statusCode !== undefined &&
+    (output.statusCode === 408 ||
+      output.statusCode === 429 ||
+      output.statusCode >= 500)
+  return isRetryableStatusCode || msg.includes('network error')
+}

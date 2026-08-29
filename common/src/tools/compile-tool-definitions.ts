@@ -1,0 +1,135 @@
+import z from 'zod/v4'
+
+import { publishedTools } from './constants'
+import { toolParams } from './list'
+
+export interface ToolSchemaEntry {
+  name: string
+  inputSchema: z.ZodType
+}
+
+function getPublishedToolEntries(): ToolSchemaEntry[] {
+  return publishedTools.map((toolName) => ({
+    name: toolName,
+    inputSchema: toolParams[toolName].inputSchema,
+  }))
+}
+
+export function compileToolDefinitions(
+  tools: ToolSchemaEntry[] = getPublishedToolEntries(),
+): string {
+  const toolInterfaces = tools
+    .map(({ name: toolName, inputSchema: parameterSchema }) => {
+      let typeDefinition: string
+      let jsonSchema: unknown
+      try {
+        jsonSchema = z.toJSONSchema(parameterSchema, { io: 'input' })
+        typeDefinition = jsonSchemaToTypeScript(jsonSchema)
+      } catch (error) {
+        console.warn(`Failed to convert schema for ${toolName}:`, error)
+        typeDefinition = '{ [key: string]: any }'
+      }
+
+      const typeName = `${toPascalCase(toolName)}Params`
+      const declaration = canEmitInterface(jsonSchema)
+        ? `export interface ${typeName} ${typeDefinition}`
+        : `export type ${typeName} = ${typeDefinition}`
+
+      return `/**
+ * ${parameterSchema.description || `Parameters for ${toolName} tool`}
+ */
+${declaration}`
+    })
+    .join('\n\n')
+
+  const toolUnion = tools.map(({ name }) => `'${name}'`).join(' | ')
+
+  const toolParamsMap = tools
+    .map(({ name }) => `  '${name}': ${toPascalCase(name)}Params`)
+    .join('\n')
+
+  return `/**
+ * Union type of all available tool names
+ */
+export type ToolName = ${toolUnion}
+
+/**
+ * Map of tool names to their parameter types
+ */
+export interface ToolParamsMap {
+${toolParamsMap}
+}
+
+${toolInterfaces}
+
+/**
+ * Get parameters type for a specific tool
+ */
+export type GetToolParams<T extends ToolName> = ToolParamsMap[T]
+`
+}
+
+function toPascalCase(str: string): string {
+  return str
+    .split(/[-_]/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('')
+}
+
+function jsonSchemaToTypeScript(schema: any): string {
+  if (schema.type === 'object' && schema.properties) {
+    const properties = Object.entries(schema.properties).map(
+      ([key, prop]: [string, any]) => {
+        const isOptional = !schema.required?.includes(key)
+        const propType = getTypeFromJsonSchema(prop)
+        const comment = prop.description ? `  /** ${prop.description} */\n` : ''
+        return `${comment}  "${key}"${isOptional ? '?' : ''}: ${propType}`
+      },
+    )
+    return `{\n${properties.join('\n')}\n}`
+  }
+  return getTypeFromJsonSchema(schema)
+}
+
+function canEmitInterface(schema: any): boolean {
+  return (
+    schema.type === 'object' &&
+    !!schema.properties &&
+    !schema.anyOf &&
+    !schema.oneOf
+  )
+}
+
+function getTypeFromJsonSchema(prop: any): string {
+  if (prop.const !== undefined) {
+    return JSON.stringify(prop.const)
+  }
+
+  if (prop.type === 'string') {
+    if (prop.enum) {
+      return prop.enum.map((v: string) => JSON.stringify(v)).join(' | ')
+    }
+    return 'string'
+  }
+  if (prop.type === 'number' || prop.type === 'integer') return 'number'
+  if (prop.type === 'boolean') return 'boolean'
+  if (prop.type === 'array') {
+    const itemType = prop.items ? getTypeFromJsonSchema(prop.items) : 'any'
+    return `${itemType}[]`
+  }
+  if (prop.type === 'object') {
+    if (prop.properties) {
+      return jsonSchemaToTypeScript(prop)
+    }
+    if (prop.additionalProperties) {
+      const valueType = getTypeFromJsonSchema(prop.additionalProperties)
+      return `Record<string, ${valueType}>`
+    }
+    return 'Record<string, any>'
+  }
+  if (prop.anyOf || prop.oneOf) {
+    const schemas = prop.anyOf || prop.oneOf
+    return schemas.map((s: any) => getTypeFromJsonSchema(s)).join(' | ')
+  }
+  return 'any'
+}

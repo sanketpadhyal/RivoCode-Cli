@@ -1,0 +1,21 @@
+{
+  "name": "cjs-compatibility-test",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "setup": "node -e \"console.log('Using local SDK package')\"",
+    "test": "node test-imports.js",
+    "test:types": "tsc --noEmit --skipLibCheck test-types.ts",
+    "test:compile": "tsc test-types.ts --outDir ./dist --skipLibCheck && cd dist && node test-types.js",
+    "test:all": "npm run setup && npm run test && npm run test:types"
+  },
+  "dependencies": {
+    "@codebuff/sdk": "file:../.."
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.0.0"
+  }
+}

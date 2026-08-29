@@ -1,0 +1,9 @@
+node_modules
+dist
+bin
+*.log
+.DS_Store
+debug/
+
+# Generated files
+src/agents/bundled-agents.generated.ts

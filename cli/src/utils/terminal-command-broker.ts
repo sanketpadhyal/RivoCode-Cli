@@ -1,0 +1,440 @@
+import { spawn, spawnSync } from 'child_process'
+import { readFileSync, rmSync, writeFileSync } from 'fs'
+import os from 'os'
+import path from 'path'
+
+import { AnalyticsEvent } from '@codebuff/common/constants/analytics-events'
+import type {
+  TerminalCommandBroker,
+  TerminalCommandProcess,
+  TerminalCommandSpawnRequest,
+} from '@codebuff/sdk'
+import type { ChildProcess } from 'child_process'
+
+import { getCliEnv, getSystemProcessEnv } from './env'
+import { reportWindowsTerminalFailure } from './windows-terminal-health'
+
+export const TERMINAL_COMMAND_BROKER_FLAG = '--terminal-command-broker'
+const TERMINAL_COMMAND_BROKER_ENV = 'CODEBUFF_TERMINAL_COMMAND_BROKER'
+const TERMINAL_COMMAND_BROKER_PROTOCOL_ENV =
+  'CODEBUFF_TERMINAL_COMMAND_BROKER_PROTOCOL'
+
+const MAX_REQUEST_BYTES = 4 * 1024 * 1024
+const MAX_PROTOCOL_BYTES = 64 * 1024
+const PROTOCOL_FILE_PREFIX = 'freebuff-terminal-command-broker-'
+const TERMINAL_COMMAND_BROKER_RECOVERY = 'Restart Freebuff and try again.'
+
+export type TerminalBrokerFailureStage = 'spawn' | 'stdio' | 'completion'
+export type TerminalBrokerFailureCode =
+  | 'failed_to_connect'
+  | 'enoent'
+  | 'eacces'
+  | 'eperm'
+  | 'epipe'
+  | 'invalid_response'
+  | 'protocol_missing'
+  | 'response_too_large'
+  | 'unknown'
+
+export type TerminalBrokerFailureTelemetry = {
+  stage: TerminalBrokerFailureStage
+  failureCode: TerminalBrokerFailureCode
+}
+
+type BrokerProtocol =
+  | { ok: true; exitCode: number | null }
+  | { ok: false; error: string }
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+export function classifyTerminalBrokerFailure(
+  error: unknown,
+): TerminalBrokerFailureCode {
+  const rawCode =
+    error && typeof error === 'object' && 'code' in error
+      ? String((error as NodeJS.ErrnoException).code ?? '').toUpperCase()
+      : ''
+  if (rawCode === 'ENOENT') return 'enoent'
+  if (rawCode === 'EACCES') return 'eacces'
+  if (rawCode === 'EPERM') return 'eperm'
+  if (rawCode === 'EPIPE') return 'epipe'
+
+  const message = errorMessage(error).toLowerCase()
+  if (message.includes('failed to connect')) return 'failed_to_connect'
+  if (message.includes('invalid response')) return 'invalid_response'
+  if (message.includes('protocol response was missing')) {
+    return 'protocol_missing'
+  }
+  if (message.includes('response was too large')) return 'response_too_large'
+  return 'unknown'
+}
+
+function reportTerminalBrokerFailure({
+  stage,
+  failureCode,
+}: TerminalBrokerFailureTelemetry): void {
+  reportWindowsTerminalFailure(AnalyticsEvent.TERMINAL_BROKER_SPAWN_FAILED, {
+    stage,
+    failureCode,
+  })
+}
+
+function brokerFailure(error: unknown): Error {
+  const message = errorMessage(error)
+  return new Error(
+    message.includes(TERMINAL_COMMAND_BROKER_RECOVERY)
+      ? message
+      : `${message}\n\n${TERMINAL_COMMAND_BROKER_RECOVERY}`,
+  )
+}
+
+export function isTerminalCommandBrokerInvocation(
+  argv: string[],
+  env: NodeJS.ProcessEnv = getSystemProcessEnv(),
+): boolean {
+  const brokerFlagIndex = argv.indexOf(TERMINAL_COMMAND_BROKER_FLAG)
+  const endOfOptionsIndex = argv.indexOf('--')
+  return (
+    env[TERMINAL_COMMAND_BROKER_ENV] === '1' &&
+    brokerFlagIndex !== -1 &&
+    (endOfOptionsIndex === -1 || brokerFlagIndex < endOfOptionsIndex)
+  )
+}
+
+function isSpawnRequest(value: unknown): value is TerminalCommandSpawnRequest {
+  if (!value || typeof value !== 'object') return false
+  const request = value as Partial<TerminalCommandSpawnRequest>
+  return (
+    typeof request.executable === 'string' &&
+    request.executable.length > 0 &&
+    Array.isArray(request.args) &&
+    request.args.every((arg) => typeof arg === 'string') &&
+    typeof request.cwd === 'string' &&
+    request.cwd.length > 0 &&
+    Boolean(request.env) &&
+    typeof request.env === 'object' &&
+    !Array.isArray(request.env) &&
+    Object.values(request.env).every((value) => typeof value === 'string')
+  )
+}
+
+export function protocolPathFromEnv(
+  env: NodeJS.ProcessEnv = getSystemProcessEnv(),
+): string {
+  const protocolPath = env[TERMINAL_COMMAND_BROKER_PROTOCOL_ENV]
+  if (!protocolPath) {
+    throw new Error('terminal command broker protocol path was invalid')
+  }
+
+  const resolvedProtocolPath = path.resolve(protocolPath)
+  if (
+    path.dirname(resolvedProtocolPath) !== path.resolve(os.tmpdir()) ||
+    !path.basename(resolvedProtocolPath).startsWith(PROTOCOL_FILE_PREFIX)
+  ) {
+    throw new Error('terminal command broker protocol path was invalid')
+  }
+  return resolvedProtocolPath
+}
+
+function createProtocolPath(): string {
+  return path.join(
+    os.tmpdir(),
+    `${PROTOCOL_FILE_PREFIX}${process.pid}-${crypto.randomUUID()}.json`,
+  )
+}
+
+function removeProtocolFile(protocolPath: string): void {
+  try {
+    rmSync(protocolPath, { force: true })
+  } catch {
+  }
+}
+
+function writeProtocol(message: BrokerProtocol): void {
+  const payload = `${JSON.stringify(message)}\n`
+  if (Buffer.byteLength(payload) > MAX_PROTOCOL_BYTES) {
+    throw new Error('terminal command broker response was too large')
+  }
+  writeFileSync(protocolPathFromEnv(), payload, {
+    encoding: 'utf8',
+    flag: 'wx',
+    mode: 0o600,
+  })
+}
+
+function waitForParentDisconnect(): Promise<void> {
+  const parentPid = process.ppid
+  return new Promise<void>((resolve) => {
+    let settled = false
+    const finish = () => {
+      if (settled) return
+      settled = true
+      clearInterval(parentPoll)
+      resolve()
+    }
+    const parentIsAlive = () => {
+      if (process.ppid !== parentPid) return false
+      try {
+        process.kill(parentPid, 0)
+        return true
+      } catch (error) {
+        return (error as NodeJS.ErrnoException).code === 'EPERM'
+      }
+    }
+    const parentPoll = setInterval(() => {
+      if (!parentIsAlive()) finish()
+    }, 100)
+  })
+}
+
+async function reapOwnProcessGroup(): Promise<never> {
+  if (process.platform === 'win32') {
+    const killer = spawn(
+      'taskkill.exe',
+      ['/pid', String(process.pid), '/t', '/f'],
+      { detached: true, stdio: 'ignore', windowsHide: true },
+    )
+    killer.unref()
+    await new Promise((resolve) => setTimeout(resolve, 1_000))
+    process.exit(1)
+  }
+  try {
+    process.kill(-process.pid, 'SIGKILL')
+  } catch {
+    process.exit(1)
+  }
+  process.exit(1)
+}
+
+async function readRequest(): Promise<TerminalCommandSpawnRequest> {
+  const chunks: Buffer[] = []
+  let totalBytes = 0
+  for await (const chunk of process.stdin) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
+    totalBytes += buffer.length
+    if (totalBytes > MAX_REQUEST_BYTES) {
+      throw new Error('terminal command broker request exceeded 4 MiB')
+    }
+    chunks.push(buffer)
+  }
+
+  const value: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'))
+  if (!isSpawnRequest(value)) {
+    throw new Error('terminal command broker received an invalid request')
+  }
+  return value
+}
+
+export async function serveTerminalCommandBroker(): Promise<void> {
+  const parentDisconnected = waitForParentDisconnect()
+  const commandResult = (async (): Promise<BrokerProtocol> => {
+    try {
+      const request = await readRequest()
+      const child = spawn(request.executable, request.args, {
+        cwd: request.cwd,
+        env: request.env,
+        stdio: ['ignore', 'inherit', 'inherit'],
+        detached: false,
+        windowsHide: true,
+      })
+      const exitCode = await new Promise<number | null>((resolve, reject) => {
+        child.once('error', reject)
+        child.once('close', resolve)
+      })
+      return { ok: true, exitCode }
+    } catch (error) {
+      return { ok: false, error: errorMessage(error) }
+    }
+  })()
+
+  const outcome = await Promise.race([
+    commandResult.then((message) => ({ kind: 'result', message }) as const),
+    parentDisconnected.then(() => ({ kind: 'parent-disconnected' }) as const),
+  ])
+  if (outcome.kind === 'parent-disconnected') return reapOwnProcessGroup()
+
+  try {
+    writeProtocol(outcome.message)
+  } catch {
+    await reapOwnProcessGroup()
+  }
+
+  await reapOwnProcessGroup()
+}
+
+function parseProtocol(value: string): BrokerProtocol {
+  const parsed: unknown = JSON.parse(value)
+  if (!parsed || typeof parsed !== 'object' || !('ok' in parsed)) {
+    throw new Error('terminal command broker returned an invalid response')
+  }
+  if (
+    parsed.ok === true &&
+    'exitCode' in parsed &&
+    (typeof parsed.exitCode === 'number' || parsed.exitCode === null)
+  ) {
+    return { ok: true, exitCode: parsed.exitCode }
+  }
+  if (
+    parsed.ok === false &&
+    'error' in parsed &&
+    typeof parsed.error === 'string'
+  ) {
+    return { ok: false, error: parsed.error }
+  }
+  throw new Error('terminal command broker returned an invalid response')
+}
+
+function terminateProcessGroup(
+  child: ChildProcess,
+  signal: NodeJS.Signals,
+): void {
+  if (!child.pid) return
+  if (process.platform === 'win32') {
+    spawnSync('taskkill.exe', ['/pid', String(child.pid), '/t', '/f'], {
+      stdio: 'ignore',
+      windowsHide: true,
+      timeout: 5_000,
+    })
+    return
+  }
+  try {
+    process.kill(-child.pid, signal)
+  } catch {
+    try {
+      child.kill(signal)
+    } catch {}
+  }
+}
+
+function isProcessGroupAlive(child: ChildProcess): boolean {
+  if (!child.pid) return false
+  if (process.platform === 'win32') {
+    return child.exitCode === null && child.signalCode === null
+  }
+  try {
+    process.kill(-child.pid, 0)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function defaultBrokerInvocation(): {
+  executable: string
+  args: string[]
+} {
+  return {
+    executable: process.execPath,
+    args:
+      getCliEnv().CODEBUFF_IS_BINARY === 'true'
+        ? [TERMINAL_COMMAND_BROKER_FLAG]
+        : [
+            path.join(import.meta.dir, '..', 'entry.ts'),
+            TERMINAL_COMMAND_BROKER_FLAG,
+          ],
+  }
+}
+
+export function createTerminalCommandBroker({
+  invocation = defaultBrokerInvocation,
+  terminate = terminateProcessGroup,
+  reportFailure = reportTerminalBrokerFailure,
+}: {
+  invocation?: () => { executable: string; args: string[] }
+  terminate?: typeof terminateProcessGroup
+  reportFailure?: (failure: TerminalBrokerFailureTelemetry) => void
+} = {}): TerminalCommandBroker {
+  const report = (stage: TerminalBrokerFailureStage, error: unknown): void => {
+    try {
+      reportFailure({
+        stage,
+        failureCode: classifyTerminalBrokerFailure(error),
+      })
+    } catch {
+    }
+  }
+
+  return {
+    start(request): TerminalCommandProcess {
+      let child: ChildProcess
+      let terminationRequested = false
+      const protocolPath = createProtocolPath()
+      try {
+        const { executable, args } = invocation()
+        child = spawn(executable, args, {
+          env: {
+            ...getSystemProcessEnv(),
+            [TERMINAL_COMMAND_BROKER_ENV]: '1',
+            [TERMINAL_COMMAND_BROKER_PROTOCOL_ENV]: protocolPath,
+          },
+          stdio: ['pipe', 'pipe', 'pipe'],
+          detached: true,
+          windowsHide: true,
+        })
+      } catch (error) {
+        report('spawn', error)
+        removeProtocolFile(protocolPath)
+        throw brokerFailure(error)
+      }
+      child.once('error', () => {})
+      if (!child.stdin || !child.stdout || !child.stderr) {
+        terminate(child, 'SIGKILL')
+        removeProtocolFile(protocolPath)
+        const error = new Error('could not open terminal command broker pipes')
+        report('stdio', error)
+        throw brokerFailure(error)
+      }
+
+      child.stdin.on('error', () => {})
+      child.stdin.end(JSON.stringify(request))
+
+      const closed = new Promise<void>((resolve, reject) => {
+        child.once('error', reject)
+        child.once('close', () => resolve())
+      })
+      const completion = closed
+        .then(() => {
+          let payload: Buffer
+          try {
+            payload = readFileSync(protocolPath)
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+              throw new Error(
+                'terminal command broker protocol response was missing',
+              )
+            }
+            throw error
+          }
+          if (payload.byteLength > MAX_PROTOCOL_BYTES) {
+            throw new Error('terminal command broker response was too large')
+          }
+          return parseProtocol(payload.toString('utf8').trim())
+        })
+        .catch((error) => {
+          if (!terminationRequested) report('completion', error)
+          throw brokerFailure(error)
+        })
+        .then((message) => {
+          if (!message.ok) throw new Error(message.error)
+          return message.exitCode
+        })
+        .finally(() => removeProtocolFile(protocolPath))
+
+      return {
+        pid: child.pid,
+        stdout: child.stdout,
+        stderr: child.stderr,
+        completion,
+        kill: (signal) => {
+          terminationRequested = true
+          terminate(child, signal)
+        },
+        isAlive: () => isProcessGroupAlive(child),
+      }
+    },
+  }
+}
+
+export const terminalCommandBroker = createTerminalCommandBroker()

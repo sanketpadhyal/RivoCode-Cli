@@ -1,0 +1,102 @@
+import { validateAgents } from '@codebuff/common/templates/agent-validation'
+import {
+  normalizeAgentIdForLookup,
+  parsePublishedAgentId,
+} from '@codebuff/common/util/agent-id-parsing'
+import { DEFAULT_ORG_PREFIX } from '@codebuff/common/util/agent-name-normalization'
+
+import type { DynamicAgentValidationError } from '@codebuff/common/templates/agent-validation'
+import type { AgentTemplate } from '@codebuff/common/types/agent-template'
+import type { FetchAgentFromDatabaseFn } from '@codebuff/common/types/contracts/database'
+import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type { ParamsExcluding } from '@codebuff/common/types/function-params'
+import type { ProjectFileContext } from '@codebuff/common/util/file'
+
+export async function getAgentTemplate(
+  params: {
+    agentId: string
+    localAgentTemplates: Record<string, AgentTemplate>
+    fetchAgentFromDatabase: FetchAgentFromDatabaseFn
+    databaseAgentCache: Map<string, AgentTemplate | null>
+    logger: Logger
+  } & ParamsExcluding<FetchAgentFromDatabaseFn, 'parsedAgentId'>,
+): Promise<AgentTemplate | null> {
+  const {
+    agentId,
+    localAgentTemplates,
+    fetchAgentFromDatabase,
+    databaseAgentCache,
+    logger,
+  } = params
+  const normalizedAgentId = normalizeAgentIdForLookup(agentId)
+
+  if (localAgentTemplates[agentId]) {
+    return localAgentTemplates[agentId]
+  }
+  if (normalizedAgentId !== agentId && localAgentTemplates[normalizedAgentId]) {
+    return localAgentTemplates[normalizedAgentId]
+  }
+
+  if (databaseAgentCache.has(agentId)) {
+    return databaseAgentCache.get(agentId) || null
+  }
+  if (
+    normalizedAgentId !== agentId &&
+    databaseAgentCache.has(normalizedAgentId)
+  ) {
+    return databaseAgentCache.get(normalizedAgentId) || null
+  }
+
+  const parsed = parsePublishedAgentId(normalizedAgentId)
+  if (!parsed) {
+    const codebuffParsed = parsePublishedAgentId(
+      `${DEFAULT_ORG_PREFIX}${normalizedAgentId}`,
+    )
+    if (codebuffParsed) {
+      const dbAgent = await fetchAgentFromDatabase({
+        ...params,
+        parsedAgentId: codebuffParsed,
+      })
+      if (dbAgent) {
+        databaseAgentCache.set(dbAgent.id, dbAgent)
+        return dbAgent
+      }
+    }
+    logger.debug({ agentId }, 'getAgentTemplate: Failed to parse agent ID')
+    return null
+  }
+
+  const dbAgent = await fetchAgentFromDatabase({
+    ...params,
+    parsedAgentId: parsed,
+  })
+  if (dbAgent && parsed.version && parsed.version !== 'latest') {
+    databaseAgentCache.set(dbAgent.id, dbAgent)
+  }
+  return dbAgent
+}
+
+export function assembleLocalAgentTemplates(params: {
+  fileContext: ProjectFileContext
+  logger: Logger
+}): {
+  agentTemplates: Record<string, AgentTemplate>
+  validationErrors: DynamicAgentValidationError[]
+} {
+  const { fileContext, logger } = params
+  const { templates: dynamicTemplates, validationErrors } = validateAgents({
+    agentTemplates: fileContext.agentTemplates,
+    logger,
+  })
+
+  const agentTemplates = { ...dynamicTemplates }
+  return { agentTemplates, validationErrors }
+}
+
+export function clearDatabaseCache(params: {
+  databaseAgentCache: Map<string, AgentTemplate | null>
+}): void {
+  const { databaseAgentCache } = params
+
+  databaseAgentCache.clear()
+}

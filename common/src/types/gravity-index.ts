@@ -1,0 +1,178 @@
+import z from 'zod/v4'
+
+import { jsonObjectSchema } from './json'
+
+const queryField = z
+  .string()
+  .min(1, 'Query cannot be empty')
+  .max(1000, 'Query cannot exceed 1000 characters')
+const slugField = z.string().min(1, 'Slug cannot be empty')
+const integratedSlugField = z.string().min(1, 'integrated_slug cannot be empty')
+
+const searchInputSchema = z.object({
+  action: z.literal('search').describe('Search for the best service.'),
+  query: queryField.describe(
+    `What the user needs, including stack, constraints, and required capabilities when known. Example: "serverless database with branching for a Next.js app".`,
+  ),
+  search_id: z
+    .string()
+    .optional()
+    .describe('Continue a previous Gravity Index search as a follow-up.'),
+  context: jsonObjectSchema
+    .optional()
+    .describe(
+      'Optional structured JSON context about the project, stack, or constraints.',
+    ),
+})
+
+const browseInputSchema = z.object({
+  action: z
+    .literal('browse')
+    .describe('Browse catalog services by category and/or keyword.'),
+  category: z
+    .string()
+    .optional()
+    .describe(
+      'Optional category filter, e.g. Database, Auth, Payments, Hosting, Email, Cache, Monitoring, Analytics, AI, Storage, CMS, Search, Realtime, Background Jobs, Infrastructure, CRM, Support, Productivity, Commerce, Video, Webhooks, SMS.',
+    ),
+  q: z
+    .string()
+    .optional()
+    .describe('Optional keyword filter, e.g. sendgrid or postgres.'),
+})
+
+const listCategoriesInputSchema = z.object({
+  action: z
+    .literal('list_categories')
+    .describe('List every category with service counts.'),
+})
+
+const getServiceInputSchema = z.object({
+  action: z
+    .literal('get_service')
+    .describe('Fetch full detail for a single service by slug.'),
+  slug: slugField.describe('Service slug, e.g. supabase, stripe, sendgrid.'),
+})
+
+const provisionInputSchema = z.object({
+  action: z
+    .literal('provision')
+    .describe('Create an account on the user’s behalf and receive credentials.'),
+  slug: slugField.describe('Service slug to provision, e.g. neon.'),
+  search_id: z
+    .string()
+    .min(1, 'search_id cannot be empty')
+    .describe('search_id from the earlier search result.'),
+  user_consent: z
+    .literal(true)
+    .describe(
+      'Must be true, and only after the user has explicitly approved creating an account on this service.',
+    ),
+})
+
+const reportIntegrationInputSchema = z.object({
+  action: z
+    .literal('report_integration')
+    .describe('Report that an integration from a prior search was done.'),
+  search_id: z
+    .string()
+    .min(1, 'search_id cannot be empty')
+    .describe('search_id from the earlier search result.'),
+  integrated_slug: integratedSlugField.describe(
+    'Slug of the service that was actually integrated.',
+  ),
+})
+
+const runtimeAttributionFields = {
+  external_session_id: z
+    .string()
+    .optional()
+    .describe(
+      'Stable Codebuff session ID for Gravity API key attribution. Codebuff usually fills this automatically.',
+    ),
+  external_user_id: z
+    .string()
+    .optional()
+    .describe(
+      'Stable per-end-user identifier for Gravity attribution. Codebuff usually fills this automatically.',
+    ),
+  metadata: jsonObjectSchema
+    .optional()
+    .describe(
+      'Non-sensitive API key metadata for Gravity attribution and debugging. Codebuff usually fills this automatically.',
+    ),
+}
+
+export const gravityIndexInputSchema = z
+  .object({
+    action: z
+      .enum([
+        'search',
+        'browse',
+        'list_categories',
+        'get_service',
+        'provision',
+        'report_integration',
+      ])
+      .describe(
+        'Which Gravity Index operation to perform. search: recommend a provider; browse: list catalog services; list_categories: list categories with counts; get_service: full detail for a known slug; provision: create the account for the user and receive credentials; report_integration: report a completed integration.',
+      ),
+    query: queryField
+      .optional()
+      .describe(
+        `For action "search": what the user needs, including stack, constraints, and required capabilities when known. Example: "serverless database with branching for a Next.js app".`,
+      ),
+    search_id: z
+      .string()
+      .optional()
+      .describe(
+        'For action "search": continue a previous Gravity Index search as a follow-up. For actions "provision" and "report_integration": the search_id from the earlier search result (required).',
+      ),
+    context: jsonObjectSchema
+      .optional()
+      .describe(
+        'For action "search": optional structured JSON context about the project, stack, or constraints.',
+      ),
+    category: z
+      .string()
+      .optional()
+      .describe(
+        'For action "browse": optional category filter, e.g. Database, Auth, Payments, Hosting, Email, Cache, Monitoring, Analytics, AI, Storage, CMS, Search, Realtime, Background Jobs, Infrastructure, CRM, Support, Productivity, Commerce, Video, Webhooks, SMS.',
+      ),
+    q: z
+      .string()
+      .optional()
+      .describe(
+        'For action "browse": optional keyword filter, e.g. sendgrid or postgres.',
+      ),
+    slug: slugField
+      .optional()
+      .describe(
+        'For actions "get_service" and "provision": service slug, e.g. supabase, stripe, sendgrid (required).',
+      ),
+    integrated_slug: integratedSlugField
+      .optional()
+      .describe(
+        'For action "report_integration": slug of the service that was actually integrated (required).',
+      ),
+    user_consent: z
+      .literal(true)
+      .optional()
+      .describe(
+        'For action "provision": must be true, and only after the user has explicitly approved creating an account on this service (required).',
+      ),
+  })
+  .describe(`Use the Gravity Index tool discovery and install API.`)
+
+export const gravityIndexApiInputSchema = z
+  .discriminatedUnion('action', [
+    searchInputSchema.extend(runtimeAttributionFields),
+    browseInputSchema,
+    listCategoriesInputSchema,
+    getServiceInputSchema,
+    provisionInputSchema.extend(runtimeAttributionFields),
+    reportIntegrationInputSchema.extend(runtimeAttributionFields),
+  ])
+  .describe(`Use the Gravity Index tool discovery and install API.`)
+
+export type GravityIndexInput = z.infer<typeof gravityIndexApiInputSchema>

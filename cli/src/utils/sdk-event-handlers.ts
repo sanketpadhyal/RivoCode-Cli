@@ -1,0 +1,541 @@
+import { match } from 'ts-pattern'
+
+import {
+  appendTextToRootStream,
+  appendToolToAgentBlock,
+  closeNativeReasoningBlock,
+  closeNativeReasoningInAgent,
+  markAgentComplete,
+} from './block-operations'
+import { shouldHideAgent } from './constants'
+import {
+  createAgentBlock,
+  extractPlanFromBuffer,
+  extractSpawnAgentResultContent,
+  findAgentTypeById,
+  insertPlanBlock,
+  nestBlockUnderParent,
+  transformAskUserBlocks,
+  updateToolBlockWithOutput,
+} from './message-block-helpers'
+import {
+  findMatchingSpawnAgent,
+  resolveSpawnAgentToReal,
+} from './spawn-agent-matcher'
+import {
+  destinationFromChunkEvent,
+  processTextChunk,
+} from './stream-chunk-processor'
+
+import type { AgentMode } from './constants'
+import type { MessageUpdater } from './message-updater'
+import type { StreamController } from '../hooks/stream-state'
+import type { StreamStatus } from '../hooks/use-message-queue'
+import type { ContentBlock, ToolContentBlock } from '../types/chat'
+import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type {
+  PrintModeError,
+  PrintModeEvent as SDKEvent,
+  PrintModeFinish,
+  PrintModeSubagentFinish,
+  PrintModeSubagentStart,
+  PrintModeToolCall,
+  PrintModeToolResult,
+} from '@codebuff/common/types/print-mode'
+import type { ToolName } from '@codebuff/sdk'
+import type { MutableRefObject } from 'react'
+
+export type SetStreamingAgentsFn = (
+  updater: (prev: Set<string>) => Set<string>,
+) => void
+
+export type SetStreamStatusFn = (status: StreamStatus) => void
+
+export type StreamChunkEvent =
+  | string
+  | {
+      type: 'subagent_chunk'
+      agentId: string
+      agentType: string
+      chunk: string
+    }
+  | {
+      type: 'reasoning_chunk'
+      agentId: string
+      ancestorRunIds: string[]
+      chunk: string
+    }
+
+export type StreamingState = {
+  streamRefs: StreamController
+  setStreamingAgents: SetStreamingAgentsFn
+  setStreamStatus: SetStreamStatusFn
+}
+
+export type MessageState = {
+  aiMessageId: string
+  updater: MessageUpdater
+  hasReceivedContentRef: MutableRefObject<boolean>
+}
+
+export type SubagentState = {
+  addActiveSubagent: (id: string) => void
+  removeActiveSubagent: (id: string) => void
+}
+
+export type ModeState = {
+  agentMode: AgentMode
+  setHasReceivedPlanResponse: (value: boolean) => void
+}
+
+export type EventHandlerState = {
+  isActive?: () => boolean
+  streaming: StreamingState
+  message: MessageState
+  subagents: SubagentState
+  mode: ModeState
+  logger: Logger
+  setIsRetrying: (retrying: boolean) => void
+  onTotalCost?: (cost: number) => void
+}
+
+type TextDelta = { type: 'text' | 'reasoning'; text: string }
+
+const hiddenToolNames = new Set<ToolName | 'spawn_agent_inline'>([
+  'spawn_agent_inline',
+  'end_turn',
+  'spawn_agents',
+])
+
+const isHiddenToolName = (
+  toolName: string,
+): toolName is ToolName | 'spawn_agent_inline' =>
+  hiddenToolNames.has(toolName as ToolName | 'spawn_agent_inline')
+
+const ensureStreaming = (state: EventHandlerState) => {
+  if (!state.message.hasReceivedContentRef.current) {
+    state.message.hasReceivedContentRef.current = true
+    state.streaming.setStreamStatus('streaming')
+  }
+}
+
+const appendRootChunk = (state: EventHandlerState, delta: TextDelta) => {
+  if (!delta.text) {
+    return
+  }
+
+  state.message.updater.updateAiMessageBlocks((blocks) =>
+    appendTextToRootStream(blocks, delta),
+  )
+
+  if (
+    state.mode.agentMode === 'PLAN' &&
+    delta.type === 'text' &&
+    !state.streaming.streamRefs.state.planExtracted &&
+    state.streaming.streamRefs.state.rootStreamBuffer.includes('</PLAN>')
+  ) {
+    const rawPlan = extractPlanFromBuffer(
+      state.streaming.streamRefs.state.rootStreamBuffer,
+    )
+    if (rawPlan !== null) {
+      state.streaming.streamRefs.setters.setPlanExtracted(true)
+      state.mode.setHasReceivedPlanResponse(true)
+      state.message.updater.updateAiMessageBlocks((blocks) =>
+        insertPlanBlock(blocks, rawPlan),
+      )
+    }
+  }
+}
+
+const updateStreamingAgents = (
+  state: EventHandlerState,
+  op: { add?: string; remove?: string },
+) => {
+  state.streaming.setStreamingAgents((prev) => {
+    const next = new Set(prev)
+    if (op.remove) {
+      next.delete(op.remove)
+    }
+    if (op.add) {
+      next.add(op.add)
+    }
+    return next
+  })
+}
+
+const handleSubagentStart = (
+  state: EventHandlerState,
+  event: PrintModeSubagentStart,
+) => {
+  if (shouldHideAgent(event.agentType)) {
+    return
+  }
+
+  state.subagents.addActiveSubagent(event.agentId)
+
+  const spawnAgentMatch = findMatchingSpawnAgent(
+    state.streaming.streamRefs.state.spawnAgentsMap,
+    event.agentType || '',
+  )
+
+  if (spawnAgentMatch) {
+    state.message.updater.updateAiMessageBlocks((blocks) =>
+      resolveSpawnAgentToReal({
+        blocks,
+        match: spawnAgentMatch,
+        realAgentId: event.agentId,
+        realAgentType: event.agentType,
+        parentAgentId: event.parentAgentId,
+        params: event.params,
+        prompt: event.prompt,
+      }),
+    )
+
+    updateStreamingAgents(state, {
+      remove: spawnAgentMatch.tempId,
+      add: event.agentId,
+    })
+    state.streaming.streamRefs.setters.removeSpawnAgentInfo(
+      spawnAgentMatch.tempId,
+    )
+    return
+  }
+
+  state.logger.info(
+    {
+      agentId: event.agentId,
+      agentType: event.agentType,
+      parentAgentId: event.parentAgentId || 'ROOT',
+    },
+    'Creating new agent block (no spawn_agents match)',
+  )
+
+  state.message.updater.updateAiMessageBlocks((blocks) => {
+    const parentAgentType = event.parentAgentId
+      ? findAgentTypeById(blocks, event.parentAgentId)
+      : undefined
+
+    const newAgentBlock = createAgentBlock({
+      agentId: event.agentId,
+      agentType: event.agentType || '',
+      prompt: event.prompt,
+      params: event.params,
+      parentAgentType,
+    })
+
+    if (event.parentAgentId) {
+      const { blocks: nestedBlocks, parentFound } = nestBlockUnderParent(
+        blocks,
+        event.parentAgentId,
+        newAgentBlock,
+      )
+      if (parentFound) {
+        return nestedBlocks
+      }
+    }
+    return [...blocks, newAgentBlock]
+  })
+
+  updateStreamingAgents(state, { add: event.agentId })
+}
+
+const handleSubagentFinish = (
+  state: EventHandlerState,
+  event: PrintModeSubagentFinish,
+) => {
+  if (shouldHideAgent(event.agentType)) {
+    return
+  }
+
+  state.streaming.streamRefs.setters.removeAgentAccumulator(event.agentId)
+  state.subagents.removeActiveSubagent(event.agentId)
+
+  state.message.updater.updateAiMessageBlocks((blocks) =>
+    markAgentComplete(blocks, event.agentId),
+  )
+
+  updateStreamingAgents(state, { remove: event.agentId })
+}
+
+const handleSpawnAgentsToolCall = (
+  state: EventHandlerState,
+  event: PrintModeToolCall,
+) => {
+  const agents = Array.isArray(event.input?.agents) ? event.input?.agents : []
+
+  const visibleAgents = agents
+    .map((agent: any, index: number) => ({ agent, index }))
+    .filter(({ agent }: any) => !shouldHideAgent(agent?.agent_type || ''))
+
+  visibleAgents.forEach(({ agent, index }: any) => {
+    const tempAgentId = `${event.toolCallId}-${index}`
+    state.streaming.streamRefs.setters.setSpawnAgentInfo(tempAgentId, {
+      index,
+      agentType: agent.agent_type || 'unknown',
+    })
+  })
+
+  state.message.updater.updateAiMessageBlocks((blocks) => {
+    const parentAgentType = event.agentId
+      ? findAgentTypeById(blocks, event.agentId)
+      : undefined
+
+    const newAgentBlocks: ContentBlock[] = visibleAgents.map(
+      ({ agent, index }: any) =>
+        createAgentBlock({
+          agentId: `${event.toolCallId}-${index}`,
+          agentType: agent.agent_type || '',
+          prompt: agent.prompt,
+          params: agent.params,
+          spawnToolCallId: event.toolCallId,
+          spawnIndex: index,
+          parentAgentType,
+        }),
+    )
+
+    return [...blocks, ...newAgentBlocks]
+  })
+
+  visibleAgents.forEach(({ index }: any) => {
+    updateStreamingAgents(state, { add: `${event.toolCallId}-${index}` })
+  })
+}
+
+const handleRegularToolCall = (
+  state: EventHandlerState,
+  event: PrintModeToolCall,
+) => {
+  const newToolBlock: ToolContentBlock = {
+    type: 'tool',
+    toolCallId: event.toolCallId,
+    toolName: event.toolName as ToolName,
+    input: event.input,
+    agentId: event.agentId,
+    ...(event.includeToolCall !== undefined && {
+      includeToolCall: event.includeToolCall,
+    }),
+  }
+
+  if (event.parentAgentId && event.agentId) {
+    state.message.updater.updateAiMessageBlocks((blocks) =>
+      appendToolToAgentBlock(blocks, event.agentId as string, newToolBlock),
+    )
+    return
+  }
+
+  state.message.updater.updateAiMessageBlocks((blocks) => [
+    ...blocks,
+    newToolBlock,
+  ])
+}
+
+const handleToolCall = (state: EventHandlerState, event: PrintModeToolCall) => {
+  if (event.parentAgentId && event.agentId) {
+    state.message.updater.updateAiMessageBlocks((blocks) =>
+      closeNativeReasoningInAgent(blocks, event.agentId as string),
+    )
+  } else if (!event.parentAgentId) {
+    state.message.updater.updateAiMessageBlocks(closeNativeReasoningBlock)
+  }
+
+  if (event.toolName === 'spawn_agents' && event.input?.agents) {
+    handleSpawnAgentsToolCall(state, event)
+    return
+  }
+
+  if (isHiddenToolName(event.toolName)) {
+    return
+  }
+
+  handleRegularToolCall(state, event)
+  updateStreamingAgents(state, { add: event.toolCallId })
+}
+
+const updateSpawnAgentBlock = (
+  block: ContentBlock,
+  toolCallId: string,
+  results: any[],
+): ContentBlock | null => {
+  if (block.type !== 'agent') {
+    return block
+  }
+
+  const spawnIndex = block.spawnIndex
+  const childBlocks = block.blocks
+  const isSpawnResultTarget =
+    block.spawnToolCallId === toolCallId &&
+    spawnIndex !== undefined &&
+    childBlocks
+
+  if (isSpawnResultTarget) {
+    const result = results[spawnIndex]
+    if (result?.value) {
+      const { content, hasError } = extractSpawnAgentResultContent(result.value)
+
+      if (hasError) {
+        if (childBlocks.length === 0) {
+          return null
+        }
+
+        return {
+          ...block,
+          blocks: content
+            ? [...childBlocks, { type: 'text', content } as ContentBlock]
+            : childBlocks,
+          status: 'complete' as const,
+        }
+      }
+
+      const hasStreamedTextContent = childBlocks.some(
+        (b) => b.type === 'text' && b.textType === 'text',
+      )
+      const finalBlocks =
+        content && !hasStreamedTextContent
+          ? [...childBlocks, { type: 'text', content } as ContentBlock]
+          : childBlocks
+
+      if (finalBlocks.length > 0) {
+        return {
+          ...block,
+          blocks: finalBlocks,
+          status: 'complete' as const,
+        }
+      }
+    }
+  }
+
+  if (!childBlocks?.length) {
+    return block
+  }
+
+  return {
+    ...block,
+    blocks: updateSpawnAgentBlocks(childBlocks, toolCallId, results),
+  }
+}
+
+const updateSpawnAgentBlocks = (
+  blocks: ContentBlock[],
+  toolCallId: string,
+  results: any[],
+): ContentBlock[] => {
+  return blocks
+    .map((block) => updateSpawnAgentBlock(block, toolCallId, results))
+    .filter((block): block is ContentBlock => block !== null)
+}
+
+const handleSpawnAgentsResult = (
+  state: EventHandlerState,
+  toolCallId: string,
+  results: any[],
+) => {
+  state.message.updater.updateAiMessageBlocks((blocks) =>
+    updateSpawnAgentBlocks(blocks, toolCallId, results),
+  )
+
+  results.forEach((_, index: number) => {
+    const agentId = `${toolCallId}-${index}`
+    updateStreamingAgents(state, { remove: agentId })
+  })
+}
+
+const handleToolResult = (
+  state: EventHandlerState,
+  event: PrintModeToolResult,
+) => {
+  const askUserResult = (event.output?.[0] as any)?.value
+  state.message.updater.updateAiMessageBlocks((blocks) =>
+    transformAskUserBlocks(blocks, {
+      toolCallId: event.toolCallId,
+      resultValue: askUserResult,
+    }),
+  )
+
+  const firstOutput = event.output?.[0]
+  const firstOutputValue =
+    firstOutput && 'value' in firstOutput ? firstOutput.value : undefined
+  const isSpawnAgentsResult =
+    Array.isArray(firstOutputValue) &&
+    firstOutputValue.some((v: any) => v?.agentName || v?.agentType)
+
+  if (isSpawnAgentsResult && Array.isArray(firstOutputValue)) {
+    handleSpawnAgentsResult(state, event.toolCallId, firstOutputValue)
+    return
+  }
+
+  state.message.updater.updateAiMessageBlocks((blocks) =>
+    updateToolBlockWithOutput(blocks, {
+      toolCallId: event.toolCallId,
+      toolOutput: event.output,
+    }),
+  )
+
+  updateStreamingAgents(state, { remove: event.toolCallId })
+}
+
+const handleFinish = (state: EventHandlerState, event: PrintModeFinish) => {
+  if (typeof event.totalCost === 'number' && state.onTotalCost) {
+    state.onTotalCost(event.totalCost)
+  }
+}
+
+const handleStreamError = (state: EventHandlerState, event: PrintModeError) => {
+  if (!event.source) {
+    return
+  }
+  state.logger.warn({ event }, 'Stream recovery; agent loop is retrying')
+  state.setIsRetrying(true)
+}
+
+export const createStreamChunkHandler =
+  (state: EventHandlerState) => (event: StreamChunkEvent) => {
+    if (state.isActive?.() === false) return
+    const destination = destinationFromChunkEvent(event)
+    let text: string | undefined
+    if (typeof event === 'string') {
+      text = event
+    } else {
+      text = event.chunk
+    }
+
+    if (!destination) {
+      state.logger.warn({ event }, 'Unhandled stream chunk event')
+      return
+    }
+
+    if (!text) {
+      return
+    }
+
+    ensureStreaming(state)
+    state.setIsRetrying(false)
+
+    if (destination.type === 'root') {
+      if (destination.textType === 'text') {
+        state.streaming.streamRefs.setters.appendRootStreamBuffer(text)
+      }
+      state.streaming.streamRefs.setters.setRootStreamSeen(true)
+      appendRootChunk(state, { type: destination.textType, text })
+      return
+    }
+
+    state.message.updater.updateAiMessageBlocks((blocks) =>
+      processTextChunk(blocks, destination, text),
+    )
+  }
+
+export const createEventHandler =
+  (state: EventHandlerState) => (event: SDKEvent) => {
+    if (state.isActive?.() === false) {
+      if (event.type === 'finish') handleFinish(state, event)
+      return
+    }
+    return match(event)
+      .with({ type: 'subagent_start' }, (e) => handleSubagentStart(state, e))
+      .with({ type: 'subagent_finish' }, (e) => handleSubagentFinish(state, e))
+      .with({ type: 'tool_call' }, (e) => handleToolCall(state, e))
+      .with({ type: 'tool_result' }, (e) => handleToolResult(state, e))
+      .with({ type: 'finish' }, (e) => handleFinish(state, e))
+      .with({ type: 'error' }, (e) => handleStreamError(state, e))
+      .otherwise(() => undefined)
+  }

@@ -1,0 +1,161 @@
+import fs from 'fs'
+
+import { useEffect, useState } from 'react'
+
+import { AttachmentCard } from './attachment-card'
+import { ImageThumbnail } from './image-thumbnail'
+import { useTheme } from '../hooks/use-theme'
+import {
+  supportsInlineImages,
+  renderInlineImage,
+} from '../utils/terminal-images'
+
+const MAX_FILENAME_LENGTH = 16
+const IMAGE_CARD_WIDTH = 18
+const THUMBNAIL_WIDTH = 14
+const THUMBNAIL_HEIGHT = 3
+const INLINE_IMAGE_WIDTH = 4
+const INLINE_IMAGE_HEIGHT = 3
+
+const truncateFilename = (filename: string): string => {
+  if (filename.length <= MAX_FILENAME_LENGTH) {
+    return filename
+  }
+  const lastDot = filename.lastIndexOf('.')
+  const ext = lastDot !== -1 ? filename.slice(lastDot) : ''
+  const baseName = lastDot !== -1 ? filename.slice(0, lastDot) : filename
+  const maxBaseLength = MAX_FILENAME_LENGTH - ext.length - 1
+  return baseName.slice(0, maxBaseLength) + '…' + ext
+}
+
+export interface ImageCardImage {
+  path: string
+  filename: string
+  status?: 'processing' | 'ready' | 'error'
+  note?: string
+  processedImage?: {
+    base64: string
+    mediaType: string
+  }
+}
+
+interface ImageCardProps {
+  image: ImageCardImage
+  onRemove?: () => void
+  showRemoveButton?: boolean
+}
+
+export const ImageCard = ({
+  image,
+  onRemove,
+  showRemoveButton = true,
+}: ImageCardProps) => {
+  const theme = useTheme()
+  const [thumbnailSequence, setThumbnailSequence] = useState<string | null>(
+    null,
+  )
+  const canShowInlineImages = supportsInlineImages()
+
+  useEffect(() => {
+    if (!canShowInlineImages) return
+    if ((image.status ?? 'ready') !== 'ready') return
+
+    let cancelled = false
+
+    const loadThumbnail = async () => {
+      try {
+        let base64Data: string | undefined
+
+        if (image.processedImage) {
+          base64Data = image.processedImage.base64
+        } else if (!image.path.startsWith('clipboard:')) {
+          const imageData = fs.readFileSync(image.path)
+          base64Data = imageData.toString('base64')
+        }
+
+        if (base64Data) {
+          const sequence = renderInlineImage(base64Data, {
+            width: INLINE_IMAGE_WIDTH,
+            height: INLINE_IMAGE_HEIGHT,
+            filename: image.filename,
+          })
+          if (!cancelled) {
+            setThumbnailSequence(sequence)
+          }
+        } else {
+          if (!cancelled) {
+            setThumbnailSequence(null)
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setThumbnailSequence(null)
+        }
+      }
+    }
+
+    loadThumbnail()
+
+    return () => {
+      cancelled = true
+    }
+  }, [image, image.filename, canShowInlineImages])
+
+  const truncatedName = truncateFilename(image.filename)
+
+  return (
+    <AttachmentCard
+      width={IMAGE_CARD_WIDTH}
+      onRemove={onRemove}
+      showRemoveButton={showRemoveButton}
+    >
+      <box
+        style={{
+          height: THUMBNAIL_HEIGHT,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        {thumbnailSequence ? (
+          <text>{thumbnailSequence}</text>
+        ) : (
+          <ImageThumbnail
+            image={image}
+            width={THUMBNAIL_WIDTH}
+            height={THUMBNAIL_HEIGHT}
+            fallback={<text style={{ fg: theme.info }}>🖼️</text>}
+          />
+        )}
+      </box>
+
+      <box
+        style={{
+          paddingLeft: 1,
+          paddingRight: 1,
+          flexDirection: 'column',
+        }}
+      >
+        <text
+          style={{
+            fg: theme.foreground,
+            wrapMode: 'none',
+          }}
+        >
+          {truncatedName}
+        </text>
+        {((image.status ?? 'ready') === 'processing' || image.note) && (
+          <text
+            style={{
+              fg: theme.muted,
+              wrapMode: 'none',
+            }}
+          >
+            {(image.status ?? 'ready') === 'processing'
+              ? 'processing…'
+              : image.note}
+          </text>
+        )}
+      </box>
+    </AttachmentCard>
+  )
+}

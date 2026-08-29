@@ -1,0 +1,58 @@
+import { describe, test, expect } from 'bun:test'
+
+import {
+  parseRetryAfterMs,
+  sessionFetchSignal,
+} from '../../utils/freebuff-session-api'
+
+const nextTick = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
+
+describe('sessionFetchSignal', () => {
+  test('aborts after the timeout when no caller signal is given', async () => {
+    const signal = sessionFetchSignal(undefined, 5)
+    expect(signal.aborted).toBe(false)
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(signal.aborted).toBe(true)
+    expect((signal.reason as DOMException).name).toBe('TimeoutError')
+  })
+
+  test('propagates the caller abort before the timeout fires', async () => {
+    const caller = new AbortController()
+    const signal = sessionFetchSignal(caller.signal, 60_000)
+    expect(signal.aborted).toBe(false)
+    caller.abort()
+    await nextTick()
+    expect(signal.aborted).toBe(true)
+    expect((signal.reason as DOMException).name).toBe('AbortError')
+  })
+
+  test('times out even with a never-aborted caller signal', async () => {
+    const caller = new AbortController()
+    const signal = sessionFetchSignal(caller.signal, 5)
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(signal.aborted).toBe(true)
+    expect((signal.reason as DOMException).name).toBe('TimeoutError')
+  })
+
+  test('reflects an already-aborted caller signal immediately', () => {
+    const caller = new AbortController()
+    caller.abort()
+    const signal = sessionFetchSignal(caller.signal, 60_000)
+    expect(signal.aborted).toBe(true)
+  })
+})
+
+describe('parseRetryAfterMs', () => {
+  test('parses delta seconds and HTTP dates', () => {
+    expect(parseRetryAfterMs('10', 0)).toBe(10_000)
+    expect(parseRetryAfterMs('Thu, 01 Jan 1970 00:00:10 GMT', 2_000)).toBe(
+      8_000,
+    )
+  })
+
+  test('rejects invalid values and clamps past dates', () => {
+    expect(parseRetryAfterMs('invalid', 0)).toBeUndefined()
+    expect(parseRetryAfterMs('1e308', 0)).toBeUndefined()
+    expect(parseRetryAfterMs('Thu, 01 Jan 1970 00:00:01 GMT', 2_000)).toBe(0)
+  })
+})

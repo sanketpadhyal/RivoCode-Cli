@@ -1,0 +1,26 @@
+import type { AgentContentBlock } from '../types/chat'
+
+export interface StatusInfo {
+  indicator: string
+  label: string
+  color: string
+  text: string
+}
+
+export function getAgentStatusInfo(
+  status: AgentContentBlock['status'],
+  theme: { primary: string; foreground: string; muted: string },
+): StatusInfo {
+  switch (status) {
+    case 'running':
+      return { indicator: '●', label: 'running', color: theme.primary, text: '● running' }
+    case 'failed':
+      return { indicator: '✗', label: 'failed', color: 'red', text: '✗ failed' }
+    case 'complete':
+      return { indicator: '✓', label: 'completed', color: theme.foreground, text: 'completed ✓' }
+    case 'cancelled':
+      return { indicator: '⊘', label: 'cancelled', color: 'red', text: '⊘ cancelled' }
+    default:
+      return { indicator: '○', label: 'waiting', color: theme.muted, text: '○ waiting' }
+  }
+}

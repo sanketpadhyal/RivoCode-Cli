@@ -1,0 +1,81 @@
+.DS_Store
+.idea/
+.vercel
+
+# Environment files (secrets) - Bun loads .env.* files natively
+.env
+.env.*
+!.env.example
+
+# ctags
+tags
+
+node_modules
+dev
+dist
+dist-env
+tsconfig.tsbuildinfo
+.manicode
+__mock-projects__
+npm-app/src/__tests__/data/
+.aider*
+.codebuff*
+**.log
+
+debug/
+.context/
+docs/bot-detection.md
+# Issue-specific plans/specs belong in Linear, not the repository. Existing
+# tracked historical specs remain tracked; this keeps new local artifacts out.
+docs/specs/
+.codex
+
+# Nx cache directories
+.nx/cache
+.nx/workspace-data
+
+# Infisical config (user-specific)
+.infisical.json
+.gstack/
+
+# Buffbench DEBUG_ERROR dumps
+evals/buffbench/*-error-*.json
+
+# Freebuff Desktop local runtime state in an opened project (SQLite DB, git
+# worktrees, materialized built-in skills) — never source, always regenerated.
+.freebuff/
+
+# Materialized by release package prepack scripts and removed by postpack.
+cli/release/launcher.js
+cli/release/http.js
+cli/release-staging/launcher.js
+cli/release-staging/http.js
+freebuff/cli/release/launcher.js
+freebuff/cli/release/http.js
+
+# QA harness fixture: a snapshot of REAL feedback rows, including the Discord
+# and GitHub handles of real people and what they complained about. Useful
+# locally, must never be committed — this repo is mirrored publicly.
+feedback-lab/src/real-data.json
+
+# Design-tooling scratch.
+freebuff/web/.impeccable/
+
+# Throwaway helper scripts written next to the repo during a task. Never part
+# of the build; one reached a PR before review caught it. At the ROOT so it
+# covers every subdirectory — the file that slipped through was at the root,
+# which a nested .gitignore cannot match.
+scratch-*
+
+# Ad-hoc investigation scripts — scratch, never committed
+scripts/_tmp-*
+
+# Local operator launch manifests contain real advertiser identifiers. The
+# checked-in example is intentionally non-routable.
+ads-pilot-launch.local.json
+
+# Linked git worktrees created by agent tooling. Each is a full checkout with
+# its own .git file, so committing one nests a second working tree inside this
+# one — and because a worktree carries its own generated migrations, it also
+# drags a DUPLICATE migration index into whichever branch swept it up.
+.claude/worktrees/

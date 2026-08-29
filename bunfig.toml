@@ -1,0 +1,7 @@
+[install]
+linker = "hoisted"
+linkWorkspacePackages = true
+
+[test]
+exclude = ["**/*.integration.test.*"]
+preload = ["./sdk/test/setup-env.ts"]

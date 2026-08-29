@@ -1,0 +1,117 @@
+
+import { useEffect, useMemo, useRef, useState } from 'react'
+
+import { useChatScrollbox } from './use-scroll-management'
+import { useTerminalDimensions } from './use-terminal-dimensions'
+import { useTerminalLayout } from './use-terminal-layout'
+import { useTheme } from './use-theme'
+import { createChatScrollAcceleration } from '../utils/chat-scroll-accel'
+import { createMarkdownPalette } from '../utils/theme-system'
+
+import type { ChatMessage } from '../types/chat'
+import type { ChatTheme } from '../types/theme-system'
+import type { MarkdownPalette } from '../utils/markdown-renderer'
+import type { ScrollBoxRenderable } from '@opentui/core'
+
+export interface UseChatUIOptions {
+  messages: ChatMessage[]
+  isUserCollapsing: () => boolean
+}
+
+export interface UseChatUIReturn {
+  scrollRef: React.RefObject<ScrollBoxRenderable | null>
+  scrollToLatest: () => void
+  scrollUp: () => void
+  scrollDown: () => void
+  appliedScrollboxProps: Record<string, unknown>
+  isAtBottom: boolean
+  hasOverflow: boolean
+
+  terminalWidth: number
+  terminalHeight: number
+  separatorWidth: number
+  messageAvailableWidth: number
+  isCompactHeight: boolean
+  isNarrowWidth: boolean
+
+  theme: ChatTheme
+  markdownPalette: MarkdownPalette
+}
+
+export function useChatUI({
+  messages,
+  isUserCollapsing,
+}: UseChatUIOptions): UseChatUIReturn {
+  const scrollRef = useRef<ScrollBoxRenderable | null>(null)
+  const [hasOverflow, setHasOverflow] = useState(false)
+  const hasOverflowRef = useRef(false)
+
+  const { separatorWidth, terminalWidth, terminalHeight } =
+    useTerminalDimensions()
+  const { height: heightLayout, width: widthLayout } = useTerminalLayout()
+  const isCompactHeight = heightLayout.is('xs')
+  const isNarrowWidth = widthLayout.is('xs')
+  const messageAvailableWidth = separatorWidth
+
+  const theme = useTheme()
+  const markdownPalette = useMemo(() => createMarkdownPalette(theme), [theme])
+
+  const { scrollToLatest, scrollUp, scrollDown, scrollboxProps, isAtBottom } =
+    useChatScrollbox(scrollRef, messages, isUserCollapsing)
+
+  useEffect(() => {
+    const scrollbox = scrollRef.current
+    if (!scrollbox) return
+
+    const checkOverflow = () => {
+      const contentHeight = scrollbox.scrollHeight
+      const viewportHeight = scrollbox.viewport.height
+      const isOverflowing = contentHeight > viewportHeight
+
+      if (hasOverflowRef.current !== isOverflowing) {
+        hasOverflowRef.current = isOverflowing
+        setHasOverflow(isOverflowing)
+      }
+    }
+
+    checkOverflow()
+    scrollbox.verticalScrollBar.on('change', checkOverflow)
+
+    return () => {
+      scrollbox.verticalScrollBar.off('change', checkOverflow)
+    }
+  }, [])
+
+  const inertialScrollAcceleration = useMemo(
+    () => createChatScrollAcceleration(),
+    [],
+  )
+
+  const appliedScrollboxProps = useMemo(
+    () =>
+      inertialScrollAcceleration
+        ? { ...scrollboxProps, scrollAcceleration: inertialScrollAcceleration }
+        : scrollboxProps,
+    [scrollboxProps, inertialScrollAcceleration],
+  )
+
+  return {
+    scrollRef,
+    scrollToLatest,
+    scrollUp,
+    scrollDown,
+    appliedScrollboxProps,
+    isAtBottom,
+    hasOverflow,
+
+    terminalWidth,
+    terminalHeight,
+    separatorWidth,
+    messageAvailableWidth,
+    isCompactHeight,
+    isNarrowWidth,
+
+    theme,
+    markdownPalette,
+  }
+}

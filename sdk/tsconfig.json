@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": [
+      "ES2023",
+      "DOM"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "allowImportingTsExtensions": false,
+    "types": [
+      "node",
+      "bun-types"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@codebuff/common/*": [
+        "../common/src/*"
+      ],
+      "@codebuff/agent-runtime/*": [
+        "../packages/agent-runtime/src/*"
+      ],
+      "@codebuff/code-map": [
+        "../packages/code-map/src/index.ts"
+      ],
+      "@codebuff/code-map/*": [
+        "../packages/code-map/src/*"
+      ],
+      "@codebuff/llm-providers/*": [
+        "../packages/llm-providers/src/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

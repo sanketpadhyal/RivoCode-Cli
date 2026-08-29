@@ -1,0 +1,74 @@
+import {
+  DEFAULT_MAX_FILES,
+  flattenTree,
+  getProjectFileTree,
+} from '@codebuff/common/project-file-tree'
+import micromatch from 'micromatch'
+
+import type { CodebuffToolOutput } from '@codebuff/common/tools/list'
+import type { CodebuffFileSystem } from '@codebuff/common/types/filesystem'
+
+export async function glob(params: {
+  pattern: string
+  projectPath: string
+  cwd?: string
+  maxResults?: number
+  fs: CodebuffFileSystem
+}): Promise<CodebuffToolOutput<'glob'>> {
+  const { pattern, projectPath, cwd, maxResults, fs } = params
+
+  try {
+    const fileTree = await getProjectFileTree({ projectRoot: projectPath, fs })
+    const flattenedNodes = flattenTree(fileTree)
+    let allFilePaths = flattenedNodes
+      .filter((node) => node.type === 'file')
+      .map((node) => node.filePath)
+
+    if (cwd) {
+      const cwdPrefix = cwd.endsWith('/') ? cwd : `${cwd}/`
+      allFilePaths = allFilePaths.filter(
+        (filePath) =>
+          filePath === cwd ||
+          filePath.startsWith(cwdPrefix) ||
+          filePath === cwd.replace(/\/$/, ''),
+      )
+    }
+
+    const allMatchingFiles = micromatch(allFilePaths, pattern)
+    const matchingFiles =
+      maxResults === undefined
+        ? allMatchingFiles
+        : allMatchingFiles.slice(0, maxResults)
+    const resultsCapped = matchingFiles.length < allMatchingFiles.length
+
+    const truncated = flattenedNodes.length >= DEFAULT_MAX_FILES
+
+    return [
+      {
+        type: 'json',
+        value: {
+          files: matchingFiles,
+          count: allMatchingFiles.length,
+          message:
+            `Found ${allMatchingFiles.length} file(s) matching pattern "${pattern}"${cwd ? ` in directory "${cwd}"` : ''}` +
+            (resultsCapped
+              ? `. Showing the first ${matchingFiles.length}; narrow the pattern or set cwd to see the rest.`
+              : '') +
+            (truncated
+              ? `. Warning: the project scan hit its ${DEFAULT_MAX_FILES}-file limit, so the deepest directories were not searched and this result may be incomplete. Narrow the search with cwd, or use run_terminal_command (find/dir) to check.`
+              : ''),
+        },
+      },
+    ]
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    return [
+      {
+        type: 'json',
+        value: {
+          errorMessage: `Failed to search for files: ${errorMessage}`,
+        },
+      },
+    ]
+  }
+}

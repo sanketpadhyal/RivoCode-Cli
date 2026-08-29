@@ -1,0 +1,198 @@
+import { FILE_READ_STATUS } from '../constants/paths'
+
+import type { FileReadWindow } from '../types/contracts/client'
+
+export const MAX_READ_FILES_CHARS = 100_000
+
+export const MAX_READ_FILES_TOKENS = 20_000
+
+export const MAX_READ_FILE_LINES = 2_000
+
+export const MAX_READ_FILE_CHARS = 50_000
+
+export function windowFileRead(
+  content: string,
+  offset?: number,
+  limit?: number,
+): string {
+  const lines = content.split('\n')
+  if (lines.length > 1 && lines[lines.length - 1] === '') lines.pop()
+  const totalLines = lines.length
+  const start = Math.max(1, Math.floor(offset ?? 1))
+  const maxLines = Math.min(
+    Math.max(1, Math.floor(limit ?? MAX_READ_FILE_LINES)),
+    MAX_READ_FILE_LINES,
+  )
+
+  if (start > totalLines) {
+    return `[read_files: ${totalLines} lines total; offset ${start} is beyond the end of the file.]`
+  }
+
+  let end = Math.min(totalLines, start - 1 + maxLines)
+  let selected = lines.slice(start - 1, end).join('\n')
+  let charCapped = false
+  if (selected.length > MAX_READ_FILE_CHARS) {
+    charCapped = true
+    let chars = 0
+    let count = 0
+    for (let i = start - 1; i < end; i++) {
+      const lineLength = lines[i].length + (count > 0 ? 1 : 0)
+      if (chars + lineLength > MAX_READ_FILE_CHARS && count > 0) break
+      chars += lineLength
+      count++
+    }
+    end = start - 1 + count
+    selected = lines.slice(start - 1, end).join('\n')
+  }
+
+  if (start === 1 && end === totalLines) {
+    return content
+  }
+
+  const charCapNote = charCapped
+    ? ` The window was shortened to stay under ${MAX_READ_FILE_CHARS.toLocaleString()} characters.`
+    : ''
+  const continueNote =
+    end < totalLines
+      ? ` Use code_search to locate the part you need and read a window around it, or call read_files again with offset=${end + 1} to continue.`
+      : ''
+  return `${selected}\n\n[read_files: showing lines ${start}-${end} of ${totalLines}.${charCapNote}${continueNote}]`
+}
+
+export type FileReadWindows = Record<string, FileReadWindow[]>
+
+export function fileReadWindowsOf(input: unknown): FileReadWindows | undefined {
+  const windows =
+    input && typeof input === 'object'
+      ? (input as { fileWindows?: unknown }).fileWindows
+      : undefined
+  return windows && typeof windows === 'object' && !Array.isArray(windows)
+    ? (windows as FileReadWindows)
+    : undefined
+}
+
+export function applyFileReadWindows(
+  content: string,
+  windows: FileReadWindow[] | undefined,
+): string {
+  const list = Array.isArray(windows) && windows.length > 0 ? windows : [{}]
+  return list
+    .map((window) => windowFileRead(content, window?.offset, window?.limit))
+    .join('\n\n')
+}
+
+const TOKEN_CHUNK_CHARS = 1_024
+
+type LimitedFileRead = {
+  content: string
+  includedChars: number
+  includedTokens: number
+}
+
+type FileReadLimiterOptions = {
+  countTokens?: (text: string) => number
+}
+
+function avoidSplittingSurrogatePair(text: string, end: number): number {
+  if (
+    end > 0 &&
+    end < text.length &&
+    text.charCodeAt(end - 1) >= 0xd800 &&
+    text.charCodeAt(end - 1) <= 0xdbff
+  ) {
+    return end - 1
+  }
+  return end
+}
+
+function limitContentByTokens(
+  content: string,
+  tokenBudget: number,
+  countTokens: (text: string) => number,
+): { chars: number; tokens: number; truncated: boolean } {
+  let chars = 0
+  let tokens = 0
+
+  while (chars < content.length) {
+    let chunkEnd = Math.min(chars + TOKEN_CHUNK_CHARS, content.length)
+    chunkEnd = avoidSplittingSurrogatePair(content, chunkEnd)
+    if (chunkEnd === chars) chunkEnd++
+
+    const chunk = content.slice(chars, chunkEnd)
+    const chunkTokens = countTokens(chunk)
+    if (tokens + chunkTokens <= tokenBudget) {
+      chars = chunkEnd
+      tokens += chunkTokens
+      continue
+    }
+    return { chars, tokens, truncated: true }
+  }
+
+  return { chars, tokens, truncated: false }
+}
+
+function limitFileReadContent(
+  content: string,
+  remainingChars: number,
+  remainingTokens: number,
+  countTokens?: (text: string) => number,
+): LimitedFileRead {
+  const charLimit = Math.min(content.length, Math.max(0, remainingChars))
+  const safeCharLimit = avoidSplittingSurrogatePair(content, charLimit)
+  const charLimitedContent = content.slice(0, safeCharLimit)
+  const tokenBudget = Math.max(0, remainingTokens)
+  const tokenLimit = countTokens
+    ? limitContentByTokens(charLimitedContent, tokenBudget, countTokens)
+    : {
+        chars: charLimitedContent.length,
+        tokens: 0,
+        truncated: false,
+      }
+  const includedChars = tokenLimit.chars
+  const includedTokens = tokenLimit.tokens
+
+  if (includedChars === content.length) {
+    return { content, includedChars, includedTokens }
+  }
+
+  let notice: string
+  if (tokenLimit.truncated) {
+    const hitAggregateLimit = remainingTokens < MAX_READ_FILES_TOKENS
+    notice = hitAggregateLimit
+      ? `${FILE_READ_STATUS.TOO_LARGE}: The combined read_files output exceeded the ${MAX_READ_FILES_TOKENS.toLocaleString()} estimated-token limit. This file was truncated after ${includedTokens.toLocaleString()} estimated tokens. Read it separately or use code_search for the relevant section.`
+      : `${FILE_READ_STATUS.TOO_LARGE}: This file exceeded the ${MAX_READ_FILES_TOKENS.toLocaleString()} estimated-token per-file limit. It was truncated after ${includedTokens.toLocaleString()} estimated tokens. Use code_search or a more targeted read for the relevant section.`
+  } else {
+    const hitAggregateLimit = remainingChars < MAX_READ_FILES_CHARS
+    notice = hitAggregateLimit
+      ? `${FILE_READ_STATUS.TOO_LARGE}: The combined read_files output exceeded the ${MAX_READ_FILES_CHARS.toLocaleString()} character hard limit. This file was truncated after ${includedChars.toLocaleString()} characters. Read it separately or use code_search for the relevant section.`
+      : `${FILE_READ_STATUS.TOO_LARGE}: This file is ${content.length.toLocaleString()} characters, exceeding the ${MAX_READ_FILES_CHARS.toLocaleString()} character hard limit. The content above has been truncated. Use code_search or a more targeted read for the relevant section.`
+  }
+
+  return {
+    content:
+      includedChars === 0
+        ? notice
+        : `${content.slice(0, includedChars)}\n\n${notice}`,
+    includedChars,
+    includedTokens,
+  }
+}
+
+export function createFileReadLimiter(options: FileReadLimiterOptions = {}) {
+  let remainingChars = MAX_READ_FILES_CHARS
+  let remainingTokens = MAX_READ_FILES_TOKENS
+
+  return {
+    limit(content: string): string {
+      const limited = limitFileReadContent(
+        content,
+        remainingChars,
+        remainingTokens,
+        options.countTokens,
+      )
+      remainingChars -= limited.includedChars
+      remainingTokens -= limited.includedTokens
+      return limited.content
+    },
+  }
+}

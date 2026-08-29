@@ -1,0 +1,33 @@
+{
+  "extends": "../tsconfig.base.json",
+  "ts-node": {
+    "esm": true
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "@opentui/react",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "preserveSymlinks": false,
+    "baseUrl": ".",
+    "paths": {
+      "@codebuff/sdk": [
+        "../sdk/src/index.ts"
+      ],
+      "@codebuff/common/*": [
+        "../common/src/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "scripts/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

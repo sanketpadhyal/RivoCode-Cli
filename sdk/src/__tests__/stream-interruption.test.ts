@@ -1,0 +1,198 @@
+import { describe, expect, it } from 'bun:test'
+
+import {
+  classifyStreamEndRecovery,
+  classifyThrownStreamRecovery,
+  streamFinishInfoOf,
+} from '../impl/stream-interruption'
+
+const noYields = {
+  receivedReasoning: false,
+  yieldedText: false,
+  yieldedToolCall: false,
+}
+
+describe('classifyStreamEndRecovery', () => {
+  it('classifies a stream that ended without any finish part as interrupted', () => {
+    expect(
+      classifyStreamEndRecovery({ aborted: false, finish: undefined, ...noYields })
+        ?.source,
+    ).toBe('stream-interrupted')
+  })
+
+  it('classifies the flush signature (unknown reason, no usage) as interrupted', () => {
+    expect(
+      classifyStreamEndRecovery({
+        aborted: false,
+        finish: { finishReason: 'unknown', hasUsage: false },
+        receivedReasoning: false,
+        yieldedText: true,
+        yieldedToolCall: false,
+      })?.source,
+    ).toBe('stream-interrupted')
+  })
+
+  it('classifies a reasoning-only length stop as output-limit', () => {
+    const recovery = classifyStreamEndRecovery({
+      aborted: false,
+      finish: { finishReason: 'length', hasUsage: true },
+      ...noYields,
+    })
+    expect(recovery?.source).toBe('output-limit')
+    expect(recovery?.message).toContain('output token limit')
+  })
+
+  it('classifies any complete finish with reasoning but no text or tool calls', () => {
+    for (const finish of [
+      { finishReason: 'stop', hasUsage: true },
+      { finishReason: 'unknown', hasUsage: true },
+      { finishReason: 'other', hasUsage: true },
+      { finishReason: 'tool-calls', hasUsage: false },
+    ]) {
+      const recovery = classifyStreamEndRecovery({
+        aborted: false,
+        finish,
+        receivedReasoning: true,
+        yieldedText: false,
+        yieldedToolCall: false,
+      })
+      expect(recovery?.source).toBe('output-limit')
+      expect(recovery?.message).toContain(
+        'ended after reasoning without producing an answer or tool call',
+      )
+    }
+  })
+
+  it('leaves a length stop after real output alone', () => {
+    for (const yields of [
+      {
+        receivedReasoning: true,
+        yieldedText: true,
+        yieldedToolCall: false,
+      },
+      {
+        receivedReasoning: true,
+        yieldedText: false,
+        yieldedToolCall: true,
+      },
+    ]) {
+      expect(
+        classifyStreamEndRecovery({
+          aborted: false,
+          finish: { finishReason: 'length', hasUsage: true },
+          ...yields,
+        }),
+      ).toBeNull()
+    }
+  })
+
+  it('never classifies a user-cancelled stream', () => {
+    for (const finish of [
+      undefined,
+      { finishReason: 'unknown', hasUsage: false },
+      { finishReason: 'length', hasUsage: true },
+    ]) {
+      expect(
+        classifyStreamEndRecovery({ aborted: true, finish, ...noYields }),
+      ).toBeNull()
+    }
+  })
+
+  it('leaves normal completions alone', () => {
+    for (const finishReason of ['stop', 'tool-calls', 'content-filter']) {
+      for (const hasUsage of [true, false]) {
+        expect(
+          classifyStreamEndRecovery({
+            aborted: false,
+            finish: { finishReason, hasUsage },
+            ...noYields,
+          }),
+        ).toBeNull()
+      }
+    }
+  })
+
+  it('leaves an unrecognized finish reason on a complete stream alone', () => {
+    expect(
+      classifyStreamEndRecovery({
+        aborted: false,
+        finish: { finishReason: 'unknown', hasUsage: true },
+        ...noYields,
+      }),
+    ).toBeNull()
+  })
+})
+
+describe('streamFinishInfoOf', () => {
+  it('counts any finite usage number as usage', () => {
+    expect(
+      streamFinishInfoOf({
+        finishReason: 'stop',
+        totalUsage: { outputTokens: 0 },
+      }),
+    ).toEqual({ finishReason: 'stop', hasUsage: true })
+  })
+
+  it('treats missing or NaN usage as absent', () => {
+    expect(
+      streamFinishInfoOf({ finishReason: 'unknown', totalUsage: {} }),
+    ).toEqual({ finishReason: 'unknown', hasUsage: false })
+    expect(
+      streamFinishInfoOf({
+        finishReason: 'unknown',
+        totalUsage: { totalTokens: NaN },
+      }),
+    ).toEqual({ finishReason: 'unknown', hasUsage: false })
+  })
+
+  it('restores a v2 compatibility adapter unknown finish reason', () => {
+    expect(
+      streamFinishInfoOf(
+        {
+          finishReason: 'other',
+          totalUsage: {},
+        },
+        true,
+      ),
+    ).toEqual({ finishReason: 'unknown', hasUsage: false })
+  })
+})
+
+describe('classifyThrownStreamRecovery', () => {
+  it('classifies Bun socket-close exceptions as interrupted streams', () => {
+    const error = new Error(
+      'The socket connection was closed unexpectedly. For more information, pass `verbose: true` in the second argument to fetch()',
+    ) as Error & { code: string }
+    error.code = 'ECONNRESET'
+
+    expect(
+      classifyThrownStreamRecovery({ aborted: false, error })?.source,
+    ).toBe('stream-interrupted')
+  })
+
+  it('walks wrapped transport errors', () => {
+    const cause = Object.assign(new Error('read failed'), {
+      code: 'ConnectionClosed',
+    })
+    const error = new Error('Failed after 4 attempts', { cause })
+
+    expect(
+      classifyThrownStreamRecovery({ aborted: false, error })?.source,
+    ).toBe('stream-interrupted')
+  })
+
+  it('does not recover cancellation or unrelated exceptions', () => {
+    const networkError = Object.assign(new Error('read ECONNRESET'), {
+      code: 'ECONNRESET',
+    })
+    expect(
+      classifyThrownStreamRecovery({ aborted: true, error: networkError }),
+    ).toBeNull()
+    expect(
+      classifyThrownStreamRecovery({
+        aborted: false,
+        error: new TypeError('Headers must be an object'),
+      }),
+    ).toBeNull()
+  })
+})

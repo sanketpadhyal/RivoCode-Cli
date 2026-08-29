@@ -1,0 +1,331 @@
+import { TextAttributes } from '@opentui/core'
+import React, { useRef, useState } from 'react'
+
+import { Button } from './button'
+import { MultilineInput, type MultilineInputHandle } from './multiline-input'
+import { Separator } from './separator'
+import { useTheme } from '../hooks/use-theme'
+import { useChatStore } from '../state/chat-store'
+import { IS_FREEBUFF } from '../utils/constants'
+import { createTextPasteHandler } from '../utils/strings'
+import { isPlainEnterKey } from '../utils/terminal-enter-detection'
+import { BORDER_CHARS } from '../utils/ui-constants'
+
+import type { FeedbackCategory } from '@codebuff/common/constants/feedback'
+
+type CategoryHighlightKey = 'success' | 'error' | 'warning' | 'info'
+
+type CategoryOption = {
+  id: FeedbackCategory
+  label: string
+  shortLabel: string
+  highlightKey: CategoryHighlightKey
+  placeholder: string
+}
+
+const CATEGORY_OPTIONS = [
+  {
+    id: 'good_result',
+    label: 'Good result',
+    shortLabel: 'Good',
+    highlightKey: 'success',
+    placeholder:
+      'What did you like? (e.g., "Fast and accurate", "Great explanation")',
+  },
+  {
+    id: 'bad_result',
+    label: 'Bad result',
+    shortLabel: 'Bad',
+    highlightKey: 'error',
+    placeholder:
+      'What went wrong? (e.g., "Incorrect changes", "Missed the requirement")',
+  },
+  {
+    id: 'app_bug',
+    label: 'App bug',
+    shortLabel: 'Bug',
+    highlightKey: 'warning',
+    placeholder: IS_FREEBUFF
+      ? 'Report a problem with Freebuff (crashes, errors, UI issues, etc.)'
+      : 'Report a problem with Codebuff (crashes, errors, UI issues, etc.)',
+  },
+  {
+    id: 'other',
+    label: 'Other',
+    shortLabel: 'Other',
+    highlightKey: 'info',
+    placeholder: 'Tell us more (what happened, what you expected)...',
+  },
+] as const satisfies readonly CategoryOption[]
+
+type CoveredCategories = (typeof CATEGORY_OPTIONS)[number]['id']
+type _AssertAllCategoriesCovered = [FeedbackCategory] extends [CoveredCategories] ? true : never
+const _exhaustiveCheck: _AssertAllCategoriesCovered = true
+void _exhaustiveCheck
+
+const FEEDBACK_CONTAINER_HORIZONTAL_INSET = 4
+const CATEGORY_BUTTON_EXTRA_WIDTH = 6
+const CATEGORY_BUTTON_GAP_WIDTH = 1
+
+const calculateCategoryRowWidth = (labels: readonly string[]): number =>
+  labels.reduce((total, label, idx) => {
+    const buttonWidth = label.length + CATEGORY_BUTTON_EXTRA_WIDTH
+    const gapWidth = idx === 0 ? 0 : CATEGORY_BUTTON_GAP_WIDTH
+    return total + buttonWidth + gapWidth
+  }, 0)
+
+const FULL_CATEGORY_ROW_WIDTH = calculateCategoryRowWidth(
+  CATEGORY_OPTIONS.map((opt) => opt.label),
+)
+
+interface FeedbackTextSectionProps {
+  value: string
+  cursor: number
+  onChange: (text: string) => void
+  onCursorChange: (cursor: number) => void
+  onSubmit: () => void
+  placeholder: string
+  inputRef?: React.MutableRefObject<MultilineInputHandle | null>
+  width: number
+  isSubmitting?: boolean
+}
+
+const FeedbackTextSection: React.FC<FeedbackTextSectionProps> = ({
+  value,
+  cursor,
+  onChange,
+  onCursorChange,
+  onSubmit,
+  placeholder,
+  inputRef,
+  width,
+  isSubmitting = false,
+}) => {
+  const inputFocused = useChatStore((state) => state.inputFocused)
+
+  return (
+    <>
+      <Separator width={width} widthOffset={4} />
+
+      <box style={{ paddingTop: 0, paddingBottom: 0 }}>
+        <MultilineInput
+          value={value}
+          onChange={({ text, cursorPosition }) => {
+            onChange(text)
+            onCursorChange(cursorPosition)
+          }}
+          onSubmit={onSubmit}
+          onKeyIntercept={(key) => {
+            if (!isPlainEnterKey(key)) return false
+            const newText = value.slice(0, cursor) + '\n' + value.slice(cursor)
+            onChange(newText)
+            onCursorChange(cursor + 1)
+            return true
+          }}
+          onPaste={createTextPasteHandler(value, cursor, ({ text, cursorPosition }) => {
+            onChange(text)
+            onCursorChange(cursorPosition)
+          })}
+          placeholder={placeholder}
+          focused={inputFocused && !isSubmitting}
+          maxHeight={5}
+          minHeight={3}
+          ref={inputRef}
+          cursorPosition={cursor}
+        />
+      </box>
+
+      <Separator width={width} widthOffset={4} />
+    </>
+  )
+}
+
+interface FeedbackInputModeProps {
+  value: string
+  cursor: number
+  feedbackCategory: FeedbackCategory
+  onChange: (text: string) => void
+  onCursorChange: (cursor: number) => void
+  onCategoryChange: (category: FeedbackCategory) => void
+  onSubmit: () => void
+  onCancel: () => void
+  inputRef?: React.MutableRefObject<any>
+  width: number
+  footerMessage?: string | null
+  isSubmitting?: boolean
+}
+
+export const FeedbackInputMode: React.FC<FeedbackInputModeProps> = ({
+  value,
+  cursor,
+  feedbackCategory,
+  onChange,
+  onCursorChange,
+  onCategoryChange,
+  onSubmit,
+  onCancel,
+  inputRef: externalInputRef,
+  width,
+  footerMessage,
+  isSubmitting = false,
+}) => {
+  const theme = useTheme()
+  const internalInputRef = useRef<MultilineInputHandle | null>(null)
+  const inputRef = externalInputRef || internalInputRef
+  const canSubmit = value.trim().length > 0 && !isSubmitting
+  const [closeButtonHovered, setCloseButtonHovered] = useState(false)
+  const availableWidth = Math.max(
+    0,
+    width - FEEDBACK_CONTAINER_HORIZONTAL_INSET,
+  )
+  const shouldUseShortLabels = FULL_CATEGORY_ROW_WIDTH > availableWidth
+
+  return (
+    <box
+      border
+      borderStyle="single"
+      borderColor={theme.primary}
+      customBorderChars={BORDER_CHARS}
+      style={{
+        flexDirection: 'column',
+        gap: 0,
+        paddingLeft: 1,
+        paddingRight: 1,
+        paddingTop: 0,
+        paddingBottom: 0,
+      }}
+    >
+      <box
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginTop: 1,
+        }}
+      >
+        <text style={{ wrapMode: 'none', marginLeft: 1, marginRight: 1 }}>
+          <span fg={theme.secondary}>
+            Share your feedback — thanks for helping us improve!
+          </span>
+        </text>
+        <box
+          style={{ paddingRight: 1 }}
+          onMouseDown={onCancel}
+          onMouseOver={() => setCloseButtonHovered(true)}
+          onMouseOut={() => setCloseButtonHovered(false)}
+        >
+          <text style={{ wrapMode: 'none' }} selectable={false}>
+            <span fg={closeButtonHovered ? theme.foreground : theme.secondary}>
+              [x]
+            </span>
+          </text>
+        </box>
+      </box>
+
+      <box
+        style={{
+          flexDirection: 'row',
+          gap: 1,
+          paddingTop: 0,
+          paddingBottom: 0,
+        }}
+      >
+        {CATEGORY_OPTIONS.map((option) => {
+          const optionHighlight = theme[option.highlightKey]
+          const isSelected = feedbackCategory === option.id
+          const label = shouldUseShortLabels ? option.shortLabel : option.label
+          return (
+            <Button
+              key={option.id}
+              onClick={() => onCategoryChange(option.id)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 1,
+                paddingLeft: 1,
+                paddingRight: 1,
+                paddingTop: 0,
+                paddingBottom: 0,
+                borderStyle: 'single',
+                borderColor: isSelected ? optionHighlight : theme.border,
+                customBorderChars: BORDER_CHARS,
+                backgroundColor: 'transparent',
+              }}
+            >
+              <text style={{ wrapMode: 'none' }}>
+                <span fg={isSelected ? optionHighlight : theme.muted}>
+                  {isSelected ? '◉' : '◯'}
+                </span>
+                <span fg={isSelected ? theme.foreground : theme.secondary}>
+                  {' '}
+                  {label}
+                </span>
+              </text>
+            </Button>
+          )
+        })}
+      </box>
+
+      <FeedbackTextSection
+        value={value}
+        cursor={cursor}
+        onChange={isSubmitting ? () => {} : onChange}
+        onCursorChange={isSubmitting ? () => {} : onCursorChange}
+        onSubmit={onSubmit}
+        placeholder={
+          isSubmitting
+            ? 'Sending feedback...'
+            : CATEGORY_OPTIONS.find((opt) => opt.id === feedbackCategory)
+                ?.placeholder ||
+              'Tell us more (what happened, what you expected)...'
+        }
+        inputRef={inputRef}
+        width={width}
+        isSubmitting={isSubmitting}
+      />
+
+      <box
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingTop: 0,
+          paddingBottom: 0,
+          gap: 2,
+        }}
+      >
+        <text style={{ wrapMode: 'none' }}>
+          <span fg={theme.muted}>
+            {footerMessage || 'Session details are auto-attached'}
+          </span>
+        </text>
+        <Button
+          onClick={() => {
+            if (canSubmit) onSubmit()
+          }}
+          style={{
+            paddingLeft: 1,
+            paddingRight: 1,
+            paddingTop: 0,
+            paddingBottom: 0,
+            borderStyle: 'single',
+            borderColor: canSubmit ? theme.foreground : theme.border,
+            customBorderChars: BORDER_CHARS,
+            backgroundColor: 'transparent',
+          }}
+        >
+          <text
+            style={{ wrapMode: 'none' }}
+            attributes={
+              canSubmit ? undefined : TextAttributes.DIM | TextAttributes.ITALIC
+            }
+          >
+            <span fg={canSubmit ? theme.foreground : theme.muted}>
+              {isSubmitting ? 'SENDING...' : 'SUBMIT'}
+            </span>
+          </text>
+        </Button>
+      </box>
+    </box>
+  )
+}

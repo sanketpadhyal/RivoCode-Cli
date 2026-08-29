@@ -1,0 +1,224 @@
+import { env } from '@codebuff/common/env'
+import {
+  FREEBUFF_COMPACT_SESSION_HEADER,
+  FREEBUFF_INSTANCE_HEADER,
+  FREEBUFF_MODEL_HEADER,
+} from '@codebuff/common/constants/freebuff-models'
+
+import { useFreebuffSessionStore } from '../state/freebuff-session-store'
+import { getAuthTokenDetails } from './auth'
+import { IS_FREEBUFF } from './constants'
+
+import type { FreebuffSessionResponse } from '../types/freebuff-session'
+import type { FreebuffSessionServerResponse } from '@codebuff/common/types/freebuff-session'
+
+const SESSION_FETCH_TIMEOUT_MS = 20_000
+export type FreebuffSessionMethod = 'POST' | 'GET' | 'DELETE'
+
+export class FreebuffSessionRequestError extends Error {
+  constructor(
+    message: string,
+    readonly statusCode: number,
+    readonly retryAfterMs?: number,
+    readonly errorCode?: string,
+  ) {
+    super(message)
+    this.name = 'FreebuffSessionRequestError'
+  }
+}
+
+export function isFreebuffSessionTimeoutError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.name === 'TimeoutError' || /timeout|timed out/i.test(error.message))
+  )
+}
+
+export type FreebuffSessionFailureDisposition = 'retry' | 'stop' | 'unknown'
+
+export function classifyFreebuffSessionRequestFailure(
+  method: Extract<FreebuffSessionMethod, 'POST' | 'GET'>,
+  error: unknown,
+): FreebuffSessionFailureDisposition {
+  if (method === 'POST') {
+    if (!(error instanceof FreebuffSessionRequestError)) return 'unknown'
+    if ([408, 429, 503].includes(error.statusCode)) {
+      return 'retry'
+    }
+    return error.statusCode >= 400 && error.statusCode < 500
+      ? 'stop'
+      : 'unknown'
+  }
+
+  if (!(error instanceof FreebuffSessionRequestError)) return 'retry'
+  return error.statusCode === 408 ||
+    error.statusCode === 429 ||
+    error.statusCode >= 500
+    ? 'retry'
+    : 'stop'
+}
+
+export function parseRetryAfterMs(
+  value: string | null,
+  nowMs = Date.now(),
+): number | undefined {
+  if (!value) return undefined
+  const seconds = Number(value)
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    const milliseconds = seconds * 1_000
+    return Number.isFinite(milliseconds) ? Math.ceil(milliseconds) : undefined
+  }
+  const dateMs = Date.parse(value)
+  return Number.isFinite(dateMs) ? Math.max(0, dateMs - nowMs) : undefined
+}
+
+export function sessionFetchSignal(
+  signal: AbortSignal | undefined,
+  timeoutMs: number = SESSION_FETCH_TIMEOUT_MS,
+): AbortSignal {
+  const timeout = AbortSignal.timeout(timeoutMs)
+  return signal ? AbortSignal.any([signal, timeout]) : timeout
+}
+
+function sessionEndpoint(): string {
+  const base = (
+    env.NEXT_PUBLIC_CODEBUFF_APP_URL || 'https://codebuff.com'
+  ).replace(/\/$/, '')
+  return `${base}/api/v1/freebuff/session`
+}
+
+export async function callFreebuffSession(
+  method: FreebuffSessionMethod,
+  token: string,
+  opts: {
+    instanceId?: string
+    model?: string
+    signal?: AbortSignal
+    compact?: boolean
+  } = {},
+): Promise<FreebuffSessionServerResponse> {
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` }
+  if (method === 'GET' && opts.instanceId) {
+    headers[FREEBUFF_INSTANCE_HEADER] = opts.instanceId
+  }
+  if (method === 'GET' && opts.compact) {
+    headers[FREEBUFF_COMPACT_SESSION_HEADER] = '1'
+  }
+  if (method === 'POST' && opts.model) {
+    headers[FREEBUFF_MODEL_HEADER] = opts.model
+  }
+
+  const response = await fetch(sessionEndpoint(), {
+    method,
+    headers,
+    signal: sessionFetchSignal(opts.signal),
+  })
+
+  if (response.status === 404) {
+    return { status: 'none' }
+  }
+
+  if (response.status === 403) {
+    const body = (await response
+      .json()
+      .catch(() => null)) as FreebuffSessionServerResponse | null
+    if (
+      body &&
+      (body.status === 'country_blocked' || body.status === 'banned')
+    ) {
+      return body
+    }
+  }
+
+  if (response.status === 409 && method === 'POST') {
+    const body = (await response
+      .json()
+      .catch(() => null)) as FreebuffSessionServerResponse | null
+    if (
+      body &&
+      (body.status === 'model_locked' || body.status === 'model_unavailable')
+    ) {
+      return body
+    }
+  }
+
+  if (response.status === 429 && method === 'POST') {
+    const body = (await response
+      .json()
+      .catch(() => null)) as FreebuffSessionServerResponse | null
+    if (
+      body &&
+      (body.status === 'rate_limited' ||
+        body.status === 'spend_limited' ||
+        body.status === 'ip_capped')
+    ) {
+      return body
+    }
+  }
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    let errorCode: string | undefined
+    try {
+      const body = JSON.parse(text) as { error?: unknown }
+      if (typeof body.error === 'string') errorCode = body.error
+    } catch {
+    }
+    throw new FreebuffSessionRequestError(
+      `freebuff session ${method} failed: ${response.status} ${text.slice(0, 200)}`,
+      response.status,
+      parseRetryAfterMs(response.headers.get('retry-after')),
+      errorCode,
+    )
+  }
+
+  return (await response.json()) as FreebuffSessionServerResponse
+}
+
+export function mergeCompactActiveSession(
+  current: FreebuffSessionResponse | null,
+  next: FreebuffSessionServerResponse,
+): FreebuffSessionServerResponse | null {
+  if (
+    current?.status !== 'active' ||
+    next.status !== 'active' ||
+    current.instanceId !== next.instanceId ||
+    current.model !== next.model
+  ) {
+    return null
+  }
+  return {
+    ...next,
+    rateLimit: next.rateLimit ?? current.rateLimit,
+    rateLimitsByModel: next.rateLimitsByModel ?? current.rateLimitsByModel,
+    subscription: next.subscription ?? current.subscription,
+  }
+}
+
+export function holdsLiveFreebuffSlot(
+  current: FreebuffSessionResponse | null,
+): boolean {
+  if (!current) return false
+  return (
+    current.status === 'active' ||
+    (current.status === 'ended' && Boolean(current.instanceId))
+  )
+}
+
+export async function releaseFreebuffSlot(): Promise<void> {
+  const current = useFreebuffSessionStore.getState().session
+  if (!holdsLiveFreebuffSlot(current)) return
+
+  const { token } = getAuthTokenDetails()
+  if (!token) return
+
+  try {
+    await callFreebuffSession('DELETE', token)
+  } catch {
+  }
+}
+
+export async function endFreebuffSessionBestEffort(): Promise<void> {
+  if (!IS_FREEBUFF) return
+  await releaseFreebuffSlot()
+}

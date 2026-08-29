@@ -1,0 +1,386 @@
+import {
+  printFileTree,
+  printFileTreeWithTokens,
+} from '@codebuff/common/util/file'
+import { sampleSizeWithSeed } from '@codebuff/common/util/random'
+
+import { countTokens, countTokensJson } from '../util/token-counter'
+
+import type { Logger } from '@codebuff/common/types/contracts/logger'
+import type {
+  FileTreeNode,
+  ProjectFileContext,
+} from '@codebuff/common/util/file'
+
+type TruncationLevel = 'none' | 'unimportant-files' | 'tokens' | 'depth-based'
+const DEBUG = false
+
+export const truncateFileTreeBasedOnTokenBudget = (params: {
+  fileContext: ProjectFileContext
+  tokenBudget: number
+  logger: Logger
+}): {
+  printedTree: string
+  tokenCount: number
+  truncationLevel: TruncationLevel
+} => {
+  const { fileContext, tokenBudget, logger } = params
+  const startTime = performance.now()
+  const { fileTree, fileTokenScores } = fileContext
+
+  const filteredTree = removeUnimportantFiles(fileTree)
+
+  const treeWithTokens = printFileTreeWithTokens(filteredTree, fileTokenScores)
+  const treeWithTokensCount = countTokensJson(treeWithTokens)
+
+  if (treeWithTokensCount <= tokenBudget) {
+    return {
+      printedTree: treeWithTokens,
+      tokenCount: treeWithTokensCount,
+      truncationLevel: 'none',
+    }
+  }
+
+  const printedFilteredTree = printFileTree(filteredTree)
+  const filteredTreeNoTokensCount = countTokensJson(printedFilteredTree)
+
+  if (filteredTreeNoTokensCount <= tokenBudget) {
+    const filteredTreeWithTokens = printFileTreeWithTokens(
+      filteredTree,
+      fileTokenScores,
+    )
+    const filteredTreeWithTokensCount = countTokensJson(filteredTreeWithTokens)
+    if (filteredTreeWithTokensCount <= tokenBudget) {
+      if (DEBUG) {
+        logger.debug(
+          {
+            tokenBudget,
+            filteredTreeWithTokensCount,
+            duration: performance.now() - startTime,
+          },
+          'truncateFileTreeBasedOnTokenBudget unimportant-files',
+        )
+      }
+      return {
+        printedTree: filteredTreeWithTokens,
+        tokenCount: filteredTreeWithTokensCount,
+        truncationLevel: 'unimportant-files',
+      }
+    }
+    const { printedTree, tokenCount } = pruneFileTokenScores({
+      fileTree: filteredTree,
+      fileTokenScores,
+      tokenBudget,
+      logger,
+    })
+
+    if (tokenCount <= tokenBudget) {
+      if (DEBUG) {
+        logger.debug(
+          { tokenBudget, tokenCount, duration: performance.now() - startTime },
+          'truncateFileTreeBasedOnTokenBudget tokens',
+        )
+      }
+      return {
+        printedTree,
+        tokenCount,
+        truncationLevel: 'tokens',
+      }
+    }
+  }
+
+  const start = performance.now()
+
+  const getFilesWithDepths = (
+    nodes: FileTreeNode[],
+    parentDepth = 0,
+  ): Array<{ node: FileTreeNode; path: string; depth: number }> => {
+    return nodes.flatMap((node) => {
+      if (node.type === 'file') {
+        return [{ node, path: node.filePath, depth: parentDepth }]
+      }
+      return (
+        node.children?.flatMap((child) =>
+          getFilesWithDepths([child], parentDepth + 1),
+        ) ?? []
+      )
+    })
+  }
+
+  let currentTree = filteredTree
+  let currentTokenCount = filteredTreeNoTokensCount
+  let currentPrintedTree = ''
+
+  const allFiles = getFilesWithDepths(currentTree)
+  const sortedFiles = allFiles.sort((a, b) => b.depth - a.depth)
+
+  const sampleCount = Math.min(30, sortedFiles.length)
+  const sampleFiles = sampleSizeWithSeed(
+    sortedFiles,
+    sampleCount,
+    JSON.stringify(sortedFiles) + JSON.stringify(sampleCount),
+  )
+  const sampleText = sampleFiles.map((f) => f.node.name).join(' ')
+  const sampleTokens = countTokens(sampleText)
+
+  const avgTokensPerFileName = sampleTokens / sampleCount
+
+  const tokensToRemove = currentTokenCount - tokenBudget
+  let estimatedFilesToRemove =
+    Math.ceil((0.5 * tokensToRemove) / avgTokensPerFileName) + 100
+
+  let iterationCount = 0
+  const MAX_ITERATIONS = 10
+  let previousTokenCount = Infinity
+
+  while (estimatedFilesToRemove > 0 && iterationCount < MAX_ITERATIONS) {
+    const filesToRemove = new Set(
+      sortedFiles
+        .slice(0, Math.min(estimatedFilesToRemove, sortedFiles.length))
+        .map((f) => f.path),
+    )
+    sortedFiles.splice(0, estimatedFilesToRemove)
+
+    const filterRemovedFiles = (node: FileTreeNode): FileTreeNode | null => {
+      if (node.type === 'file') {
+        return filesToRemove.has(node.filePath) ? null : node
+      }
+
+      const newChildren = node.children
+        ?.map(filterRemovedFiles)
+        .filter((n): n is FileTreeNode => n !== null)
+
+      return newChildren?.length ? { ...node, children: newChildren } : null
+    }
+
+    currentTree = currentTree
+      .map(filterRemovedFiles)
+      .filter((n): n is FileTreeNode => n !== null)
+
+    currentPrintedTree = printFileTree(currentTree)
+    currentTokenCount = countTokensJson(currentPrintedTree)
+
+    if (currentTokenCount >= previousTokenCount) {
+      logger.warn(
+        { currentTokenCount, previousTokenCount, iterationCount },
+        'No progress in reducing tokens, breaking loop',
+      )
+      break
+    }
+    previousTokenCount = currentTokenCount
+
+    const tokensToRemove = currentTokenCount - tokenBudget
+    estimatedFilesToRemove =
+      tokensToRemove > 0
+        ? Math.ceil((0.5 * tokensToRemove) / avgTokensPerFileName) + 100
+        : 0
+
+    iterationCount++
+  }
+
+  if (iterationCount >= MAX_ITERATIONS) {
+    logger.warn(
+      { iterationCount, currentTokenCount, tokenBudget },
+      'Hit max iterations while truncating file tree',
+    )
+  }
+
+  const end = performance.now()
+  if (end - start > 100) {
+    logger.debug(
+      { durationMs: end - start, tokenCount: currentTokenCount },
+      'fileNameTruncation took a while',
+    )
+  }
+  if (DEBUG) {
+    logger.debug(
+      {
+        tokenBudget,
+        tokenCount: currentTokenCount,
+        duration: performance.now() - startTime,
+      },
+      'truncateFileTreeBasedOnTokenBudget depth-based',
+    )
+  }
+  return {
+    printedTree: currentPrintedTree,
+    tokenCount: currentTokenCount,
+    truncationLevel: 'depth-based',
+  }
+}
+
+function pruneFileTokenScores(params: {
+  fileTree: FileTreeNode[]
+  fileTokenScores: Record<string, Record<string, number>>
+  tokenBudget: number
+  logger: Logger
+}) {
+  const { fileTree, fileTokenScores, tokenBudget, logger } = params
+  const startTime = performance.now()
+
+  const sortedTokens = Object.entries(fileTokenScores)
+    .flatMap(([filePath, tokens]) =>
+      Object.entries(tokens).map(([token, score]) => ({
+        filePath,
+        token,
+        score,
+      })),
+    )
+    .sort((a, b) => a.score - b.score)
+
+  let printedTree = printFileTreeWithTokens(fileTree, fileTokenScores)
+  let totalTokens = countTokensJson(printedTree)
+
+  if (totalTokens <= tokenBudget) {
+    return { pruned: fileTokenScores, printedTree, tokenCount: totalTokens }
+  }
+
+  const tokensToRemove = totalTokens - tokenBudget
+  const initialKeepIndex = Math.max(0, Math.ceil(tokensToRemove / 5))
+
+  let pruned: Record<string, Record<string, number>> = {}
+  for (let i = initialKeepIndex; i < sortedTokens.length; i++) {
+    const { filePath, token, score } = sortedTokens[i]
+    if (!pruned[filePath]) {
+      pruned[filePath] = {}
+    }
+    pruned[filePath][token] = score
+  }
+
+  let index = initialKeepIndex
+  printedTree = printFileTreeWithTokens(fileTree, pruned)
+  totalTokens = countTokensJson(printedTree)
+
+  while (totalTokens > tokenBudget && index < sortedTokens.length) {
+    const remainingToRemove = totalTokens - tokenBudget
+    const batchSize = Math.ceil(remainingToRemove / 5) + 500
+
+    for (let i = index; i < index + batchSize && i < sortedTokens.length; i++) {
+      const { filePath, token } = sortedTokens[i]
+      if (pruned[filePath]?.[token] !== undefined) {
+        delete pruned[filePath][token]
+        if (Object.keys(pruned[filePath]).length === 0) {
+          delete pruned[filePath]
+        }
+      }
+    }
+
+    printedTree = printFileTreeWithTokens(fileTree, pruned)
+    totalTokens = countTokensJson(printedTree)
+    index += batchSize
+  }
+
+  const endTime = performance.now()
+  if (endTime - startTime > 100) {
+    logger.debug(
+      {
+        tokenBudget,
+        durationMs: endTime - startTime,
+        finalTokenCount: totalTokens,
+        remainingTokenEntries: Object.values(pruned).reduce(
+          (sum, tokens) => sum + Object.keys(tokens).length,
+          0,
+        ),
+      },
+      'pruneFileTokenScores took a while',
+    )
+  }
+  return { pruned, printedTree, tokenCount: totalTokens }
+}
+
+const removeUnimportantFiles = (fileTree: FileTreeNode[]): FileTreeNode[] => {
+  const shouldKeepFile = (node: FileTreeNode): boolean => {
+    if (node.type === 'directory') {
+      const dirPath = node.filePath.toLowerCase()
+      const isUnimportantDir = unimportantExtensions.some(
+        (ext) =>
+          ext.startsWith('/') && ext.endsWith('/') && dirPath.includes(ext),
+      )
+      if (isUnimportantDir) {
+        return false
+      }
+      const filteredChildren = node.children?.filter(shouldKeepFile) ?? []
+      node.children = filteredChildren
+      return filteredChildren.length > 0
+    }
+
+    const filePath = node.filePath.toLowerCase()
+    return !unimportantExtensions.some(
+      (ext) => !ext.startsWith('/') && filePath.endsWith(ext),
+    )
+  }
+
+  return fileTree.filter(shouldKeepFile)
+}
+
+const unimportantExtensions = [
+  '.min.js',
+  '.min.css',
+  '.map',
+  '.d.ts',
+
+  '.pyc',
+  '.pyo',
+  '__pycache__',
+  '.pyd',
+  '.so',
+  '.egg-info',
+  '.whl',
+
+  '.class',
+  '.jar',
+  '.war',
+
+  '.gem',
+  '.rbc',
+
+  '/dist/',
+  '/build/',
+  '/out/',
+  '/target/',
+
+  '/node_modules/',
+  '/.venv/',
+  '/vendor/',
+
+  '.log',
+  '.tmp',
+  '.temp',
+  '.swp',
+  '.bak',
+  '.cache',
+
+  '.docx',
+  '.pdf',
+  '.chm',
+
+  '.zip',
+  '.tar',
+  '.gz',
+  '.rar',
+  '.7z',
+  '.iso',
+  '.dmg',
+  '.pkg',
+  '.deb',
+  '.rpm',
+  '.exe',
+  '.dll',
+  '.lib',
+  '.so',
+
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.gif',
+  '.ico',
+  '.svg',
+  '.mp3',
+  '.mp4',
+  '.mov',
+  '.avi',
+  '.bmp',
+  '.tiff',
+  '.tif',
+  '.webp',
+]

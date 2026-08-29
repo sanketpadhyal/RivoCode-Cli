@@ -1,0 +1,56 @@
+import { TextAttributes } from '@opentui/core'
+
+import { TerminalCommandDisplay } from './terminal-command-display'
+import { useTheme } from '../hooks/use-theme'
+import { DASHED_BORDER_CHARS } from '../utils/ui-constants'
+
+import type { PendingBashMessage as PendingBashMessageType } from '../types/store'
+
+interface PendingBashMessageProps {
+  message: PendingBashMessageType
+}
+
+export const PendingBashMessage = ({
+  message,
+}: PendingBashMessageProps) => {
+  const theme = useTheme()
+
+  return (
+    <box
+      style={{
+        flexDirection: 'column',
+        width: '100%',
+        gap: 0,
+        paddingBottom: 1,
+      }}
+    >
+      <box
+        style={{
+          flexDirection: 'column',
+          width: '100%',
+          borderStyle: 'single',
+          borderColor: theme.muted,
+          customBorderChars: DASHED_BORDER_CHARS,
+          paddingLeft: 1,
+          paddingRight: 1,
+          paddingTop: 0,
+          paddingBottom: 0,
+          gap: 0,
+        }}
+      >
+        <TerminalCommandDisplay
+          command={message.command}
+          output={message.stdout || message.stderr || null}
+          expandable={false}
+          maxVisibleLines={10}
+          isRunning={message.isRunning}
+          cwd={message.cwd}
+        />
+
+        <text fg={theme.muted} attributes={TextAttributes.ITALIC}>
+          Will be added to chat history when it completes
+        </text>
+      </box>
+    </box>
+  )
+}
