@@ -366,101 +366,6 @@ export const useSendMessage = ({
 
       if (releaseIfStopped()) return
 
-      try {
-        const validationResult = await onBeforeMessageSend()
-
-        if (releaseIfStopped()) return
-
-        if (!validationResult.success) {
-          logger.warn(
-            { errors: validationResult.errors },
-            '[send-message] Validation failed',
-          )
-          const errorsToAttach =
-            validationResult.errors.length === 0
-              ? [
-                ]
-              : validationResult.errors
-
-          setMessages((prev) =>
-            prev.map((msg) => {
-              if (msg.id !== userMessageId) {
-                return msg
-              }
-              return {
-                ...msg,
-                validationErrors: errorsToAttach,
-              }
-            }),
-          )
-          finishPreflight()
-          return
-        }
-      } catch (error) {
-        if (releaseIfStopped()) return
-        logger.error(
-          { error },
-          '[send-message] Validation before message send failed with exception',
-        )
-
-        setMessages((prev) => [
-          ...prev,
-          createErrorChatMessage(
-            '⚠️ Agent validation failed unexpectedly. Please try again.',
-          ),
-        ])
-        await yieldToEventLoop()
-        if (releaseIfStopped()) return
-        setTimeout(() => scrollToLatest(), 0)
-
-        finishPreflight()
-        return
-      }
-
-      setFocusedAgentId(null)
-      setInputFocused(true)
-      inputRef.current?.focus()
-
-      let client: Awaited<ReturnType<typeof getCodebuffClient>>
-      try {
-        client = await getClient()
-      } catch (error) {
-        if (releaseIfStopped()) return
-        logger.error(
-          { error },
-          '[send-message] Failed to create Codebuff client',
-        )
-        setMessages((prev) => [
-          ...prev,
-          createErrorChatMessage(
-            '⚠️ Unable to create the client. Please check your authentication and try again.',
-          ),
-        ])
-        finishPreflight()
-        return
-      }
-
-      if (releaseIfStopped()) return
-
-      if (!client) {
-        logger.error(
-          {},
-          '[send-message] No Codebuff client available. Please ensure you are authenticated.',
-        )
-        const brandName = IS_FREEBUFF ? 'Freebuff' : 'Codebuff'
-        setMessages((prev) => [
-          ...prev,
-          createErrorChatMessage(
-            `⚠️ Unable to connect to ${brandName}. Please check your authentication and try again.`,
-          ),
-        ])
-        await yieldToEventLoop()
-        if (releaseIfStopped()) return
-        setTimeout(() => scrollToLatest(), 0)
-        finishPreflight()
-        return
-      }
-
       const aiMessageId = generateAiMessageId()
       const aiMessage = createAiMessageShell(aiMessageId)
 
@@ -484,13 +389,6 @@ export const useSendMessage = ({
         ...autoCollapsePreviousMessages(prev, aiMessageId),
         aiMessage,
       ])
-      let actualCredits: number | undefined
-
-      saveChatState(
-        latestRunStateSnapshot,
-        useChatStore.getState().messages,
-        runChatDir,
-      )
 
       try {
         await simulateFakeAiResponse({
@@ -529,6 +427,109 @@ export const useSendMessage = ({
       } catch (err) {
         logger.error({ err }, '[send-message] Fake response simulation error')
       }
+
+      try {
+        const validationResult = await onBeforeMessageSend()
+
+        if (releaseIfStopped()) return
+
+        if (!validationResult.success) {
+          logger.warn(
+            { errors: validationResult.errors },
+            '[send-message] Validation failed',
+          )
+          const errorsToAttach =
+            validationResult.errors.length === 0
+              ? [
+                ]
+              : validationResult.errors
+
+          setMessages((prev) =>
+            prev.map((msg) => {
+              if (msg.id !== userMessageId) {
+                return msg
+              }
+              return {
+                ...msg,
+                validationErrors: errorsToAttach,
+              }
+            }),
+          )
+          releaseRunOwnership()
+          return
+        }
+      } catch (error) {
+        if (releaseIfStopped()) return
+        logger.error(
+          { error },
+          '[send-message] Validation before message send failed with exception',
+        )
+
+        setMessages((prev) => [
+          ...prev,
+          createErrorChatMessage(
+            '⚠️ Agent validation failed unexpectedly. Please try again.',
+          ),
+        ])
+        await yieldToEventLoop()
+        if (releaseIfStopped()) return
+        setTimeout(() => scrollToLatest(), 0)
+
+        releaseRunOwnership()
+        return
+      }
+
+      setFocusedAgentId(null)
+      setInputFocused(true)
+      inputRef.current?.focus()
+
+      let client: Awaited<ReturnType<typeof getCodebuffClient>>
+      try {
+        client = await getClient()
+      } catch (error) {
+        if (releaseIfStopped()) return
+        logger.error(
+          { error },
+          '[send-message] Failed to create Codebuff client',
+        )
+        setMessages((prev) => [
+          ...prev,
+          createErrorChatMessage(
+            '⚠️ Unable to create the client. Please check your authentication and try again.',
+          ),
+        ])
+        releaseRunOwnership()
+        return
+      }
+
+      if (releaseIfStopped()) return
+
+      if (!client) {
+        logger.error(
+          {},
+          '[send-message] No Codebuff client available. Please ensure you are authenticated.',
+        )
+        const brandName = IS_FREEBUFF ? 'Freebuff' : 'Codebuff'
+        setMessages((prev) => [
+          ...prev,
+          createErrorChatMessage(
+            `⚠️ Unable to connect to ${brandName}. Please check your authentication and try again.`,
+          ),
+        ])
+        await yieldToEventLoop()
+        if (releaseIfStopped()) return
+        setTimeout(() => scrollToLatest(), 0)
+        releaseRunOwnership()
+        return
+      }
+
+      let actualCredits: number | undefined
+
+      saveChatState(
+        latestRunStateSnapshot,
+        useChatStore.getState().messages,
+        runChatDir,
+      )
 
       try {
         const agentDefinitions = loadAgentDefinitions()

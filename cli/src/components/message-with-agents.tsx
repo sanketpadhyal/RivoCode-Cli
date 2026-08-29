@@ -211,7 +211,7 @@ export const MessageWithAgents = memo(
 
     const agentChildren = messageTree?.get(message.id) ?? []
     const hasAgentChildren = agentChildren.length > 0
-    const showVerticalLine = isUser
+    const showVerticalLine = false
 
     return (
       <box

@@ -98,7 +98,7 @@ const UserTextWithInlineCopy = memo(
         textToCopy={content}
         style={{ wrapMode: 'word', fg: textColor }}
       >
-        <span attributes={TextAttributes.ITALIC}>
+        <span>
           <ContentWithMarkdown
             content={normalizedContent}
             isStreaming={isStreamingMessage}
