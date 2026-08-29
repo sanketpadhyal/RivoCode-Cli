@@ -42,6 +42,7 @@ import {
   resetEarlyReturnState,
   setupStreamingContext,
 } from './helpers/send-message'
+import { simulateFakeAiResponse } from '../utils/fake-response'
 import { NETWORK_ERROR_ID } from '../utils/validation-error-helpers'
 import { yieldToEventLoop } from '../utils/yield-to-event-loop'
 
@@ -490,6 +491,44 @@ export const useSendMessage = ({
         useChatStore.getState().messages,
         runChatDir,
       )
+
+      try {
+        await simulateFakeAiResponse({
+          prompt: finalContent,
+          agentMode,
+          aiMessageId,
+          updater,
+          signal: abortController.signal,
+          onComplete: (runState) => {
+            if (!abortController.signal.aborted && runChatIsCurrent()) {
+              previousRunStateRef.current = runState
+              setRunState(runState)
+              setIsRetrying(false)
+              saveChatState(runState, useChatStore.getState().messages, runChatDir)
+            }
+            handleRunCompletion({
+              runState,
+              actualCredits: 0,
+              agentMode,
+              timerController,
+              updater,
+              aiMessageId,
+              wasAbortedByUser: abortController.signal.aborted,
+              hasReceivedContent: true,
+              setStreamStatus,
+              setCanProcessQueue,
+              updateChainInProgress,
+              setHasReceivedPlanResponse,
+              resumeQueue,
+              isProcessingQueueRef,
+              isQueuePausedRef,
+            })
+          },
+        })
+        return
+      } catch (err) {
+        logger.error({ err }, '[send-message] Fake response simulation error')
+      }
 
       try {
         const agentDefinitions = loadAgentDefinitions()
