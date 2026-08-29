@@ -65,22 +65,13 @@ export const SegmentedControl = ({
           >
             <text style={{ wrapMode: 'none' }}>
               {isSelected ? (
-                <>
-                  <span fg={theme.primary}>● </span>
-                  <b>
-                    <span fg={theme.primary}>{seg.label}</span>
-                  </b>
-                </>
+                <b>
+                  <span fg={theme.primary}>{seg.label}</span>
+                </b>
               ) : isHovered ? (
-                <>
-                  <span fg={theme.foreground}>○ </span>
-                  <span fg={theme.foreground}>{seg.label}</span>
-                </>
+                <span fg={theme.foreground}>{seg.label}</span>
               ) : (
-                <>
-                  <span fg={theme.muted}>○ </span>
-                  <span fg={theme.muted}>{seg.label}</span>
-                </>
+                <span fg={theme.muted}>{seg.label}</span>
               )}
             </text>
           </Button>

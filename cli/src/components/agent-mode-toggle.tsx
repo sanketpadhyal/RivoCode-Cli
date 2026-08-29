@@ -14,6 +14,13 @@ export const OPEN_DELAY_MS = 0
 export const CLOSE_DELAY_MS = 250
 export const REOPEN_SUPPRESS_MS = 250
 
+export const MODE_ICONS: Record<AgentMode, string> = {
+  DEFAULT: '⚡',
+  LITE: '🍃',
+  MAX: '🔥',
+  PLAN: '📐',
+}
+
 export function useHoverToggle() {
   const [isOpen, setIsOpen] = useState(false)
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -84,11 +91,14 @@ export function useHoverToggle() {
 }
 
 export function buildExpandedSegments(currentMode: AgentMode): Segment[] {
-  return AGENT_MODES.map((m) => ({
-    id: m,
-    label: m,
-    isSelected: m === currentMode,
-  }))
+  return AGENT_MODES.map((m) => {
+    const icon = MODE_ICONS[m] || '⚡'
+    return {
+      id: m,
+      label: `${icon} ${m}`,
+      isSelected: m === currentMode,
+    }
+  })
 }
 
 export type AgentModeClickAction =
@@ -152,6 +162,8 @@ export const AgentModeToggle = ({
     hoverToggle.closeNow(true)
   }
 
+  const currentIcon = MODE_ICONS[mode] || '⚡'
+
   if (!hoverToggle.isOpen) {
     return (
       <Button
@@ -179,12 +191,12 @@ export const AgentModeToggle = ({
       >
         <text
           wrapMode="none"
-          fg={isCollapsedHovered ? theme.primary : theme.muted}
+          fg={isCollapsedHovered ? theme.primary : theme.foreground}
         >
           {isCollapsedHovered ? (
-            <b>{`⚡ ${mode}`}</b>
+            <b>{`${currentIcon} ${mode}`}</b>
           ) : (
-            `⚡ ${mode}`
+            `${currentIcon} ${mode}`
           )}
         </text>
       </Button>
