@@ -192,9 +192,9 @@ export const AgentModeToggle = ({
           fg={isCollapsedHovered ? theme.primary : theme.muted}
         >
           {isCollapsedHovered ? (
-            <b>{`${currentIcon} ${mode} ▾`}</b>
+            <b>{`< ${currentIcon} ${mode}`}</b>
           ) : (
-            `${currentIcon} ${mode} ▾`
+            `< ${currentIcon} ${mode}`
           )}
         </text>
       </Button>
