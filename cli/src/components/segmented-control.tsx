@@ -55,12 +55,8 @@ export const SegmentedControl = ({
               alignItems: 'center',
               paddingLeft: 1,
               paddingRight: 1,
-              borderStyle: 'single',
-              borderColor: isSelected
-                ? theme.primary
-                : isHovered
-                  ? theme.foreground
-                  : theme.border,
+              borderStyle: isSelected ? 'single' : 'none',
+              borderColor: isSelected ? theme.primary : undefined,
             }}
           >
             <text style={{ wrapMode: 'none' }}>
