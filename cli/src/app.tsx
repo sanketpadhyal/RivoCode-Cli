@@ -11,6 +11,10 @@ import { ProjectPickerScreen } from './components/project-picker-screen'
 import { SigningInScreen } from './components/signing-in-screen'
 import { WorkspaceTrustScreen } from './components/workspace-trust-screen'
 import { DEFAULT_BYPASS_USER, saveUserCredentials } from './utils/auth'
+import {
+  isWorkspaceTrusted as checkWorkspaceTrusted,
+  trustWorkspace,
+} from './utils/trusted-workspaces'
 import { FreebuffLandingScreen } from './components/freebuff-landing-screen'
 import { useAuthQuery } from './hooks/use-auth-query'
 import { useAuthState } from './hooks/use-auth-state'
@@ -196,7 +200,7 @@ export const App = ({
   }
 
   const [signingInComplete, setSigningInComplete] = useState(false)
-  const [isWorkspaceTrusted, setIsWorkspaceTrusted] = useState(false)
+  const [isWorkspaceTrusted, setIsWorkspaceTrusted] = useState(() => checkWorkspaceTrusted(projectRoot))
 
   if (!signingInComplete) {
     return (
@@ -215,6 +219,7 @@ export const App = ({
       <WorkspaceTrustScreen
         workspacePath={projectRoot}
         onTrust={() => {
+          trustWorkspace(projectRoot)
           setIsWorkspaceTrusted(true)
         }}
       />
