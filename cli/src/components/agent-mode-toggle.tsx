@@ -15,10 +15,10 @@ export const CLOSE_DELAY_MS = 250
 export const REOPEN_SUPPRESS_MS = 250
 
 export const MODE_ICONS: Record<AgentMode, string> = {
-  DEFAULT: '⚡',
-  LITE: '🍃',
-  MAX: '🔥',
-  PLAN: '📐',
+  DEFAULT: '✦',
+  LITE: '◇',
+  MAX: '★',
+  PLAN: '≡',
 }
 
 export function useHoverToggle() {
