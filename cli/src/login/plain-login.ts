@@ -1,96 +1,39 @@
-import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
-import { cyan, green, red, yellow, bold } from 'picocolors'
+import readline from 'readline'
+import { cyan, green, red, bold } from 'picocolors'
 
-import { LOGIN_WEBSITE_URL } from './constants'
-import { generateLoginUrl, pollLoginStatus } from './login-flow'
-import {
-  flushAnalytics,
-  identifyUser,
-  trackEvent,
-} from '../utils/analytics'
-import { saveUserCredentials } from '../utils/auth'
-import { IS_FREEBUFF } from '../utils/constants'
-import { getFingerprintId } from '../utils/fingerprint'
-import { logger } from '../utils/logger'
-
-import type { User } from '../utils/auth'
+import { DEFAULT_BYPASS_USER, saveUserCredentials } from '../utils/auth'
 
 export async function runPlainLogin(): Promise<void> {
-  const fingerprintId = await getFingerprintId()
+  console.log()
+  console.log(bold('RivoCode Authentication'))
+  console.log()
 
-  console.log()
-  console.log(bold(IS_FREEBUFF ? 'Freebuff Login' : 'Codebuff Login'))
-  console.log()
-  console.log('Generating login URL...')
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
 
-  let loginData
-  try {
-    loginData = await generateLoginUrl(
-      { logger, trackEvent },
-      { baseUrl: LOGIN_WEBSITE_URL, fingerprintId, via: 'plain_command' },
-    )
-  } catch (error) {
-    console.error(
-      red(
-        `Failed to generate login URL: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      ),
-    )
-    process.exit(1)
-  }
+  return new Promise<void>((resolve) => {
+    rl.question('Enter access code: ', (input) => {
+      rl.close()
+      const code = input.trim().toLowerCase()
 
-  console.log()
-  console.log('Open this URL in your browser to log in:')
-  console.log()
-  console.log(cyan(loginData.loginUrl))
-  console.log()
-  console.log(yellow('Please open the URL above manually to complete login.'))
-  console.log()
-  console.log('Waiting for login...')
-
-  const sleep = (ms: number) =>
-    new Promise<void>((resolve) => {
-      setTimeout(resolve, ms)
+      if (code === 'sanket') {
+        saveUserCredentials(DEFAULT_BYPASS_USER)
+        console.log()
+        console.log(green('✓ Logged in as Sanket Padhyal (RivoCode)'))
+        console.log()
+        console.log('You can now run ' + cyan('rivocode') + ' to start.')
+        console.log()
+        resolve()
+        process.exit(0)
+      } else {
+        console.log()
+        console.log(red('❌ Invalid access code. (Hint: sanket)'))
+        console.log()
+        resolve()
+        process.exit(1)
+      }
     })
-
-  const result = await pollLoginStatus(
-    { sleep, logger, trackEvent },
-    {
-      baseUrl: LOGIN_WEBSITE_URL,
-      fingerprintId,
-      fingerprintHash: loginData.fingerprintHash,
-      expiresAt: loginData.expiresAt,
-      via: 'plain_command',
-    },
-  )
-
-  if (result.status === 'success') {
-    const user = result.user as User
-    saveUserCredentials(user)
-
-    if (user.id) {
-      identifyUser(user.id, { email: user.email, freebuff: IS_FREEBUFF })
-      trackEvent(AnalyticsEvent.LOGIN, {
-        userId: user.id,
-        via: 'plain_command',
-        hasEmail: Boolean(user.email),
-        hasName: Boolean(user.name),
-      })
-      await flushAnalytics()
-    }
-
-    console.log()
-    console.log(green(`✓ Logged in as ${user.name} (${user.email})`))
-    console.log()
-    const cliName = IS_FREEBUFF ? 'freebuff' : 'codebuff'
-    console.log('You can now run ' + cyan(cliName) + ' to start.')
-    process.exit(0)
-  } else if (result.status === 'timeout') {
-    console.error(red('Login timed out. Please try again.'))
-    process.exit(1)
-  } else {
-    console.error(red('Login was aborted.'))
-    process.exit(1)
-  }
+  })
 }

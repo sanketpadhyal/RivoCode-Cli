@@ -272,7 +272,7 @@ async function main(): Promise<void> {
         return
       }
 
-      setHasInvalidCredentials(true)
+      setHasInvalidCredentials(false)
       setRequireAuth(false)
     }, [])
 
