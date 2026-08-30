@@ -1,4 +1,5 @@
 import { TextAttributes } from '@opentui/core'
+import os from 'os'
 import { memo, useMemo, useState } from 'react'
 
 import { useLogo } from '../hooks/use-logo'
@@ -73,29 +74,18 @@ export const ChatHeader = memo(function ChatHeader({
       <box style={{ flexDirection: 'column', gap: 0 }}>
         <text style={{ wrapMode: 'none' }}>
           <span fg={theme.primary} attributes={TextAttributes.BOLD}>
-            RivoCode CLI
+            RivoCode CLI 1.0.0
           </span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
           <span>sanketpadhyal@gmail.com (Created by Sanket Padhyal)</span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
-          <span>{selectedModel ? `${selectedModel} (${modeLabel})` : 'No model selected'}</span>
+          <span>{selectedModel ? `${selectedModel} (${modeLabel})` : 'Gemini 3.6 Flash (High)'}</span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.secondary }}>
-          <span>{projectRoot}</span>
+          <span>{projectRoot.startsWith(os.homedir()) ? '~' + projectRoot.slice(os.homedir().length) : projectRoot}</span>
         </text>
-        <box style={{ marginTop: 1 }}>
-          <text style={{ wrapMode: 'none' }}>
-            <span
-              bg={apiConnected ? '#ca8a04' : '#a16207'}
-              fg="#ffffff"
-              attributes={TextAttributes.BOLD}
-            >
-              {apiConnected ? ' API Connected ' : ' API Not Connected '}
-            </span>
-          </text>
-        </box>
       </box>
     </box>
   )

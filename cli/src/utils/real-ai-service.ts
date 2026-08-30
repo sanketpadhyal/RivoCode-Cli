@@ -750,29 +750,35 @@ STRICT BEHAVIOR RULES:
           let toolActionNotice = '\n\n'
           if (tc.name === 'write_file') {
             const lineCount = (parsedArgs.content || '').split('\n').length
-            toolActionNotice += `┌── 📝 **Write File**: \`${parsedArgs.path}\`\n`
-            toolActionNotice += `├── 📍 **Location**: \`${projectRoot}/${parsedArgs.path}\`\n`
-            toolActionNotice += `├── 📊 **Lines**: ${lineCount} lines (${parsedArgs.content?.length || 0} bytes)\n`
-            toolActionNotice += `└── ✓ **Status**: Saved to disk successfully\n`
+            toolActionNotice += `● **WriteFile**(\`${parsedArgs.path}\`)\n`
+            toolActionNotice += `  ⎿  Wrote ${lineCount} lines\n`
           } else if (tc.name === 'run_terminal_command') {
             const cleanOutput = toolExec.result.trim()
-            toolActionNotice += `┌── ⚡ **Terminal Command**: \`$ ${parsedArgs.command}\`\n`
-            if (cleanOutput) {
-              toolActionNotice += `├── 💻 **Output**:\n\`\`\`bash\n${cleanOutput}\n\`\`\`\n`
+            toolActionNotice += `● **Bash**(\`${parsedArgs.command}\`)\n`
+            if (cleanOutput && cleanOutput !== '(Command executed successfully with no output)') {
+              const firstLine = cleanOutput.split('\n')[0]?.slice(0, 80)
+              toolActionNotice += `  ⎿  ${firstLine}\n`
             }
-            toolActionNotice += `└── ✓ **Status**: Executed (Exit Code 0)\n`
           } else if (tc.name === 'read_files') {
-            const fileList = (parsedArgs.paths || []).join(', ')
-            toolActionNotice += `┌── 📖 **Read Files**: \`${fileList}\`\n`
-            toolActionNotice += `└── ✓ **Status**: Loaded into context\n`
+            const fileList = (parsedArgs.paths || []).map((p: string) => (p.startsWith(os.homedir()) ? '~' + p.slice(os.homedir().length) : p)).join(', ')
+            toolActionNotice += `● **ReadFile**(\`${fileList}\`)\n`
+            toolActionNotice += `  ⎿  Loaded into context\n`
           } else if (tc.name === 'list_directory') {
-            const folder = parsedArgs.path || '.'
-            const fileCount = toolExec.result.split('\n').filter(Boolean).length
-            toolActionNotice += `┌── 📁 **Explore Directory**: \`${folder}\` (${fileCount} items found)\n`
-            toolActionNotice += `└── ✓ **Status**: Inspected\n`
+            const folder = parsedArgs.path ? (path.isAbsolute(parsedArgs.path) ? parsedArgs.path : path.join(projectRoot, parsedArgs.path)) : projectRoot
+            let filesCount = 0
+            let dirsCount = 0
+            try {
+              const items = fs.readdirSync(folder)
+              dirsCount = items.filter(i => {
+                try { return fs.statSync(path.join(folder, i)).isDirectory() } catch { return false }
+              }).length
+              filesCount = items.length - dirsCount
+            } catch {}
+            const displayFolder = folder.startsWith(os.homedir()) ? '~' + folder.slice(os.homedir().length) : folder
+            toolActionNotice += `● **ListDir**(\`${displayFolder}\`)\n`
+            toolActionNotice += `  ⎿  ${filesCount} files, ${dirsCount} directories\n`
           } else {
-            toolActionNotice += `┌── ⚙️ **Tool Action [${tc.name}]**\n`
-            toolActionNotice += `└── ✓ ${toolExec.result}\n`
+            toolActionNotice += `● **${tc.name}**\n`
           }
 
           accumulatedContent += toolActionNotice
