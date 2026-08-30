@@ -12,6 +12,41 @@ interface WorkspaceTrustScreenProps {
   onTrust: () => void
 }
 
+const FolderArt = () => (
+  <box style={{ flexDirection: 'column', marginBottom: 1 }}>
+    <text style={{ wrapMode: 'none' }}>
+      <span fg="#EAB308">  ▄▄▄▄▄▄▄▄▄▄▄▄▄</span>
+    </text>
+    <text style={{ wrapMode: 'none' }}>
+      <span fg="#EAB308">  █            █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▄</span>
+    </text>
+    <text style={{ wrapMode: 'none' }}>
+      <span fg="#EAB308">  █</span>
+      <span fg="#FFFFFF">  ┌──────────────────────────────────────────┐</span>
+      <span fg="#EAB308">  █</span>
+    </text>
+    <text style={{ wrapMode: 'none' }}>
+      <span fg="#EAB308">  █</span>
+      <span fg="#FFFFFF">  │                                          │</span>
+      <span fg="#EAB308">  █</span>
+    </text>
+    <text style={{ wrapMode: 'none' }}>
+      <span fg="#FBBF24">  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▄</span>
+      <span fg="#FFFFFF">                  │</span>
+      <span fg="#EAB308">  █</span>
+    </text>
+    <text style={{ wrapMode: 'none' }}>
+      <span fg="#FBBF24">  █                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█</span>
+    </text>
+    <text style={{ wrapMode: 'none' }}>
+      <span fg="#FBBF24">  █                                                  █</span>
+    </text>
+    <text style={{ wrapMode: 'none' }}>
+      <span fg="#FBBF24">  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀</span>
+    </text>
+  </box>
+)
+
 export const WorkspaceTrustScreen = ({
   workspacePath,
   onTrust,
@@ -80,6 +115,7 @@ export const WorkspaceTrustScreen = ({
       }}
     >
       <box style={{ flexDirection: 'column', gap: 1 }}>
+        <FolderArt />
         <box style={{ flexDirection: 'column' }}>
           <text style={{ wrapMode: 'none' }}>
             <span fg="#ffb703">
