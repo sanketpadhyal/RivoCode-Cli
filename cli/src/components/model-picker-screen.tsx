@@ -24,29 +24,47 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   {
     id: 'groq',
     name: 'groq',
-    badge: '(Fast)',
+    badge: '(Fast & Free Tier)',
     icon: 'g',
     iconPadding: '  ',
     iconColor: '#FF4800',
-    description: 'Ultra-fast low-latency inference on Groq LPUs',
+    description: 'Llama-3.3-70B on Groq LPUs · 500+ tok/s (Free at console.groq.com)',
   },
   {
     id: 'gpt-oss',
     name: 'gpt-oss',
-    badge: '(High Reasoning)',
+    badge: '(High Reasoning & Free)',
     icon: '❃',
     iconPadding: '  ',
     iconColor: '#10A37F',
-    description: 'Open-source flagship reasoning model for complex coding',
+    description: 'Open-source flagship reasoning model on OpenRouter Free',
   },
   {
     id: 'deepseek',
     name: 'deepseek',
-    badge: '(Coding & Agentic)',
+    badge: '(Reasoning & Free Tier)',
     icon: '🐋',
     iconPadding: ' ',
     iconColor: '#38BDF8',
-    description: 'Deep reasoning model with superior code intelligence',
+    description: 'DeepSeek R1 reasoning on Groq LPUs · 100% free API tier',
+  },
+  {
+    id: 'openrouter-free',
+    name: 'openrouter-free',
+    badge: '(Auto Free Router)',
+    icon: '⚡',
+    iconPadding: '  ',
+    iconColor: '#3B82F6',
+    description: 'Auto-routes across top free open-weights coding LLMs',
+  },
+  {
+    id: 'gemini-flash',
+    name: 'gemini-flash',
+    badge: '(Free Tier · 1M Context)',
+    icon: '✦',
+    iconPadding: '  ',
+    iconColor: '#4E86E4',
+    description: 'Gemini 2.0 Flash (Free API key at aistudio.google.com)',
   },
 ]
 
@@ -235,22 +253,30 @@ export const ModelPickerScreen = ({
           </box>
         )}
 
-        <box style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <text style={{ wrapMode: 'none' }}>
-            <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
-              Select model for{' '}
+        <box style={{ flexDirection: 'column' }}>
+          <box style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <text style={{ wrapMode: 'none' }}>
+              <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+                Select model for{' '}
+              </span>
+              <span fg={theme.primary} attributes={TextAttributes.BOLD}>
+                RivoCode
+              </span>
+              <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+                :{' '}
+              </span>
+              {filterText.length > 0 ? (
+                <span fg={theme.primary}>{filterText}</span>
+              ) : (
+                <span fg={theme.muted}>Type to filter...</span>
+              )}
+            </text>
+          </box>
+          <text style={{ wrapMode: 'none', marginTop: 1 }}>
+            <span fg="#ffb703">ℹ </span>
+            <span fg={theme.muted}>
+              Select a model below. You will enter your free API key after selection.
             </span>
-            <span fg={theme.primary} attributes={TextAttributes.BOLD}>
-              RivoCode
-            </span>
-            <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
-              :{' '}
-            </span>
-            {filterText.length > 0 ? (
-              <span fg={theme.primary}>{filterText}</span>
-            ) : (
-              <span fg={theme.muted}>Type to filter...</span>
-            )}
           </text>
         </box>
 
