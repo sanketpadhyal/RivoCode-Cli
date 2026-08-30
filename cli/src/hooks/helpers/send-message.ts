@@ -1,12 +1,6 @@
 import { FREEBUFF_PROVIDER_USAGE_MESSAGE } from '@rivocode/common/constants/freebuff-errors'
 import { getErrorObject } from '@rivocode/common/util/error'
 
-import {
-  markFreebuffSessionCountryBlocked,
-  markFreebuffSessionEnded,
-  markFreebuffSessionSuperseded,
-  refreshFreebuffSession,
-} from '../use-freebuff-session'
 import { getProjectRoot } from '../../project-files'
 import { useChatStore } from '../../state/chat-store'
 import { IS_FREEBUFF } from '../../utils/constants'
@@ -385,13 +379,6 @@ export const handleRunCompletion = (params: {
 
     if (isFreeModeUnavailableError(output)) {
       updater.setError(getFreeModeUnavailableErrorMessage(output))
-      if (IS_FREEBUFF) {
-        markFreebuffSessionCountryBlocked(
-          getCountryBlockFromFreeModeError(output) ?? {
-            countryCode: 'UNKNOWN',
-          },
-        )
-      }
       finalizeAfterError()
       return
     }
@@ -504,13 +491,6 @@ export const handleRunError = (params: {
 
   if (isFreeModeUnavailableError(error)) {
     updater.setError(getFreeModeUnavailableErrorMessage(error))
-    if (IS_FREEBUFF) {
-      markFreebuffSessionCountryBlocked(
-        getCountryBlockFromFreeModeError(error) ?? {
-          countryCode: 'UNKNOWN',
-        },
-      )
-    }
     return
   }
 
@@ -546,22 +526,19 @@ function handleFreebuffGateError(
       updater.markComplete()
       if (opts.messageWasDropped) {
         updater.setError(
-          'Your free session ended before this message was processed. Send it again after starting a new session.',
+          'Your session ended before this message was processed.',
         )
       }
-      markFreebuffSessionEnded()
       return
     case 'waiting_room_queued':
       updater.setError(
-        'Your free session is still being set up. Try again in a moment.',
+        'Connecting to model. Try again in a moment.',
       )
-      refreshFreebuffSession().catch(() => {})
       return
     case 'session_superseded':
       updater.setError(
-        'Another freebuff CLI took over this account. Close the other instance, then restart.',
+        'Session active in another terminal.',
       )
-      markFreebuffSessionSuperseded()
       return
     default:
       return

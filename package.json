@@ -15,13 +15,16 @@
     "sdk"
   ],
   "bin": {
+    "rivo": "./cli/src/entry.ts",
     "rivocode": "./cli/src/entry.ts"
   },
   "scripts": {
+    "rivo": "bun --cwd cli dev",
     "rivocode": "bun --cwd cli dev",
-    "start": "bun run rivocode",
-    "start-cli": "bun run rivocode",
-    "dev": "bun run rivocode",
+    "start": "bun run rivo",
+    "start-cli": "bun run rivo",
+    "dev": "bun run rivo",
+    "build:binary": "bun run --cwd=cli build:binary",
     "release:cli": "bun run --cwd=cli release",
     "release:sdk": "bun run --cwd=sdk release",
     "build:sdk": "cd sdk && bun run build",

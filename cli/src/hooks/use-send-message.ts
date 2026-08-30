@@ -5,10 +5,6 @@ import { useCallback, useEffect, useRef } from 'react'
 import { setCurrentChatId } from '../project-files'
 import { createStreamController } from './stream-state'
 import { useChatStore } from '../state/chat-store'
-import {
-  getFreebuffInstanceId,
-  markFreebuffSessionEnded,
-} from './use-freebuff-session'
 import { getSelectedFreebuffReasoningEffort } from '../state/freebuff-model-store'
 import { getCodebuffClient } from '../utils/codebuff-client'
 import { AGENT_MODE_TO_COST_MODE, IS_FREEBUFF } from '../utils/constants'
@@ -249,18 +245,6 @@ export const useSendMessage = ({
       isChainInProgressRef.current = true
       updateChainInProgress(true)
       setCanProcessQueue(false)
-
-      if (IS_FREEBUFF && !getFreebuffInstanceId()) {
-        markFreebuffSessionEnded()
-        requeueMessageAtFront?.({ content, attachments: attachments ?? [] })
-        resetEarlyReturnState({
-          setCanProcessQueue,
-          updateChainInProgress,
-          isProcessingQueueRef,
-          isQueuePausedRef,
-        })
-        return
-      }
 
       if (agentMode !== 'PLAN') {
         setHasReceivedPlanResponse(false)
@@ -565,10 +549,6 @@ export const useSendMessage = ({
           },
         })
 
-        const freebuffInstanceId = getFreebuffInstanceId()
-        const freebuffReasoningEffort = IS_FREEBUFF
-          ? getSelectedFreebuffReasoningEffort()
-          : null
         const runConfig = createRunConfig({
           logger,
           agent: resolvedAgent,
@@ -579,15 +559,6 @@ export const useSendMessage = ({
           eventHandlerState,
           signal: abortController.signal,
           costMode: AGENT_MODE_TO_COST_MODE[agentMode],
-          extraCodebuffMetadata:
-            IS_FREEBUFF && freebuffInstanceId
-              ? {
-                  freebuff_instance_id: freebuffInstanceId,
-                  ...(freebuffReasoningEffort
-                    ? { freebuff_reasoning_effort: freebuffReasoningEffort }
-                    : {}),
-                }
-              : undefined,
           onStateSnapshot: (snapshot) => {
             latestRunStateSnapshot = snapshot
             if (abortController.signal.aborted || !runChatIsCurrent()) {

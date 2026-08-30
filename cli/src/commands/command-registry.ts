@@ -13,7 +13,6 @@ import { buildInterviewPrompt, buildPlanPrompt, buildReviewPromptFromArgs } from
 import { handleReasoningCommand } from './reasoning'
 import { runBashCommand } from './router'
 import { handleUsageCommand } from './usage'
-import { returnToFreebuffLanding } from '../hooks/use-freebuff-session'
 import { useThemeStore } from '../hooks/use-theme'
 import { LOGIN_WEBSITE_URL, WEBSITE_URL } from '../login/constants'
 import { startNewChat } from '../project-files'
@@ -555,12 +554,11 @@ const ALL_COMMANDS: CommandDefinition[] = [
       params.setMessages((prev) => [
         ...prev,
         getUserMessage(params.inputValue.trim()),
-        getSystemMessage(END_SESSION_MESSAGE),
+        getSystemMessage('Resetting session…'),
       ])
       params.saveToHistory(params.inputValue.trim())
       clearInput(params)
-      returnToFreebuffLanding({ resetChat: true }).catch(() => {
-      })
+      startNewChat()
     },
   }),
 ]

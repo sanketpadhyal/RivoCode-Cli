@@ -5,28 +5,21 @@ import { useShallow } from 'zustand/react/shallow'
 import { Chat } from './chat'
 import { ChatHistoryScreen } from './components/chat-history-screen'
 import { ChatRuntimeProvider } from './contexts/chat-runtime-context'
-import { FreebuffSupersededScreen } from './components/freebuff-superseded-screen'
-import { LoginModal } from './components/login-modal'
-import { ProjectPickerScreen } from './components/project-picker-screen'
 import { ModelPickerScreen } from './components/model-picker-screen'
-import { SigningInScreen } from './components/signing-in-screen'
 import { WorkspaceTrustScreen } from './components/workspace-trust-screen'
 import { DEFAULT_BYPASS_USER, saveUserCredentials } from './utils/auth'
 import {
   isWorkspaceTrusted as checkWorkspaceTrusted,
   trustWorkspace,
 } from './utils/trusted-workspaces'
-import { FreebuffLandingScreen } from './components/freebuff-landing-screen'
 import { useAuthQuery } from './hooks/use-auth-query'
 import { useAuthState } from './hooks/use-auth-state'
-import { useFreebuffSession } from './hooks/use-freebuff-session'
 import { useTerminalFocus } from './hooks/use-terminal-focus'
 import { getProjectRoot, startNewChat } from './project-files'
 import { useChatHistoryStore } from './state/chat-history-store'
 import { stopActiveRun } from './utils/active-run'
 import { useChatStore } from './state/chat-store'
 import type { TopBannerType } from './types/store'
-import { IS_FREEBUFF } from './utils/constants'
 import { findGitRoot } from './utils/git'
 
 import type { MultilineInputHandle } from './components/multiline-input'
@@ -200,21 +193,13 @@ export const App = ({
     }
   }
 
-  const [signingInComplete, setSigningInComplete] = useState(false)
+  useEffect(() => {
+    saveUserCredentials(DEFAULT_BYPASS_USER)
+    handleLoginSuccess(DEFAULT_BYPASS_USER)
+  }, [handleLoginSuccess])
+
   const [isWorkspaceTrusted, setIsWorkspaceTrusted] = useState(false)
   const [isModelSelected, setIsModelSelected] = useState(false)
-
-  if (!signingInComplete) {
-    return (
-      <SigningInScreen
-        onComplete={() => {
-          saveUserCredentials(DEFAULT_BYPASS_USER)
-          handleLoginSuccess(DEFAULT_BYPASS_USER)
-          setSigningInComplete(true)
-        }}
-      />
-    )
-  }
 
   if (!isWorkspaceTrusted) {
     return (
@@ -241,7 +226,6 @@ export const App = ({
       />
     )
   }
-
 
   return (
     <AuthedSurface
@@ -291,8 +275,6 @@ interface AuthedSurfaceProps {
 }
 
 const AuthedSurface = (props: AuthedSurfaceProps) => {
-  const { session, failure: sessionFailure } = useFreebuffSession()
-
   return (
     <ChatRuntimeProvider
       key={props.runtimeKey}
@@ -301,11 +283,7 @@ const AuthedSurface = (props: AuthedSurfaceProps) => {
       continueChat={props.continueChat}
       continueChatId={props.continueChatId}
     >
-      <AuthedSurfaceRoutes
-        {...props}
-        session={session}
-        sessionFailure={sessionFailure}
-      />
+      <AuthedSurfaceRoutes {...props} />
     </ChatRuntimeProvider>
   )
 }
@@ -325,12 +303,7 @@ const AuthedSurfaceRoutes = ({
   onSelectChat,
   onCancelChatHistory,
   onNewChat,
-  session,
-  sessionFailure,
-}: AuthedSurfaceProps & {
-  session: ReturnType<typeof useFreebuffSession>['session']
-  sessionFailure: ReturnType<typeof useFreebuffSession>['failure']
-}) => {
+}: AuthedSurfaceProps) => {
   if (showChatHistory) {
     return (
       <ChatHistoryScreen
@@ -353,7 +326,7 @@ const AuthedSurfaceRoutes = ({
       initialMode={initialMode}
       gitRoot={gitRoot}
       onSwitchToGitRoot={onSwitchToGitRoot}
-      freebuffSession={session}
+      freebuffSession={null}
     />
   )
 }

@@ -21,7 +21,6 @@ import React from 'react'
 import { App } from './app'
 import { loadPackageVersion, parseArgs } from './cli-args'
 import { handlePublish } from './commands/publish'
-import { runPlainLogin } from './login/plain-login'
 import { initializeApp } from './init/init-app'
 import { getProjectRoot, setProjectRoot } from './project-files'
 import { trackEvent } from './utils/analytics'
@@ -192,7 +191,8 @@ async function main(): Promise<void> {
   setApiClientAuthToken(getAuthToken())
 
   if (isLoginCommand) {
-    await runPlainLogin()
+    console.log('RivoCode is completely local and does not require cloud login.')
+    console.log('To configure API keys, add them to ~/.rivocode/.apikeys or set GROQ_API_KEY / OPENROUTER_API_KEY.')
     return
   }
 

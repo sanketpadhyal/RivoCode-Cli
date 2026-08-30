@@ -17,14 +17,12 @@ import { routeUserPrompt, addBashMessageToHistory } from './commands/router'
 import { SingleAdBanner } from './components/ad-banner'
 import { ChatInputBar } from './components/chat-input-bar'
 import { ChatHeader } from './components/chat-header'
-import { FreebuffActiveSessionSummary } from './components/freebuff-active-session-summary'
 import { LoadPreviousButton } from './components/load-previous-button'
 import { QueuePanel } from './components/queue-panel'
 import { ReviewScreen } from './components/review-screen'
 import { MessageWithAgents } from './components/message-with-agents'
 import { areCreditsRestored } from './components/out-of-credits-banner'
 import { PendingBashMessage } from './components/pending-bash-message'
-import { SessionEndedBanner } from './components/session-ended-banner'
 import { StatusBar } from './components/status-bar'
 import {
   SuggestedPrompts,
@@ -65,7 +63,6 @@ import { stopActiveRun } from './utils/active-run'
 import { trackEvent } from './utils/analytics'
 import { showClipboardMessage } from './utils/clipboard'
 import { readClipboardImage } from './utils/clipboard-image'
-import { returnToFreebuffLanding } from './hooks/use-freebuff-session'
 import { END_SESSION_MESSAGE, IS_FREEBUFF } from './utils/constants'
 import { getSystemMessage } from './utils/message-history'
 import { getInputModeConfig } from './utils/input-modes'
@@ -1472,9 +1469,6 @@ export const Chat = ({
             animationEnabled={isHeaderVisible && inputFocused}
           />
         </box>
-        {IS_FREEBUFF && (
-          <FreebuffActiveSessionSummary session={freebuffSession} />
-        )}
         {hiddenMessageCount > 0 && (
           <LoadPreviousButton
             hiddenCount={hiddenMessageCount}
@@ -1503,7 +1497,7 @@ export const Chat = ({
           backgroundColor: 'transparent',
         }}
       >
-        {showOnboardingPrompts && !reviewMode && !isFreebuffSessionOver && (
+        {showOnboardingPrompts && !reviewMode && (
           <SuggestedPrompts
             onSelect={handleSelectSuggestedPrompt}
             maxItems={isCompactHeight ? 2 : undefined}
@@ -1517,14 +1511,7 @@ export const Chat = ({
             scrollToLatest={scrollToLatest}
             statusIndicatorState={statusIndicatorState}
             onStop={chatKeyboardHandlers.onInterruptStream}
-            onEndSession={() => {
-              setMessages((prev) => [
-                ...prev,
-                getSystemMessage(END_SESSION_MESSAGE),
-              ])
-              returnToFreebuffLanding({ resetChat: true }).catch(() => {})
-            }}
-            freebuffSession={freebuffSession}
+            freebuffSession={null}
           />
         )}
 
@@ -1551,10 +1538,6 @@ export const Chat = ({
             onClose={handleCloseQueuePanel}
             width={separatorWidth}
             maxVisibleRows={isCompactHeight ? 4 : 8}
-          />
-        ) : isFreebuffSessionOver && !askUserState ? (
-          <SessionEndedBanner
-            isStreaming={isStreaming || isWaitingForResponse}
           />
         ) : (
           <>
