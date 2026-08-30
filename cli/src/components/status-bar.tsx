@@ -8,6 +8,7 @@ import { ShimmerText } from './shimmer-text'
 import { useTheme } from '../hooks/use-theme'
 import { useChatStore } from '../state/chat-store'
 import { formatElapsedTime } from '../utils/format-elapsed-time'
+import { getContextualThinkingState } from '../utils/thinking-verbs'
 
 import type { StatusIndicatorState } from '../utils/status-indicator-state'
 
@@ -60,7 +61,22 @@ export const StatusBar = ({
 }: StatusBarProps) => {
   const theme = useTheme()
   const liveTokens = useChatStore((state) => state.liveTokenCount)
+  const messages = useChatStore((state) => state.messages)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
+
+  const lastUserPrompt = React.useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i]
+      if (msg?.sender === 'user' && msg.text) {
+        return msg.text
+      }
+    }
+    return ''
+  }, [messages])
+
+  const thinkingState = React.useMemo(() => {
+    return getContextualThinkingState(lastUserPrompt)
+  }, [lastUserPrompt, statusIndicatorState?.kind === 'waiting'])
 
   const shouldShowTimer =
     statusIndicatorState?.kind === 'waiting' ||
@@ -140,9 +156,9 @@ export const StatusBar = ({
       case 'waiting':
         return (
           <>
-            <span fg="#f97316">✦ </span>
+            <span fg="#f97316">{`${thinkingState.icon} `}</span>
             <ShimmerText
-              text="Reasoning..."
+              text={`${thinkingState.verb}...`}
               interval={SHIMMER_INTERVAL_MS}
               primaryColor="#f97316"
             />
@@ -157,9 +173,9 @@ export const StatusBar = ({
       case 'streaming':
         return (
           <>
-            <span fg="#f97316">✦ </span>
+            <span fg="#f97316">{`${thinkingState.icon} `}</span>
             <ShimmerText
-              text="Responding..."
+              text="Generating..."
               interval={SHIMMER_INTERVAL_MS}
               primaryColor="#f97316"
             />
