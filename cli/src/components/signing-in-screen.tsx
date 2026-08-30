@@ -64,7 +64,7 @@ export const SigningInScreen = ({ onComplete }: SigningInScreenProps) => {
       <box style={{ flexDirection: 'row', gap: 1, marginTop: 1 }}>
         <text style={{ wrapMode: 'none' }}>
           <span fg={theme.primary}>{SPINNER_FRAMES[frameIndex]}</span>
-          <span fg={theme.foreground}>  Signing in...</span>
+          <span fg={theme.foreground}>  Setting Up...</span>
         </text>
       </box>
     </box>
