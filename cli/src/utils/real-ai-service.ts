@@ -8,7 +8,7 @@ import { getProjectRoot } from '../project-files'
 import { useChatStore } from '../state/chat-store'
 import { updateProjectSettings } from '../workspace/project-context'
 import { performNativeOcr } from './ocr-helper'
-import { fetchWebContent } from './web-helper'
+import { fetchWebContent, searchWeb } from './web-helper'
 
 import type { MessageUpdater } from './message-updater'
 import type { AgentMode } from './constants'
@@ -484,6 +484,23 @@ const AGENT_TOOLS = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'search_web',
+      description: 'Perform real-time live internet web search for any person, library, documentation, topic, or question',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'The web search query string',
+          },
+        },
+        required: ['query'],
+      },
+    },
+  },
 ]
 
 const sessionAllowedCommands = new Set<string>()
@@ -701,6 +718,12 @@ export async function executeLocalTool(
       return { success: true, result: content }
     }
 
+    if (name === 'search_web' || name === 'web_search') {
+      const query = (args.query || args.q || '').trim()
+      const searchResults = await searchWeb(query)
+      return { success: true, result: searchResults }
+    }
+
     return { success: false, result: `Unknown tool: ${name}` }
   } catch (err: any) {
     return {
@@ -837,13 +860,19 @@ You are running in mode: ${agentMode}.
 Current workspace directory: ${projectRoot}.
 Host Platform: ${os.platform()} (${os.arch()}).
 
-AUTONOMOUS CAPABILITIES (YOU HAVE FULL LOCAL SYSTEM & INTERNET ACCESS):
+AUTONOMOUS CAPABILITIES (YOU HAVE FULL LOCAL SYSTEM & LIVE INTERNET ACCESS):
 - write_file(path, content): Create or overwrite files directly in the workspace.
 - run_terminal_command(command): Execute shell/terminal commands directly.
 - read_files(paths): Read workspace files into context.
 - list_directory(path): List folder contents.
 - ocr_image(path): Extract text from images, screenshots, or UI mockups using native Apple Vision OCR.
+- search_web(query): Search the live internet for any person, library, API, documentation, or fact.
 - fetch_web_content(url): Fetch real-time web documentation, online articles, APIs, GitHub repositories, and packages.
+
+PROACTIVE WEB SEARCH & REAL-TIME ACCURACY RULES:
+- You have LIVE, REAL-TIME INTERNET ACCESS!
+- If the user asks about ANY person (e.g. "Who is Rakesh Pandey?"), developer, company, framework, API, documentation, or topic that is not already in your context, NEVER say "I don't know" or ask "Should I search the web?".
+- You MUST IMMEDIATELY and AUTONOMOUSLY call search_web(query) or fetch_web_content(url) on your very first turn, retrieve the real live web results, and answer accurately!
 
 AUTONOMOUS TASK COMPLETION RULES:
 - NEVER STOP after just reading files or searching! You must IMMEDIATELY proceed to write the necessary code using write_file, execute tests/commands, and finish the entire user request.
@@ -1272,6 +1301,11 @@ AUTONOMOUS TASK COMPLETION RULES:
             toolActionNotice += `● **WebRead**(\`${urlDisplay}\`)\n`
             const len = (toolExec.result || '').length
             toolActionNotice += `  ⎿  Loaded \`${len} chars\` of token-optimized markdown\n`
+          } else if (tc.name === 'search_web' || tc.name === 'web_search') {
+            const qDisplay = parsedArgs.query || parsedArgs.q || 'query'
+            toolActionNotice += `● **WebSearch**("${qDisplay}")\n`
+            const firstResult = (toolExec.result || '').split('\n').filter(l => l.trim().startsWith('•'))[0] || 'Results retrieved'
+            toolActionNotice += `  ⎿  ${firstResult.slice(0, 80)}\n`
           } else {
             toolActionNotice += `● **${tc.name}**\n`
           }

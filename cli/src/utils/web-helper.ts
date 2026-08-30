@@ -111,6 +111,74 @@ export function ensureWebToolExists(): string {
   return WEB_SCRIPT_PATH
 }
 
+export function htmlToMarkdown(html: string): string {
+  if (!html) return ''
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
+    .replace(/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/gi, '')
+    .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, '')
+    .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, '')
+    .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, '')
+    .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n# $1\n')
+    .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n## $1\n')
+    .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n### $1\n')
+    .replace(/<h[4-6][^>]*>(.*?)<\/h[4-6]>/gi, '\n#### $1\n')
+    .replace(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/gis, '\n```\n$1\n```\n')
+    .replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
+    .replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
+    .replace(/<li[^>]*>(.*?)<\/li>/gi, '\n* $1')
+    .replace(/<p[^>]*>(.*?)<\/p>/gi, '\n$1\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+export async function searchWeb(query: string): Promise<string> {
+  try {
+    const encoded = encodeURIComponent(query.trim())
+    const searchUrl = `https://html.duckduckgo.com/html/?q=${encoded}`
+    const res = await fetch(searchUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+      signal: AbortSignal.timeout(10000),
+    })
+    const rawHtml = await res.text()
+
+    // Extract search snippets
+    const results: string[] = []
+    const snippetRegex = /<a class="result__snippet[^>]*>(.*?)<\/a>/gis
+    const titleRegex = /<a class="result__url"[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gis
+
+    let match: RegExpExecArray | null
+    while ((match = snippetRegex.exec(rawHtml)) !== null && results.length < 6) {
+      const cleanSnippet = match[1]?.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&#39;/g, "'").trim()
+      if (cleanSnippet) {
+        results.push(`• ${cleanSnippet}`)
+      }
+    }
+
+    if (results.length > 0) {
+      return `Search results for "${query}":\n\n` + results.join('\n\n')
+    }
+
+    const md = htmlToMarkdown(rawHtml)
+    return md.slice(0, 4000) || `No search results found for "${query}"`
+  } catch (err: any) {
+    return `[Search error for "${query}": ${err?.message || String(err)}]`
+  }
+}
+
 export async function fetchWebContent(targetUrl: string): Promise<string> {
   try {
     ensureWebToolExists()
@@ -130,35 +198,7 @@ export async function fetchWebContent(targetUrl: string): Promise<string> {
       return `\`\`\`json\n${rawText.slice(0, 20000)}\n\`\`\``
     }
 
-    // Convert HTML to clean token-optimized Markdown
-    const markdown = rawText
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-      .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
-      .replace(/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/gi, '')
-      .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, '')
-      .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, '')
-      .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, '')
-      .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n# $1\n')
-      .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n## $1\n')
-      .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n### $1\n')
-      .replace(/<h[4-6][^>]*>(.*?)<\/h[4-6]>/gi, '\n#### $1\n')
-      .replace(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/gis, '\n```\n$1\n```\n')
-      .replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
-      .replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
-      .replace(/<li[^>]*>(.*?)<\/li>/gi, '\n* $1')
-      .replace(/<p[^>]*>(.*?)<\/p>/gi, '\n$1\n')
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<[^>]+>/g, '')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/\n{3,}/g, '\n\n')
-      .trim()
-
+    const markdown = htmlToMarkdown(rawText)
     return markdown.slice(0, 25000) || '(No readable text extracted from web page)'
   } catch (err: any) {
     return `[Failed to fetch web content from ${targetUrl}: ${err.message || String(err)}]`
