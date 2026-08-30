@@ -40,8 +40,8 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     id: 'deepseek',
     name: 'deepseek',
     badge: '(Coding & Agentic)',
-    icon: '◈',
-    iconColor: '#1D82FE',
+    icon: '🐋',
+    iconColor: '#4D6BFE',
     description: 'Deep reasoning model with superior code intelligence',
   },
 ]
