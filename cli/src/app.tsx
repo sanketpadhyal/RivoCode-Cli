@@ -8,6 +8,7 @@ import { ChatRuntimeProvider } from './contexts/chat-runtime-context'
 import { FreebuffSupersededScreen } from './components/freebuff-superseded-screen'
 import { LoginModal } from './components/login-modal'
 import { ProjectPickerScreen } from './components/project-picker-screen'
+import { ModelPickerScreen } from './components/model-picker-screen'
 import { SigningInScreen } from './components/signing-in-screen'
 import { WorkspaceTrustScreen } from './components/workspace-trust-screen'
 import { DEFAULT_BYPASS_USER, saveUserCredentials } from './utils/auth'
@@ -201,6 +202,7 @@ export const App = ({
 
   const [signingInComplete, setSigningInComplete] = useState(false)
   const [isWorkspaceTrusted, setIsWorkspaceTrusted] = useState(false)
+  const [isModelSelected, setIsModelSelected] = useState(false)
 
   if (!signingInComplete) {
     return (
@@ -221,6 +223,20 @@ export const App = ({
         onTrust={() => {
           trustWorkspace(projectRoot)
           setIsWorkspaceTrusted(true)
+        }}
+      />
+    )
+  }
+
+  if (!isModelSelected) {
+    return (
+      <ModelPickerScreen
+        onSelectModel={(model) => {
+          useChatStore.getState().setSelectedModel(model.name)
+          setIsModelSelected(true)
+        }}
+        onBack={() => {
+          setIsWorkspaceTrusted(false)
         }}
       />
     )

@@ -4,6 +4,7 @@ import { useLogo } from '../hooks/use-logo'
 import { useSheenAnimation } from '../hooks/use-sheen-animation'
 import { useTerminalDimensions } from '../hooks/use-terminal-dimensions'
 import { useTheme } from '../hooks/use-theme'
+import { useChatStore } from '../state/chat-store'
 import { IS_FREEBUFF } from '../utils/constants'
 import { openFileAtPath } from '../utils/open-file'
 import { formatCwd } from '../utils/path-helpers'
@@ -38,6 +39,8 @@ export const ChatHeader = memo(function ChatHeader({
     applySheenToChar,
   })
 
+  const selectedModel = useChatStore((state) => state.selectedModel)
+
   return (
     <box
       style={{
@@ -63,7 +66,7 @@ export const ChatHeader = memo(function ChatHeader({
           <span>sanketpadhyal@gmail.com (Created by Sanket Padhyal)</span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
-          <span>No model selected</span>
+          <span>{selectedModel ? `${selectedModel} (High)` : 'No model selected'}</span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.secondary }}>
           <span>{formatCwd(projectRoot)}</span>

@@ -21,20 +21,22 @@ export async function simulateFakeAiResponse({
   onComplete: (runState: RunState) => void
 }) {
   const projectRoot = getProjectRoot()
+  const selectedModel =
+    useChatStore.getState().selectedModel ?? 'glm-5.3-flash:cloud'
   const lower = prompt.toLowerCase().trim()
 
-  let reasoningText = `Analyzing user prompt and workspace context at ${projectRoot}...`
+  let reasoningText = `Analyzing user prompt and workspace context at ${projectRoot} using ${selectedModel}...`
   let responseText = ''
 
   if (lower === 'hey' || lower === 'hello' || lower === 'hi') {
-    reasoningText = 'Recognized friendly greeting. Initializing RivoCode agent assistance.'
-    responseText = `Hello! 👋 I am **RivoCode**, your agentic AI coding assistant created by **Sanket Padhyal**.\n\nI'm connected to your workspace (\`${projectRoot}\`) and ready to help you:\n\n- 🔍 **Explore Codebase**: Read, search, and analyze project files\n- ⚡ **Build & Refactor**: Write code, create components, fix bugs\n- 🛠️ **Run Terminal Commands**: Execute builds, tests, and scripts\n\nHow can I help you build today?`
+    reasoningText = `Recognized friendly greeting. Initializing RivoCode agent assistance on ${selectedModel}.`
+    responseText = `Hello! 👋 I am **RivoCode**, your agentic AI coding assistant created by **Sanket Padhyal** (running on **${selectedModel}**).\n\nI'm connected to your workspace (\`${projectRoot}\`) and ready to help you:\n\n- 🔍 **Explore Codebase**: Read, search, and analyze project files\n- ⚡ **Build & Refactor**: Write code, create components, fix bugs\n- 🛠️ **Run Terminal Commands**: Execute builds, tests, and scripts\n\nHow can I help you build today?`
   } else if (lower.includes('test') || lower.includes('check')) {
-    reasoningText = 'Checking testing suites and project verification scripts.'
-    responseText = `I'm analyzing the workspace for test suites.\n\nEverything looks clear and ready. You can specify a test command or file to run checks on.`
+    reasoningText = `Checking testing suites and project verification scripts with ${selectedModel}.`
+    responseText = `I'm analyzing the workspace for test suites using **${selectedModel}**.\n\nEverything looks clear and ready. You can specify a test command or file to run checks on.`
   } else {
-    reasoningText = `Processing request: "${prompt}". Preparing execution plan in ${agentMode} mode.`
-    responseText = `I have received your request:\n\n> *${prompt}*\n\n### 🚀 Execution Plan:\n1. **Inspect Workspace**: Check relevant source files and dependencies\n2. **Plan & Implement**: Apply clean changes adhering to project conventions\n3. **Verify & Test**: Ensure zero regression and type safety\n\n\`\`\`ts\n// RivoCode Agent Ready\nconsole.log("Ready to execute your instructions in ${agentMode} mode.");\n\`\`\`\n\nTell me what specific file or task you would like to begin with!`
+    reasoningText = `Processing request: "${prompt}". Preparing execution plan with ${selectedModel} in ${agentMode} mode.`
+    responseText = `I have received your request:\n\n> *${prompt}*\n\n### 🚀 Execution Plan (${selectedModel}):\n1. **Inspect Workspace**: Check relevant source files and dependencies\n2. **Plan & Implement**: Apply clean changes adhering to project conventions\n3. **Verify & Test**: Ensure zero regression and type safety\n\n\`\`\`ts\n// RivoCode Agent Active (${selectedModel})\nconsole.log("Ready to execute your instructions in ${agentMode} mode.");\n\`\`\`\n\nTell me what specific file or task you would like to begin with!`
   }
 
   // 1. Add reasoning / thinking block

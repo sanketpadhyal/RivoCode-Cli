@@ -77,6 +77,7 @@ export type ChatStoreState = {
   pendingBashMessages: PendingBashMessage[]
   suggestedFollowups: SuggestedFollowupsState | null
   clickedFollowupsMap: ClickedFollowupsMap
+  selectedModel: string | null
 }
 
 const findLatestFollowupInBlocks = (
@@ -162,6 +163,7 @@ type ChatStoreActions = {
   clearPendingBashMessages: () => void
   setSuggestedFollowups: (state: SuggestedFollowupsState | null) => void
   markFollowupClicked: (toolCallId: string, index: number) => void
+  setSelectedModel: (model: string | null) => void
   reset: () => void
 }
 
@@ -197,11 +199,17 @@ const initialState: ChatStoreState = {
   pendingBashMessages: [],
   suggestedFollowups: null,
   clickedFollowupsMap: new Map<string, Set<number>>(),
+  selectedModel: 'glm-5.3-flash:cloud',
 }
 
 export const useChatStore = create<ChatStore>()(
   immer((set) => ({
     ...initialState,
+
+    setSelectedModel: (model) =>
+      set((state) => {
+        state.selectedModel = model
+      }),
 
     setMessages: (value) =>
       set((state) => {
