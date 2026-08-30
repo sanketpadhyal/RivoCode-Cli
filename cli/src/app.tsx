@@ -331,24 +331,6 @@ const AuthedSurfaceRoutes = ({
   session: ReturnType<typeof useFreebuffSession>['session']
   sessionFailure: ReturnType<typeof useFreebuffSession>['failure']
 }) => {
-  if (IS_FREEBUFF && session?.status === 'superseded') {
-    return <FreebuffSupersededScreen />
-  }
-
-  if (
-    IS_FREEBUFF &&
-    (session === null ||
-      session.status === 'none' ||
-      session.status === 'country_blocked' ||
-      session.status === 'banned' ||
-      session.status === 'rate_limited' ||
-      session.status === 'spend_limited' ||
-      session.status === 'ip_capped' ||
-      session.status === 'takeover_prompt')
-  ) {
-    return <FreebuffLandingScreen session={session} failure={sessionFailure} />
-  }
-
   if (showChatHistory) {
     return (
       <ChatHistoryScreen
