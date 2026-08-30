@@ -992,6 +992,7 @@ STRICT BEHAVIOR RULES:
 
       // Execute each tool and format output for user UI
       const toolResultsForHistory: string[] = []
+      const toolResultById = new Map<string, string>()
       for (const tc of pendingToolCalls) {
         if (!tc || !tc.name) continue
         try {
@@ -1000,6 +1001,7 @@ STRICT BEHAVIOR RULES:
           const oldContent = (tc.name === 'write_file' && filePath && fs.existsSync(filePath)) ? fs.readFileSync(filePath, 'utf-8') : null
 
           const toolExec = await executeLocalTool(projectRoot, tc.name, parsedArgs)
+          toolResultById.set(tc.id, toolExec.result)
           toolResultsForHistory.push(`[${tc.name}]\nResult: ${toolExec.result}`)
 
           let toolActionNotice = '\n\n'
@@ -1082,12 +1084,11 @@ STRICT BEHAVIOR RULES:
           })),
         })
         for (const tc of pendingToolCalls) {
-          const parsedArgs = JSON.parse(tc.args || '{}')
-          const toolExec = await executeLocalTool(projectRoot, tc.name, parsedArgs)
+          const resultStr = toolResultById.get(tc.id) || ''
           chatHistory.push({
             role: 'tool',
             tool_call_id: tc.id,
-            content: toolExec.result,
+            content: resultStr,
           })
         }
       }
