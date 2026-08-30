@@ -382,6 +382,28 @@ export function executeLocalTool(
   }
 }
 
+// Fallback: If model outputs markdown code blocks with a file header, auto-create them on disk
+function autoExtractAndWriteCodeBlocks(projectRoot: string, text: string): string[] {
+  const writtenFiles: string[] = []
+  // Matches patterns like: ```python calculator.py or // File: calculator.py or Save as `calculator.py`
+  const codeBlockRegex = /```(?:[a-zA-Z0-9_-]+)?\s*(?:(?:\/\/|#)\s*(?:file:)?\s*([a-zA-Z0-9_./-]+\.[a-zA-Z0-9]+))?\n([\s\S]*?)```/gi
+  let match: RegExpExecArray | null
+
+  while ((match = codeBlockRegex.exec(text)) !== null) {
+    const filename = match[1]?.trim()
+    const content = match[2]
+    if (filename && content && !filename.includes('bash') && !filename.includes('sh')) {
+      try {
+        const filePath = path.isAbsolute(filename) ? filename : path.join(projectRoot, filename)
+        fs.mkdirSync(path.dirname(filePath), { recursive: true })
+        fs.writeFileSync(filePath, content, 'utf-8')
+        writtenFiles.push(filename)
+      } catch (_e) {}
+    }
+  }
+  return writtenFiles
+}
+
 export async function executeRealAiStream({
   prompt,
   agentMode,
@@ -428,21 +450,22 @@ export async function executeRealAiStream({
   }
 
   // 2. Build system prompt and conversation messages
-  const systemPrompt = `You are RivoCode, an elite autonomous AI coding assistant created by Sanket Padhyal.
+  const systemPrompt = `You are RivoCode, an autonomous AI coding assistant created by Sanket Padhyal, operating like Claude Code / Cursor.
 You are running in mode: ${agentMode}.
-You are connected to the user's workspace at: ${projectRoot}.
+Current workspace directory: ${projectRoot}.
 Host Platform: ${os.platform()} (${os.arch()}).
 
-YOU HAVE REAL SYSTEM TOOLS ATTACHED:
-- write_file(path, content): Create or overwrite files directly on the user's workspace.
-- run_terminal_command(command): Execute shell/terminal commands directly.
-- read_files(paths): Read workspace files.
-- list_directory(path): List folder contents.
+AUTONOMOUS CAPABILITIES (YOU HAVE FULL LOCAL SYSTEM ACCESS):
+- You have tools to write files directly: write_file(path, content)
+- You have tools to run terminal commands: run_terminal_command(command)
+- You have tools to read files: read_files(paths)
+- You have tools to list files: list_directory(path)
 
-AUTONOMOUS EXECUTION RULES:
-- NEVER tell the user to manually create, copy-paste, or save files if they asked you to build, create, or modify code. ALWAYS use write_file to create the file directly in the workspace.
-- When asked to run tests or execute code, use run_terminal_command.
-- Be proactive and take direct action.`
+STRICT BEHAVIOR RULES:
+- NEVER tell the user to manually create files, copy-paste code, or run bash commands when you can do it yourself!
+- When asked to build, create, or modify a file or feature, ALWAYS call 'write_file' to create the file directly in the workspace.
+- When asked to run, test, or check code, ALWAYS call 'run_terminal_command' to run it directly and inspect the results.
+- Take immediate autonomous action. Do not ask for confirmation for basic file creation or inspection.`
 
   const existingMessages = useChatStore.getState().messages
   const chatHistory: Array<{
@@ -474,7 +497,8 @@ AUTONOMOUS EXECUTION RULES:
   let hasThinkingBlock = false
   let accumulatedThinking = ''
   let accumulatedContent = ''
-  const pendingToolCalls: Array<{ id: string; name: string; args: string }> = []
+  let turns = 0
+  const maxTurns = 4
 
   try {
     const headers: Record<string, string> = {
@@ -488,129 +512,162 @@ AUTONOMOUS EXECUTION RULES:
       headers['X-Title'] = 'RivoCode CLI'
     }
 
-    const response = await fetch(route.endpoint, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        model: route.modelId,
-        messages: chatHistory,
-        tools: AGENT_TOOLS,
-        stream: true,
-        temperature: 0.7,
-      }),
-      signal,
-    })
-
-    if (!response.ok) {
-      const errBody = await response.text().catch(() => '')
-      throw new Error(
-        `API returned status ${response.status} (${response.statusText}): ${errBody || 'Unknown error'}`,
-      )
-    }
-
-    const reader = response.body?.getReader()
-    if (!reader) {
-      throw new Error('Response body is not readable')
-    }
-
-    const decoder = new TextDecoder('utf-8')
-    let buffer = ''
-
     updater.addBlock({
       type: 'text',
       textType: 'text',
       content: '',
     })
 
-    while (!signal.aborted) {
-      const { done, value } = await reader.read()
-      if (done) break
+    while (turns < maxTurns && !signal.aborted) {
+      turns++
+      const pendingToolCalls: Array<{ id: string; name: string; args: string }> = []
 
-      buffer += decoder.decode(value, { stream: true })
-      const lines = buffer.split('\n')
-      buffer = lines.pop() || ''
+      const response = await fetch(route.endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model: route.modelId,
+          messages: chatHistory,
+          tools: AGENT_TOOLS,
+          stream: true,
+          temperature: 0.7,
+        }),
+        signal,
+      })
 
-      for (const line of lines) {
-        const trimmed = line.trim()
-        if (!trimmed || !trimmed.startsWith('data:')) continue
+      if (!response.ok) {
+        const errBody = await response.text().catch(() => '')
+        throw new Error(
+          `API returned status ${response.status} (${response.statusText}): ${errBody || 'Unknown error'}`,
+        )
+      }
 
-        const dataStr = trimmed.replace(/^data:\s*/, '')
-        if (dataStr === '[DONE]') break
+      const reader = response.body?.getReader()
+      if (!reader) {
+        throw new Error('Response body is not readable')
+      }
 
-        try {
-          const parsed = JSON.parse(dataStr)
-          const delta = parsed.choices?.[0]?.delta
+      const decoder = new TextDecoder('utf-8')
+      let buffer = ''
+      let turnContent = ''
 
-          if (!delta) continue
+      while (!signal.aborted) {
+        const { done, value } = await reader.read()
+        if (done) break
 
-          const reasoningChunk = delta.reasoning_content || delta.reasoning
-          if (reasoningChunk) {
-            if (!hasThinkingBlock) {
-              hasThinkingBlock = true
-              updater.addBlock({
-                type: 'text',
-                textType: 'reasoning',
-                content: reasoningChunk,
-                thinkingOpen: true,
-              })
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          const trimmed = line.trim()
+          if (!trimmed || !trimmed.startsWith('data:')) continue
+
+          const dataStr = trimmed.replace(/^data:\s*/, '')
+          if (dataStr === '[DONE]') break
+
+          try {
+            const parsed = JSON.parse(dataStr)
+            const delta = parsed.choices?.[0]?.delta
+
+            if (!delta) continue
+
+            const reasoningChunk = delta.reasoning_content || delta.reasoning
+            if (reasoningChunk) {
+              if (!hasThinkingBlock) {
+                hasThinkingBlock = true
+                updater.addBlock({
+                  type: 'text',
+                  textType: 'reasoning',
+                  content: reasoningChunk,
+                  thinkingOpen: true,
+                })
+              }
+              accumulatedThinking += reasoningChunk
+              const currentReasoning = accumulatedThinking
+              updater.updateAiMessageBlocks((blocks) =>
+                blocks.map((b) =>
+                  b.type === 'text' &&
+                  (b as TextContentBlock).textType === 'reasoning'
+                    ? { ...b, content: currentReasoning }
+                    : b,
+                ),
+              )
             }
-            accumulatedThinking += reasoningChunk
-            const currentReasoning = accumulatedThinking
-            updater.updateAiMessageBlocks((blocks) =>
-              blocks.map((b) =>
-                b.type === 'text' &&
-                (b as TextContentBlock).textType === 'reasoning'
-                  ? { ...b, content: currentReasoning }
-                  : b,
-              ),
-            )
-          }
 
-          const contentChunk = delta.content
-          if (contentChunk) {
-            accumulatedContent += contentChunk
-            const currentContent = accumulatedContent
-            updater.updateAiMessageBlocks((blocks) =>
-              blocks.map((b) =>
-                b.type === 'text' &&
-                (b as TextContentBlock).textType === 'text'
-                  ? { ...b, content: currentContent }
-                  : b,
-              ),
-            )
-          }
+            const contentChunk = delta.content
+            if (contentChunk) {
+              turnContent += contentChunk
+              accumulatedContent += contentChunk
+              const currentContent = accumulatedContent
+              updater.updateAiMessageBlocks((blocks) =>
+                blocks.map((b) =>
+                  b.type === 'text' &&
+                  (b as TextContentBlock).textType === 'text'
+                    ? { ...b, content: currentContent }
+                    : b,
+                ),
+              )
+            }
 
-          if (delta.tool_calls) {
-            for (const tc of delta.tool_calls) {
-              const index = tc.index ?? 0
-              if (!pendingToolCalls[index]) {
-                pendingToolCalls[index] = {
-                  id: tc.id || `call_${index}`,
-                  name: tc.function?.name || '',
-                  args: '',
+            if (delta.tool_calls) {
+              for (const tc of delta.tool_calls) {
+                const index = tc.index ?? 0
+                if (!pendingToolCalls[index]) {
+                  pendingToolCalls[index] = {
+                    id: tc.id || `call_${index}_${turns}`,
+                    name: tc.function?.name || '',
+                    args: '',
+                  }
+                }
+                if (tc.function?.name) {
+                  pendingToolCalls[index].name = tc.function.name
+                }
+                if (tc.function?.arguments) {
+                  pendingToolCalls[index].args += tc.function.arguments
                 }
               }
-              if (tc.function?.name) {
-                pendingToolCalls[index].name = tc.function.name
-              }
-              if (tc.function?.arguments) {
-                pendingToolCalls[index].args += tc.function.arguments
-              }
             }
-          }
-        } catch (_jsonErr) {}
+          } catch (_jsonErr) {}
+        }
       }
-    }
 
-    // Execute any function tool calls generated by the model
-    if (pendingToolCalls.length > 0) {
+      // If no tool calls were made, check fallback auto-extraction and stop loop
+      if (pendingToolCalls.length === 0) {
+        const autoCreated = autoExtractAndWriteCodeBlocks(projectRoot, turnContent)
+        if (autoCreated.length > 0) {
+          const autoNotice = `\n\n⚡ **Auto-created file(s) in workspace**: ${autoCreated.map((f) => `\`${f}\``).join(', ')}`
+          accumulatedContent += autoNotice
+          updater.updateAiMessageBlocks((blocks) =>
+            blocks.map((b) =>
+              b.type === 'text' && (b as TextContentBlock).textType === 'text'
+                ? { ...b, content: accumulatedContent }
+                : b,
+            ),
+          )
+        }
+        break
+      }
+
+      // Push assistant message with tool calls to chat history
+      chatHistory.push({
+        role: 'assistant',
+        content: turnContent || '',
+        tool_calls: pendingToolCalls.map((tc) => ({
+          id: tc.id,
+          type: 'function',
+          function: { name: tc.name, arguments: tc.args },
+        })),
+      })
+
+      // Execute each tool and append tool result
       for (const tc of pendingToolCalls) {
         if (!tc || !tc.name) continue
         try {
           const parsedArgs = JSON.parse(tc.args || '{}')
           const toolExec = executeLocalTool(projectRoot, tc.name, parsedArgs)
 
-          let toolActionNotice = `\n\n⚡ **Executed Action [${tc.name}]**\n`
+          let toolActionNotice = `\n\n⚡ **Executed [${tc.name}]**\n`
           if (tc.name === 'write_file') {
             toolActionNotice += `Created file: \`${parsedArgs.path}\` in workspace.`
           } else if (tc.name === 'run_terminal_command') {
@@ -627,7 +684,19 @@ AUTONOMOUS EXECUTION RULES:
                 : b,
             ),
           )
-        } catch (_e) {}
+
+          chatHistory.push({
+            role: 'tool',
+            tool_call_id: tc.id,
+            content: toolExec.result,
+          })
+        } catch (execErr: any) {
+          chatHistory.push({
+            role: 'tool',
+            tool_call_id: tc.id,
+            content: `Error: ${execErr.message || String(execErr)}`,
+          })
+        }
       }
     }
 
