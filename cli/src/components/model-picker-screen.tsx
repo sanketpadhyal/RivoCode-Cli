@@ -22,6 +22,15 @@ export interface ModelOption {
 
 export const AVAILABLE_MODELS: ModelOption[] = [
   {
+    id: 'gemini',
+    name: 'gemini-3.6-flash',
+    badge: '(Google AI · 1M Context & Free)',
+    icon: '✨',
+    iconPadding: ' ',
+    iconColor: '#38BDF8',
+    description: 'Gemini 3.6 Flash via Google AI Studio · 1M token window (Free at aistudio.google.com)',
+  },
+  {
     id: 'openrouter-claude',
     name: 'claude-3.7-sonnet',
     badge: '(OpenRouter · Anthropic Flagship)',
@@ -37,7 +46,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     icon: '🐳',
     iconPadding: ' ',
     iconColor: '#3B82F6',
-    description: 'DeepSeek V3 671B via OpenRouter · Ultra-low cost, massive coding session capacity',
+    description: 'DeepSeek V3 671B via OpenRouter · Ultra-low cost, massive coding capacity',
   },
   {
     id: 'openrouter-r1',
@@ -65,33 +74,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     iconPadding: '  ',
     iconColor: '#10A37F',
     description: 'Free Llama 3.3 70B on OpenRouter (Free at openrouter.ai/keys)',
-  },
-  {
-    id: 'groq',
-    name: 'gpt-oss-120b',
-    badge: '(Groq · Flagship 120B & Free)',
-    icon: '⚡',
-    iconPadding: ' ',
-    iconColor: '#FF4800',
-    description: 'OpenAI GPT-OSS 120B on Groq LPUs · 500+ tok/s (Free at console.groq.com)',
-  },
-  {
-    id: 'qwen',
-    name: 'qwen-3.8-27b',
-    badge: '(Groq · Ultra Fast 27B)',
-    icon: '⚡',
-    iconPadding: ' ',
-    iconColor: '#38BDF8',
-    description: 'Qwen 3.8 27B on Groq LPUs · 131k context window (Free at console.groq.com)',
-  },
-  {
-    id: 'gemini',
-    name: 'gemini-3.6-flash',
-    badge: '(Google AI · 1M Context)',
-    icon: '✨',
-    iconPadding: ' ',
-    iconColor: '#38BDF8',
-    description: 'Gemini 3.6 Flash via Google AI Studio · 1M token window (Free at aistudio.google.com)',
   },
 ]
 
