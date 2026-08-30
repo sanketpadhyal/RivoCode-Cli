@@ -667,13 +667,32 @@ STRICT BEHAVIOR RULES:
           const parsedArgs = JSON.parse(tc.args || '{}')
           const toolExec = executeLocalTool(projectRoot, tc.name, parsedArgs)
 
-          let toolActionNotice = `\n\n⚡ **Executed [${tc.name}]**\n`
+          let toolActionNotice = '\n\n'
           if (tc.name === 'write_file') {
-            toolActionNotice += `Created file: \`${parsedArgs.path}\` in workspace.`
+            const lineCount = (parsedArgs.content || '').split('\n').length
+            toolActionNotice += `┌── 📝 **Write File**: \`${parsedArgs.path}\`\n`
+            toolActionNotice += `├── 📍 **Location**: \`${projectRoot}/${parsedArgs.path}\`\n`
+            toolActionNotice += `├── 📊 **Lines**: ${lineCount} lines (${parsedArgs.content?.length || 0} bytes)\n`
+            toolActionNotice += `└── ✓ **Status**: Saved to disk successfully\n`
           } else if (tc.name === 'run_terminal_command') {
-            toolActionNotice += `Command: \`${parsedArgs.command}\`\nOutput:\n\`\`\`\n${toolExec.result}\n\`\`\``
+            const cleanOutput = toolExec.result.trim()
+            toolActionNotice += `┌── ⚡ **Terminal Command**: \`$ ${parsedArgs.command}\`\n`
+            if (cleanOutput) {
+              toolActionNotice += `├── 💻 **Output**:\n\`\`\`bash\n${cleanOutput}\n\`\`\`\n`
+            }
+            toolActionNotice += `└── ✓ **Status**: Executed (Exit Code 0)\n`
+          } else if (tc.name === 'read_files') {
+            const fileList = (parsedArgs.paths || []).join(', ')
+            toolActionNotice += `┌── 📖 **Read Files**: \`${fileList}\`\n`
+            toolActionNotice += `└── ✓ **Status**: Loaded into context\n`
+          } else if (tc.name === 'list_directory') {
+            const folder = parsedArgs.path || '.'
+            const fileCount = toolExec.result.split('\n').filter(Boolean).length
+            toolActionNotice += `┌── 📁 **Explore Directory**: \`${folder}\` (${fileCount} items found)\n`
+            toolActionNotice += `└── ✓ **Status**: Inspected\n`
           } else {
-            toolActionNotice += `${toolExec.result}`
+            toolActionNotice += `┌── ⚙️ **Tool Action [${tc.name}]**\n`
+            toolActionNotice += `└── ✓ ${toolExec.result}\n`
           }
 
           accumulatedContent += toolActionNotice
