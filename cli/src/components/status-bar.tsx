@@ -135,9 +135,9 @@ export const StatusBar = ({
       case 'streaming':
         return (
           <ShimmerText
-            text="working..."
+            text="executing..."
             interval={SHIMMER_INTERVAL_MS}
-            primaryColor={theme.secondary}
+            primaryColor="#eab308"
           />
         )
     }

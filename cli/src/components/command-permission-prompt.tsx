@@ -58,7 +58,15 @@ export const CommandPermissionPrompt: React.FC<CommandPermissionPromptProps> = (
           return
         }
 
-        if (isPlainEnterKey(key) || key.name === 'space') {
+        const isEnter =
+          key.name === 'return' ||
+          key.name === 'enter' ||
+          key.name === 'linefeed' ||
+          key.sequence === '\r' ||
+          key.sequence === '\n' ||
+          isPlainEnterKey(key)
+
+        if (isEnter || key.name === 'space') {
           preventDefault()
           onSubmit(options[selectedIndex])
           return
