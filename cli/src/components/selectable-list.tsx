@@ -165,7 +165,7 @@ export const SelectableList = forwardRef<
                 onClick={() => onSelect(item, idx)}
                 style={{
                   flexDirection: 'row',
-                  gap: 3,
+                  gap: 1,
                   flexGrow: 1,
                   flexShrink: 1,
                   paddingLeft: 1,
@@ -176,19 +176,26 @@ export const SelectableList = forwardRef<
                   overflow: 'hidden',
                 }}
               >
+                <text style={{ fg: isHighlighted ? theme.primary : theme.muted }}>
+                  {isHighlighted ? '▶ ' : '  '}
+                </text>
                 {item.icon && (
                   <text
                     style={{
-                      fg: isHighlighted ? theme.foreground : theme.muted,
+                      fg: item.accent ? theme.primary : isHighlighted ? '#FBBF24' : theme.muted,
                     }}
                   >
-                    {item.icon}
+                    {item.icon}{' '}
                   </text>
                 )}
                 <text
                   style={{
                     fg:
-                      item.accent && !isHighlighted ? theme.primary : textColor,
+                      item.accent
+                        ? theme.primary
+                        : isHighlighted
+                          ? theme.foreground
+                          : theme.foreground,
                     attributes:
                       item.accent || isHighlighted
                         ? TextAttributes.BOLD
@@ -198,7 +205,7 @@ export const SelectableList = forwardRef<
                   {item.label}
                 </text>
                 {item.secondary && !item.hideSecondary && (
-                  <text style={{ fg: theme.muted }}>{item.secondary}</text>
+                  <text style={{ fg: theme.muted }}> {item.secondary}</text>
                 )}
               </Button>
               {actionLabel && onAction && (

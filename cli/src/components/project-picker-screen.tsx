@@ -1,5 +1,6 @@
 import os from 'os'
 
+import { TextAttributes } from '@opentui/core'
 import React, { useCallback, useMemo, useState } from 'react'
 
 import { Button } from './button'
@@ -70,7 +71,8 @@ export const ProjectPickerScreen: React.FC<ProjectPickerScreenProps> = ({
       directories.map((entry) => ({
         id: entry.path,
         label: entry.name,
-        icon: entry.isParent ? '📂' : '📁',
+        icon: entry.isParent ? '↑' : entry.isGitRepo ? '📦' : '📁',
+        secondary: entry.isGitRepo ? '(git repo)' : undefined,
         accent: entry.isGitRepo,
       })),
     [directories],
@@ -296,27 +298,36 @@ export const ProjectPickerScreen: React.FC<ProjectPickerScreenProps> = ({
           </box>
         )}
 
-        {canShowHelpText && (
-          <box
-            style={{
-              flexDirection: 'column',
-              alignItems: 'center',
-              maxWidth: contentMaxWidth,
-              marginBottom: isCompactMode ? 0 : LAYOUT.HELP_TEXT_MARGIN_BOTTOM,
-              flexShrink: 0,
-            }}
-          >
-            <text style={{ fg: theme.muted, wrapMode: 'word' }}>
-              Navigate to your project folder and press Open.
-            </text>
-          </box>
-        )}
+        <box
+          style={{
+            width: contentWidth,
+            flexShrink: 0,
+            marginBottom: 1,
+            flexDirection: 'column',
+          }}
+        >
+          <text style={{ wrapMode: 'none' }}>
+            <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+              Select project workspace for{' '}
+            </span>
+            <span fg={theme.primary} attributes={TextAttributes.BOLD}>
+              RivoCode
+            </span>
+            <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+              :
+            </span>
+          </text>
+          <text style={{ wrapMode: 'none', fg: theme.muted }}>
+            <span>Current: </span>
+            <span fg={theme.secondary}>{formatCwd(currentPath)}</span>
+          </text>
+        </box>
 
         <box
           style={{
             width: contentWidth,
             flexShrink: 0,
-            marginBottom: 0,
+            marginBottom: 1,
           }}
         >
           <MultilineInput
@@ -325,7 +336,7 @@ export const ProjectPickerScreen: React.FC<ProjectPickerScreenProps> = ({
             onSubmit={() => {}}
             onPaste={() => {}}
             onKeyIntercept={handleSearchKeyIntercept}
-            placeholder="Select project directory..."
+            placeholder="Type to search folder or enter path..."
             focused={true}
             maxHeight={1}
             minHeight={1}
@@ -339,7 +350,7 @@ export const ProjectPickerScreen: React.FC<ProjectPickerScreenProps> = ({
               flexDirection: 'column',
               width: contentWidth,
               borderStyle: 'single',
-              borderColor: theme.muted,
+              borderColor: '#334155',
               flexShrink: 0,
             }}
             border={['top', 'bottom', 'left', 'right']}
@@ -367,7 +378,7 @@ export const ProjectPickerScreen: React.FC<ProjectPickerScreenProps> = ({
               gap: 0,
             }}
           >
-            <text style={{ fg: theme.muted, height: 1 }}>Recent:</text>
+            <text style={{ fg: theme.muted, height: 1 }}>Recent Workspaces:</text>
             {recentProjects.slice(0, maxRecentsToShow).map((project, idx) => (
               <box
                 key={project.path}
@@ -378,7 +389,7 @@ export const ProjectPickerScreen: React.FC<ProjectPickerScreenProps> = ({
                   height: 1,
                 }}
               >
-                <text style={{ fg: theme.secondary }}>[{idx + 1}]</text>
+                <text style={{ fg: theme.primary }}>[{idx + 1}]</text>
                 <TerminalLink
                   text={formatCwd(project.path)}
                   onActivate={() => onSelectProject(project.path)}
@@ -397,8 +408,8 @@ export const ProjectPickerScreen: React.FC<ProjectPickerScreenProps> = ({
           alignItems: 'center',
           justifyContent: 'center',
           width: '100%',
-          paddingTop: 0,
-          paddingBottom: 0,
+          paddingTop: 1,
+          paddingBottom: 1,
           borderStyle: 'single',
           borderColor: theme.border,
           flexShrink: 0,
@@ -414,9 +425,13 @@ export const ProjectPickerScreen: React.FC<ProjectPickerScreenProps> = ({
             width: contentWidth,
           }}
         >
-          <box style={{ flexGrow: 1, flexShrink: 1, overflow: 'hidden' }}>
-            <text style={{ fg: theme.muted }}>{formatCwd(currentPath)}</text>
-          </box>
+          <text style={{ fg: theme.muted }}>
+            <span>↑/↓ navigate · </span>
+            <span fg={theme.foreground}>enter</span>
+            <span> open · </span>
+            <span fg={theme.foreground}>tab</span>
+            <span> complete</span>
+          </text>
 
           <Button
             onClick={selectCurrentDirectory}
@@ -425,13 +440,12 @@ export const ProjectPickerScreen: React.FC<ProjectPickerScreenProps> = ({
               paddingRight: 2,
               paddingTop: 0,
               paddingBottom: 0,
-              borderStyle: 'single',
-              borderColor: theme.primary,
               backgroundColor: theme.primary,
             }}
-            border={['top', 'bottom', 'left', 'right']}
           >
-            <text style={{ fg: '#1a1a1a' }}>Open</text>
+            <text style={{ fg: '#000000', attributes: TextAttributes.BOLD }}>
+              Open Workspace
+            </text>
           </Button>
         </box>
       </box>
