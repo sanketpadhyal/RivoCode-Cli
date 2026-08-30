@@ -107,6 +107,11 @@ const VERB_CATEGORIES = {
   },
 }
 
+const ALL_ICONS = ['✂', '✄', '✁', '✃', '⎚', '⌗', '⌿', '⚙', '⚡', '⌖', '⌁', '⌘', '⌥', '⍾', '⚑', '⎔', '✦', '◈', '⟡', '⊞', '⟁', '⟠', '✎', '⌬', '⌕', '◎', '§', '✶', '✓', '✔', '◆', '◇']
+const ALL_WORDS = Object.values(VERB_CATEGORIES).flatMap(c => c.words)
+
+let lastPickedVerb = ''
+
 function selectRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
@@ -117,36 +122,35 @@ function selectRandom<T>(arr: T[]): T {
 export function getContextualThinkingState(userPrompt: string): ThinkingStateInfo {
   const p = (userPrompt || '').toLowerCase()
 
+  let pool = VERB_CATEGORIES.GENERAL_REASONING
+
   if (/\b(cut|remove|delete|trim|prune|strip|clean|crop|drop|reduce|compact|purge|sciss|slice)\b/.test(p)) {
-    const cat = VERB_CATEGORIES.CUT_AND_PRUNE
-    return { icon: selectRandom(cat.icons), verb: selectRandom(cat.words) }
+    pool = VERB_CATEGORIES.CUT_AND_PRUNE
+  } else if (/\b(fix|bug|error|exception|crash|issue|patch|fail|broken|debug|repair|resolve|problem)\b/.test(p)) {
+    pool = VERB_CATEGORIES.DEBUG_AND_FIX
+  } else if (/\b(create|build|make|add|new|implement|write|scaffold|generate|craft|compose|forge)\b/.test(p)) {
+    pool = VERB_CATEGORIES.BUILD_AND_CREATE
+  } else if (/\b(search|find|where|locate|look|check|inspect|scan|read|explore|view|grep|browse)\b/.test(p)) {
+    pool = VERB_CATEGORIES.SEARCH_AND_INSPECT
+  } else if (/\b(optimize|speed|fast|perf|performance|refactor|enhance|upgrade|polish|boost|turbo|tune)\b/.test(p)) {
+    pool = VERB_CATEGORIES.OPTIMIZE_AND_REFACTOR
+  } else if (/\b(test|verify|check|assert|bench|benchmark|validate|prove|confirm|spec)\b/.test(p)) {
+    pool = VERB_CATEGORIES.TEST_AND_VERIFY
   }
 
-  if (/\b(fix|bug|error|exception|crash|issue|patch|fail|broken|debug|repair|resolve|problem)\b/.test(p)) {
-    const cat = VERB_CATEGORIES.DEBUG_AND_FIX
-    return { icon: selectRandom(cat.icons), verb: selectRandom(cat.words) }
-  }
+  // 30% chance to blend with full collection for hyper-variety
+  const wordsToChooseFrom = Math.random() < 0.3 ? ALL_WORDS : pool.words
+  const iconsToChooseFrom = Math.random() < 0.3 ? ALL_ICONS : pool.icons
 
-  if (/\b(create|build|make|add|new|implement|write|scaffold|generate|craft|compose|forge)\b/.test(p)) {
-    const cat = VERB_CATEGORIES.BUILD_AND_CREATE
-    return { icon: selectRandom(cat.icons), verb: selectRandom(cat.words) }
+  let chosenVerb = selectRandom(wordsToChooseFrom)
+  let attempts = 0
+  while (chosenVerb === lastPickedVerb && attempts < 5) {
+    chosenVerb = selectRandom(wordsToChooseFrom)
+    attempts++
   }
+  lastPickedVerb = chosenVerb
 
-  if (/\b(search|find|where|locate|look|check|inspect|scan|read|explore|view|grep|browse)\b/.test(p)) {
-    const cat = VERB_CATEGORIES.SEARCH_AND_INSPECT
-    return { icon: selectRandom(cat.icons), verb: selectRandom(cat.words) }
-  }
+  const chosenIcon = selectRandom(iconsToChooseFrom)
 
-  if (/\b(optimize|speed|fast|perf|performance|refactor|enhance|upgrade|polish|boost|turbo|tune)\b/.test(p)) {
-    const cat = VERB_CATEGORIES.OPTIMIZE_AND_REFACTOR
-    return { icon: selectRandom(cat.icons), verb: selectRandom(cat.words) }
-  }
-
-  if (/\b(test|verify|check|assert|bench|benchmark|validate|prove|confirm|spec)\b/.test(p)) {
-    const cat = VERB_CATEGORIES.TEST_AND_VERIFY
-    return { icon: selectRandom(cat.icons), verb: selectRandom(cat.words) }
-  }
-
-  const cat = VERB_CATEGORIES.GENERAL_REASONING
-  return { icon: selectRandom(cat.icons), verb: selectRandom(cat.words) }
+  return { icon: chosenIcon, verb: chosenVerb }
 }

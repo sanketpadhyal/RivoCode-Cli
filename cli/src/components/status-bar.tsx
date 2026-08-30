@@ -74,9 +74,21 @@ export const StatusBar = ({
     return ''
   }, [messages])
 
-  const thinkingState = React.useMemo(() => {
-    return getContextualThinkingState(lastUserPrompt)
-  }, [lastUserPrompt, statusIndicatorState?.kind === 'waiting'])
+  const [thinkingState, setThinkingState] = useState(() => getContextualThinkingState(lastUserPrompt))
+
+  useEffect(() => {
+    if (statusIndicatorState?.kind !== 'waiting' && statusIndicatorState?.kind !== 'streaming') {
+      return
+    }
+
+    setThinkingState(getContextualThinkingState(lastUserPrompt))
+
+    const interval = setInterval(() => {
+      setThinkingState(getContextualThinkingState(lastUserPrompt))
+    }, 2200)
+
+    return () => clearInterval(interval)
+  }, [lastUserPrompt, statusIndicatorState?.kind, timerStartTime])
 
   const shouldShowTimer =
     statusIndicatorState?.kind === 'waiting' ||
