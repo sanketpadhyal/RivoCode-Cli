@@ -500,15 +500,22 @@ Current workspace directory: ${projectRoot}.
 Host Platform: ${os.platform()} (${os.arch()}).
 
 AUTONOMOUS CAPABILITIES (YOU HAVE FULL LOCAL SYSTEM ACCESS):
-- You have tools to write files directly: write_file(path, content)
-- You have tools to run terminal commands: run_terminal_command(command)
-- You have tools to read files: read_files(paths)
-- You have tools to list files: list_directory(path)
+- write_file(path, content): Create or overwrite files directly in the workspace.
+- run_terminal_command(command): Execute shell/terminal commands directly.
+- read_files(paths): Read workspace files into context.
+- list_directory(path): List folder contents.
+
+HOW TO EXECUTE ACTIONS:
+When you need to create a file or run a command, you can either call the tool function or output an action tag:
+<action name="write_file">{"path": "calculator.py", "content": "..."}</action>
+<action name="run_terminal_command">{"command": "python3 calculator.py"}</action>
+<action name="read_files">{"paths": ["src/app.ts"]}</action>
+<action name="list_directory">{"path": "."}</action>
 
 STRICT BEHAVIOR RULES:
 - NEVER tell the user to manually create files, copy-paste code, or run bash commands when you can do it yourself!
-- When asked to build, create, or modify a file or feature, ALWAYS call 'write_file' to create the file directly in the workspace.
-- When asked to run, test, or check code, ALWAYS call 'run_terminal_command' to run it directly and inspect the results.
+- When asked to build, create, or modify a file or feature, ALWAYS create the file directly in the workspace.
+- When asked to run, test, or check code, ALWAYS execute the command directly and inspect the results.
 - Take immediate autonomous action. Do not ask for confirmation for basic file creation or inspection.`
 
   const existingMessages = useChatStore.getState().messages
@@ -570,16 +577,22 @@ STRICT BEHAVIOR RULES:
       turns++
       const pendingToolCalls: Array<{ id: string; name: string; args: string }> = []
 
+      const requestBody: Record<string, any> = {
+        model: route.modelId,
+        messages: chatHistory,
+        stream: true,
+        temperature: 0.7,
+      }
+
+      // Pass native tools for Groq/OpenRouter (Gemini uses action tags to avoid thought_signature 400s)
+      if (route.provider !== 'gemini') {
+        requestBody.tools = AGENT_TOOLS
+      }
+
       const response = await fetch(route.endpoint, {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          model: route.modelId,
-          messages: chatHistory,
-          tools: AGENT_TOOLS,
-          stream: true,
-          temperature: 0.7,
-        }),
+        body: JSON.stringify(requestBody),
         signal,
       })
 
@@ -680,7 +693,26 @@ STRICT BEHAVIOR RULES:
         }
       }
 
-      // If no tool calls were made, check fallback auto-extraction and stop loop
+      // If no function tool calls were made, check action tags
+      if (pendingToolCalls.length === 0) {
+        const actionRegex = /<action\s+name=["']([a-zA-Z0-9_-]+)["']>([\s\S]*?)<\/action>/gi
+        let match: RegExpExecArray | null
+        let actionIndex = 0
+
+        while ((match = actionRegex.exec(turnContent)) !== null) {
+          const name = match[1]?.trim()
+          const rawArgs = match[2]?.trim()
+          if (name && rawArgs) {
+            pendingToolCalls.push({
+              id: `action_${actionIndex++}_${turns}`,
+              name,
+              args: rawArgs.startsWith('{') ? rawArgs : JSON.stringify({ command: rawArgs }),
+            })
+          }
+        }
+      }
+
+      // If still no tool calls or actions, check fallback auto-extraction and stop loop
       if (pendingToolCalls.length === 0) {
         const autoCreated = autoExtractAndWriteCodeBlocks(projectRoot, turnContent)
         if (autoCreated.length > 0) {
