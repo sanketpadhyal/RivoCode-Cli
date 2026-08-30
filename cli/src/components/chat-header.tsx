@@ -86,6 +86,11 @@ export const ChatHeader = memo(function ChatHeader({
         <text style={{ wrapMode: 'none', fg: theme.secondary }}>
           <span>{(projectRoot || process.cwd()).startsWith(os.homedir()) ? '~' + (projectRoot || process.cwd()).slice(os.homedir().length) : (projectRoot || process.cwd())}</span>
         </text>
+        <text style={{ wrapMode: 'none' }}>
+          <span fg="#f97316" attributes={TextAttributes.BOLD}>
+            {apiConnected ? '● API Connected' : '○ API Not Connected'}
+          </span>
+        </text>
       </box>
     </box>
   )
