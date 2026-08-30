@@ -1,15 +1,14 @@
 import os from 'os'
 
 import { TextAttributes } from '@opentui/core'
+import { useKeyboard } from '@opentui/react'
 import React, { useCallback, useMemo, useState } from 'react'
 
 import { Button } from './button'
-import { MultilineInput } from './multiline-input'
 import { SelectableList } from './selectable-list'
 import { TerminalLink } from './terminal-link'
 import { useDirectoryBrowser } from '../hooks/use-directory-browser'
 import { useLogo } from '../hooks/use-logo'
-import { usePathTabCompletion } from '../hooks/use-path-tab-completion'
 import { useSearchableList } from '../hooks/use-searchable-list'
 import { useSheenAnimation } from '../hooks/use-sheen-animation'
 import { useTerminalLayout } from '../hooks/use-terminal-layout'
@@ -20,6 +19,7 @@ import { loadRecentProjects } from '../utils/recent-projects'
 import { isPlainEnterKey } from '../utils/terminal-enter-detection'
 import { getLogoBlockColor, getLogoAccentColor } from '../utils/theme-system'
 
+import type { KeyEvent } from '@opentui/core'
 import type { SelectableListItem } from './selectable-list'
 
 const LAYOUT = {
@@ -189,74 +189,54 @@ export const ProjectPickerScreen: React.FC<ProjectPickerScreenProps> = ({
     onSelectProject(currentPath)
   }, [currentPath, onSelectProject])
 
-  const { handleTabCompletion } = usePathTabCompletion({
-    searchQuery,
-    setSearchQuery,
-    currentPath,
-    setCurrentPath,
-    expandPath,
-  })
+  useKeyboard(
+    useCallback(
+      (key: KeyEvent) => {
+        if (key.ctrl && key.name === 'c') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
+            key.preventDefault()
+          }
+          void exitCliCleanly()
+          return
+        }
 
-  const handleSearchKeyIntercept = useCallback(
-    (key: {
-      name?: string
-      sequence?: string
-      shift?: boolean
-      ctrl?: boolean
-      meta?: boolean
-      option?: boolean
-    }) => {
-      if (key.name === 'escape') {
-        if (searchQuery.length > 0) {
-          setSearchQuery('')
+        if (key.name === 'up' || (key.ctrl && key.name === 'k')) {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
+            key.preventDefault()
+          }
+          setFocusedIndex((prev) => Math.max(0, prev - 1))
+          return
         }
-        return true
-      }
-      if (key.name === 'tab') {
-        return handleTabCompletion()
-      }
-      if (key.name === 'up') {
-        setFocusedIndex((prev) => Math.max(0, prev - 1))
-        return true
-      }
-      if (key.name === 'down') {
-        setFocusedIndex((prev) =>
-          Math.min(filteredDirectoryItems.length - 1, prev + 1),
-        )
-        return true
-      }
-      if (isPlainEnterKey(key)) {
-        if (searchQuery.startsWith('/') || searchQuery.startsWith('~')) {
-          if (tryNavigateToPath(searchQuery)) {
-            return true
+
+        if (
+          key.name === 'down' ||
+          (key.ctrl && key.name === 'j') ||
+          key.name === 'tab'
+        ) {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
+            key.preventDefault()
+          }
+          setFocusedIndex((prev) =>
+            Math.min(filteredDirectoryItems.length - 1, prev + 1),
+          )
+          return
+        }
+
+        if (isPlainEnterKey(key)) {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
+            key.preventDefault()
+          }
+          const focused = filteredDirectoryItems[focusedIndex]
+          if (focused) {
+            const entry = directories.find((d) => d.path === focused.id)
+            if (entry) {
+              navigateToDirectory(entry)
+            }
           }
         }
-        const focused = filteredDirectoryItems[focusedIndex]
-        if (focused) {
-          const entry = directories.find((d) => d.path === focused.id)
-          if (entry) {
-            navigateToDirectory(entry)
-          }
-        }
-        return true
-      }
-      if (key.name === 'c' && key.ctrl) {
-        void exitCliCleanly()
-        return true
-      }
-      return false
-    },
-    [
-      searchQuery,
-      setSearchQuery,
-      handleTabCompletion,
-      setFocusedIndex,
-      filteredDirectoryItems,
-      focusedIndex,
-      tryNavigateToPath,
-      directories,
-      navigateToDirectory,
-    ],
+      },
+      [directories, filteredDirectoryItems, focusedIndex, navigateToDirectory, setFocusedIndex],
+    ),
   )
 
   return (
@@ -323,26 +303,6 @@ export const ProjectPickerScreen: React.FC<ProjectPickerScreenProps> = ({
           </text>
         </box>
 
-        <box
-          style={{
-            width: contentWidth,
-            flexShrink: 0,
-            marginBottom: 1,
-          }}
-        >
-          <MultilineInput
-            value={searchQuery}
-            onChange={({ text }) => setSearchQuery(text)}
-            onSubmit={() => {}}
-            onPaste={() => {}}
-            onKeyIntercept={handleSearchKeyIntercept}
-            placeholder="Type to search folder or enter path..."
-            focused={true}
-            maxHeight={1}
-            minHeight={1}
-            cursorPosition={searchQuery.length}
-          />
-        </box>
 
         {canShowFilePicker && (
           <box
