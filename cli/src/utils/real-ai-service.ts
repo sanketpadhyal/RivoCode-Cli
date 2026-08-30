@@ -106,13 +106,15 @@ DEEPSEEK_API_KEY=${current.deepseek || ''}
   } catch (_e) {}
 }
 
-export function resolveApiKey(provider: 'groq' | 'openrouter' | 'gemini'): string | null {
+export function resolveApiKey(provider: 'groq' | 'openrouter' | 'gemini' | 'deepseek'): string | null {
   const envKey =
     provider === 'groq'
       ? process.env.GROQ_API_KEY
       : provider === 'gemini'
         ? (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY)
-        : process.env.OPENROUTER_API_KEY
+        : provider === 'deepseek'
+          ? process.env.DEEPSEEK_API_KEY
+          : process.env.OPENROUTER_API_KEY
 
   if (envKey && envKey.trim().length > 0) {
     return envKey.trim()
@@ -136,11 +138,16 @@ export function isApiConnected(modelName?: string): boolean {
     const route = resolveModelRoute(modelName)
     return Boolean(resolveApiKey(route.provider))
   }
-  return Boolean(resolveApiKey('groq') || resolveApiKey('gemini') || resolveApiKey('openrouter'))
+  return Boolean(
+    resolveApiKey('groq') ||
+      resolveApiKey('gemini') ||
+      resolveApiKey('deepseek') ||
+      resolveApiKey('openrouter'),
+  )
 }
 
 export interface ModelRoute {
-  provider: 'groq' | 'openrouter' | 'gemini'
+  provider: 'groq' | 'openrouter' | 'gemini' | 'deepseek'
   endpoint: string
   modelId: string
   displayName: string
@@ -160,12 +167,22 @@ export function resolveModelRoute(modelName: string): ModelRoute {
     }
   }
 
-  if (normalized.includes('qwen')) {
+  if (normalized.includes('deepseek')) {
+    return {
+      provider: 'deepseek',
+      endpoint: 'https://api.deepseek.com/chat/completions',
+      modelId: 'deepseek-chat',
+      displayName: 'DeepSeek V3 (platform.deepseek.com)',
+      apiKeyUrl: 'https://platform.deepseek.com/api_keys',
+    }
+  }
+
+  if (normalized.includes('qwen') || normalized.includes('coder')) {
     return {
       provider: 'groq',
       endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-      modelId: 'qwen/qwen3.8-27b',
-      displayName: 'Qwen 3.8 27B (Groq)',
+      modelId: 'qwen-2.5-coder-32b',
+      displayName: 'Qwen 2.5 Coder 32B (Groq)',
       apiKeyUrl: 'https://console.groq.com/keys',
     }
   }
@@ -183,14 +200,14 @@ export function resolveModelRoute(modelName: string): ModelRoute {
   return {
     provider: 'groq',
     endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-    modelId: 'openai/gpt-oss-120b',
-    displayName: 'GPT-OSS 120B (Groq)',
+    modelId: 'llama-3.3-70b-versatile',
+    displayName: 'Llama 3.3 70B Versatile (Groq)',
     apiKeyUrl: 'https://console.groq.com/keys',
   }
 }
 
 export async function testApiKeyConnection(
-  provider: 'groq' | 'openrouter' | 'gemini',
+  provider: 'groq' | 'openrouter' | 'gemini' | 'deepseek',
   apiKey: string,
 ): Promise<{ success: boolean; error?: string; message?: string }> {
   try {
@@ -199,13 +216,17 @@ export async function testApiKeyConnection(
         ? 'https://api.groq.com/openai/v1/chat/completions'
         : provider === 'gemini'
           ? 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
-          : 'https://openrouter.ai/api/v1/chat/completions'
+          : provider === 'deepseek'
+            ? 'https://api.deepseek.com/chat/completions'
+            : 'https://openrouter.ai/api/v1/chat/completions'
     const model =
       provider === 'groq'
-        ? 'openai/gpt-oss-120b'
+        ? 'llama-3.3-70b-versatile'
         : provider === 'gemini'
           ? 'gemini-3.6-flash'
-          : 'meta-llama/llama-3.3-70b-instruct:free'
+          : provider === 'deepseek'
+            ? 'deepseek-chat'
+            : 'meta-llama/llama-3.3-70b-instruct:free'
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -662,32 +683,36 @@ STRICT BEHAVIOR RULES:
       })
 
       // Handle 429 Rate Limiting with Auto-Retry
-      if (response.status === 429 || response.status === 503) {
+      let retryAttempts = 0
+      while ((response.status === 429 || response.status === 503) && retryAttempts < 3 && !signal.aborted) {
+        retryAttempts++
         const errBody = await response.text().catch(() => '')
-        let waitSeconds = 4
+        let waitSeconds = 5 * retryAttempts
         try {
           const parsed = JSON.parse(errBody)
           const details = Array.isArray(parsed) ? parsed[0]?.error?.details : parsed?.error?.details
           const retryInfo = details?.find((d: any) => d['@type']?.includes('RetryInfo'))
           if (retryInfo?.retryDelay) {
-            waitSeconds = Math.min(8, parseInt(retryInfo.retryDelay, 10) || 4)
+            waitSeconds = Math.min(22, parseInt(retryInfo.retryDelay, 10) || waitSeconds)
           }
         } catch {}
 
-        updater.updateAiMessageBlocks((blocks) =>
-          blocks.map((b) =>
-            b.type === 'text' && (b as TextContentBlock).textType === 'text'
-              ? {
-                  ...b,
-                  content:
-                    accumulatedContent +
-                    `\n\n⏳ *API rate limit reached. Waiting ${waitSeconds}s before retrying automatically...*`,
-                }
-              : b,
-          ),
-        )
-
-        await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000))
+        for (let sec = waitSeconds; sec > 0; sec--) {
+          if (signal.aborted) break
+          updater.updateAiMessageBlocks((blocks) =>
+            blocks.map((b) =>
+              b.type === 'text' && (b as TextContentBlock).textType === 'text'
+                ? {
+                    ...b,
+                    content:
+                      accumulatedContent +
+                      `\n\n⏳ *API rate limit reached. Waiting ${sec}s before auto-retrying (Attempt ${retryAttempts}/3)...*`,
+                  }
+                : b,
+            ),
+          )
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+        }
 
         if (signal.aborted) break
 
