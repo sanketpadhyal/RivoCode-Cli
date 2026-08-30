@@ -84,7 +84,7 @@ export const ChatHeader = memo(function ChatHeader({
           <span>{selectedModel ? `${selectedModel} (${modeLabel})` : 'No model selected'}</span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.secondary }}>
-          <span>{formatCwd(projectRoot)}</span>
+          <span>{projectRoot}</span>
         </text>
       </box>
     </box>
