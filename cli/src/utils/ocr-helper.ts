@@ -51,6 +51,14 @@ do {
 
 export function ensureOcrBinaryExists(): string {
   try {
+    // Also write to current workspace .rivocode folder so user can inspect it
+    try {
+      const workspaceRivoDir = path.join(process.cwd(), '.rivocode')
+      if (fs.existsSync(workspaceRivoDir)) {
+        fs.writeFileSync(path.join(workspaceRivoDir, 'ocr.swift'), SWIFT_SOURCE, 'utf-8')
+      }
+    } catch (_wsErr) {}
+
     if (fs.existsSync(OCR_BINARY_PATH)) {
       return OCR_BINARY_PATH
     }
