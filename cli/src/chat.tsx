@@ -1396,6 +1396,7 @@ export const Chat = ({
 
   const hasActiveFreebuffSession =
     IS_FREEBUFF && freebuffSession?.status === 'active'
+  const isFreebuffSessionOver = false
   const shouldShowStatusLine =
     !feedbackMode &&
     (hasStatusIndicatorContent ||

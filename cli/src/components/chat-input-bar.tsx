@@ -25,7 +25,7 @@ import { BORDER_CHARS } from '../utils/ui-constants'
 import type { useTheme } from '../hooks/use-theme'
 import type { InputValue } from '../types/store'
 import type { AgentMode } from '../utils/constants'
-import { TextAttributes, type MouseEvent } from '@opentui/core'
+import type { MouseEvent } from '@opentui/core'
 
 type Theme = ReturnType<typeof useTheme>
 
@@ -128,21 +128,6 @@ export const ChatInputBar = ({
   const normalModeMaxVisible = terminalHeight > 35 ? 15 : 10
   const { submitAnswers, skip } = useAskUserBridge()
   const [askUserTitle] = React.useState(' Some questions for you ')
-
-  const selectedModel = useChatStore((state) => state.selectedModel)
-  const modeLabel = React.useMemo(() => {
-    switch (agentMode) {
-      case 'LITE':
-        return 'lite'
-      case 'MAX':
-        return 'max'
-      case 'PLAN':
-        return 'plan'
-      case 'DEFAULT':
-      default:
-        return 'high'
-    }
-  }, [agentMode])
 
   const handleKeyIntercept = useEvent(
     (key: {
@@ -269,12 +254,7 @@ export const ChatInputBar = ({
 
   const effectivePlaceholder =
     inputMode === 'default' ? inputPlaceholder : modeConfig.placeholder
-  const borderColor =
-    inputMode !== 'default'
-      ? theme[modeConfig.color]
-      : inputFocused
-        ? theme.primary
-        : '#334155'
+  const borderColor = theme[modeConfig.color]
 
   if (askUserState) {
     return (
@@ -374,8 +354,8 @@ export const ChatInputBar = ({
             </box>
           )}
           {!modeConfig.label && !modeConfig.icon && (
-            <box style={{ flexShrink: 0, paddingRight: 1 }}>
-              <text style={{ fg: theme.primary, attributes: TextAttributes.BOLD }}>❯</text>
+            <box style={{ flexShrink: 0 }}>
+              <text style={{ fg: theme.primary }}>❯</text>
             </box>
           )}
           <MultilineInput
@@ -405,7 +385,7 @@ export const ChatInputBar = ({
         style={{
           width: '100%',
           borderStyle: 'single',
-          borderColor: inputFocused ? theme.primary : '#2d3748',
+          borderColor,
           customBorderChars: BORDER_CHARS,
           paddingLeft: 1,
           paddingRight: 1,
@@ -436,80 +416,60 @@ export const ChatInputBar = ({
         ) : null}
         <box
           style={{
-            flexDirection: 'row',
-            alignItems: shouldCenterInputVertically ? 'center' : 'flex-start',
-            width: '100%',
-            paddingTop: 0,
-            paddingBottom: 0,
+            flexDirection: 'column',
+            justifyContent: shouldCenterInputVertically
+              ? 'center'
+              : 'flex-start',
+            minHeight: shouldCenterInputVertically ? 3 : undefined,
+            gap: 0,
           }}
         >
-          {modeConfig.label && (
-            <box style={{ flexShrink: 0, paddingRight: 1 }}>
-              <text>
-                <span
-                  bg={theme.info}
-                  fg={theme.background}
-                >{` ${modeConfig.label} `}</span>
-              </text>
+          <box
+            style={{
+              flexDirection: 'row',
+              alignItems: shouldCenterInputVertically ? 'center' : 'flex-start',
+              width: '100%',
+            }}
+          >
+            {modeConfig.label && (
+              <box style={{ flexShrink: 0, paddingRight: 1 }}>
+                <text>
+                  <span
+                    bg={theme.info}
+                    fg={theme.background}
+                  >{` ${modeConfig.label} `}</span>
+                </text>
+              </box>
+            )}
+            {modeConfig.icon && (
+              <box
+                style={{
+                  flexShrink: 0,
+                  paddingRight: 1,
+                }}
+              >
+                <text style={{ fg: theme[modeConfig.color] }}>
+                  {modeConfig.icon}
+                </text>
+              </box>
+            )}
+            <box style={{ flexGrow: 1, minWidth: 0 }}>
+              <MultilineInput
+                value={inputValue}
+                onChange={handleInputChange}
+                onSubmit={handleSubmit}
+                onPaste={onPaste}
+                onKeyIntercept={handleKeyIntercept}
+                placeholder={effectivePlaceholder}
+                focused={inputFocused && !feedbackMode}
+                maxHeight={Math.floor(terminalHeight / 2)}
+                ref={inputRef}
+                cursorPosition={cursorPosition}
+              />
             </box>
-          )}
-          {modeConfig.icon && (
-            <box
-              style={{
-                flexShrink: 0,
-                paddingRight: 1,
-              }}
-            >
-              <text style={{ fg: theme[modeConfig.color] }}>
-                {modeConfig.icon}
-              </text>
-            </box>
-          )}
-          {!modeConfig.label && !modeConfig.icon && (
-            <box style={{ flexShrink: 0, paddingRight: 1 }}>
-              <text style={{ wrapMode: 'none' }}>
-                <span fg={theme.secondary} attributes={TextAttributes.BOLD}>
-                  {'>'}
-                </span>
-              </text>
-            </box>
-          )}
-          <box style={{ flexGrow: 1, minWidth: 0 }}>
-            <MultilineInput
-              value={inputValue}
-              onChange={handleInputChange}
-              onSubmit={handleSubmit}
-              onPaste={onPaste}
-              onKeyIntercept={handleKeyIntercept}
-              placeholder=""
-              focused={inputFocused && !feedbackMode}
-              maxHeight={Math.floor(terminalHeight / 2)}
-              ref={inputRef}
-              cursorPosition={cursorPosition}
-            />
           </box>
         </box>
       </ClickableTitleBox>
-      <box
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-          paddingLeft: 1,
-          paddingRight: 1,
-          paddingTop: 0,
-          marginTop: 0,
-        }}
-      >
-        <text style={{ wrapMode: 'none', fg: theme.muted }}>
-          <span>? for shortcuts</span>
-        </text>
-
-        <text style={{ wrapMode: 'none', fg: theme.muted }}>
-          <span>{`${selectedModel ?? 'deepseek'} · ${modeLabel}`}</span>
-        </text>
-      </box>
       <InputModeBanner />
     </>
   )
