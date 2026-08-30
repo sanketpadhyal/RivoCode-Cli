@@ -8,6 +8,7 @@ import { useTerminalDimensions } from '../hooks/use-terminal-dimensions'
 import { useTheme } from '../hooks/use-theme'
 import { initProjectWorkspace } from '../workspace/project-context'
 import { ensureOcrBinaryExists } from '../utils/ocr-helper'
+import { ensureWebToolExists } from '../utils/web-helper'
 
 const SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
 
@@ -46,22 +47,27 @@ export const SettingUpSession = ({ onComplete }: SettingUpSessionProps) => {
 
   // Execute actual initialization steps live
   useEffect(() => {
-    // Step 1: Initialize workspace files (.rivocode, context.json, settings.json, ocr.swift)
+    // Step 1: Initialize workspace files (.rivocode, context.json, settings.json, ocr.swift, web.js)
     setSetupStep(1)
     try {
       initProjectWorkspace(process.cwd())
       ensureOcrBinaryExists()
+      ensureWebToolExists()
     } catch (_e) {}
 
     const t1 = setTimeout(() => {
       setSetupStep(2)
-    }, 400)
+    }, 300)
 
     const t2 = setTimeout(() => {
       setSetupStep(3)
-    }, 800)
+    }, 600)
 
     const t3 = setTimeout(() => {
+      setSetupStep(4)
+    }, 900)
+
+    const t4 = setTimeout(() => {
       onComplete()
     }, 1200)
 
@@ -69,6 +75,7 @@ export const SettingUpSession = ({ onComplete }: SettingUpSessionProps) => {
       clearTimeout(t1)
       clearTimeout(t2)
       clearTimeout(t3)
+      clearTimeout(t4)
     }
   }, [onComplete])
 
@@ -76,10 +83,12 @@ export const SettingUpSession = ({ onComplete }: SettingUpSessionProps) => {
     if (isReturning) {
       if (setupStep === 1) return 'Reconnecting workspace session...'
       if (setupStep === 2) return 'Checking native Vision OCR tools...'
+      if (setupStep === 3) return 'Verifying web reader & internet tools...'
       return 'Connected & Ready!'
     } else {
       if (setupStep === 1) return 'Initializing .rivocode workspace configuration...'
       if (setupStep === 2) return 'Installing native Vision OCR in .rivocode/ocr.swift...'
+      if (setupStep === 3) return 'Installing web access & markdown reader in .rivocode/web.js...'
       return 'Workspace ready!'
     }
   }, [isReturning, setupStep])
@@ -112,7 +121,7 @@ export const SettingUpSession = ({ onComplete }: SettingUpSessionProps) => {
       <box style={{ flexDirection: 'row', gap: 1, marginTop: 1 }}>
         <text style={{ wrapMode: 'none' }}>
           <span fg={theme.primary}>{SPINNER_FRAMES[frameIndex]}</span>
-          <span fg={theme.foreground}>  [{setupStep}/3] {stepText}</span>
+          <span fg={theme.foreground}>  [{setupStep}/4] {stepText}</span>
         </text>
       </box>
     </box>

@@ -7,6 +7,7 @@ import { AskUserBridge } from '@rivocode/common/utils/ask-user-bridge'
 import { getProjectRoot } from '../project-files'
 import { useChatStore } from '../state/chat-store'
 import { performNativeOcr } from './ocr-helper'
+import { fetchWebContent } from './web-helper'
 
 import type { MessageUpdater } from './message-updater'
 import type { AgentMode } from './constants'
@@ -465,6 +466,23 @@ const AGENT_TOOLS = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'fetch_web_content',
+      description: 'Fetch real-time web pages, online documentation, libraries, and APIs with token-optimized markdown extraction',
+      parameters: {
+        type: 'object',
+        properties: {
+          url: {
+            type: 'string',
+            description: 'The HTTP/HTTPS URL of the web page or documentation to read',
+          },
+        },
+        required: ['url'],
+      },
+    },
+  },
 ]
 
 const sessionAllowedCommands = new Set<string>()
@@ -639,6 +657,12 @@ export async function executeLocalTool(
       const imgPath = args.path ? (path.isAbsolute(args.path) ? args.path : path.join(projectRoot, args.path)) : ''
       const ocrResult = performNativeOcr(imgPath)
       return { success: true, result: ocrResult }
+    }
+
+    if (name === 'fetch_web_content' || name === 'read_url' || name === 'web_fetch') {
+      const url = (args.url || '').trim()
+      const content = await fetchWebContent(url)
+      return { success: true, result: content }
     }
 
     return { success: false, result: `Unknown tool: ${name}` }
@@ -1129,6 +1153,11 @@ STRICT BEHAVIOR RULES:
             toolActionNotice += `● **Vision OCR**(\`${imgDisplay}\`)\n`
             const preview = (toolExec.result || '').split('\n').filter(Boolean).slice(0, 2).join(' ')
             toolActionNotice += `  ⎿  ${preview.slice(0, 80) || 'Text extracted'}\n`
+          } else if (tc.name === 'fetch_web_content' || tc.name === 'read_url' || tc.name === 'web_fetch') {
+            const urlDisplay = parsedArgs.url || 'web'
+            toolActionNotice += `● **WebRead**(\`${urlDisplay}\`)\n`
+            const len = (toolExec.result || '').length
+            toolActionNotice += `  ⎿  Loaded \`${len} chars\` of token-optimized markdown\n`
           } else {
             toolActionNotice += `● **${tc.name}**\n`
           }

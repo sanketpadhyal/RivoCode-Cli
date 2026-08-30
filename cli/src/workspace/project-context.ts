@@ -166,6 +166,71 @@ do {
     } catch {}
   }
 
+  // 5. Native Web Reader & Token-Optimized Markdown Extractor
+  const webJsFile = path.join(rivoDir, 'web.js')
+  if (!fs.existsSync(webJsFile)) {
+    const webSource = `// RivoCode Native Web Access & Token-Optimized Markdown Extractor
+const https = require('https');
+const http = require('http');
+
+function htmlToMarkdown(html) {
+  if (!html) return '';
+  return html
+    .replace(/<script\\b[^<]*(?:(?!<\\/script>)<[^<]*)*<\\/script>/gi, '')
+    .replace(/<style\\b[^<]*(?:(?!<\\/style>)<[^<]*)*<\\/style>/gi, '')
+    .replace(/<svg\\b[^<]*(?:(?!<\\/svg>)<[^<]*)*<\\/svg>/gi, '')
+    .replace(/<noscript\\b[^<]*(?:(?!<\\/noscript>)<[^<]*)*<\\/noscript>/gi, '')
+    .replace(/<nav\\b[^<]*(?:(?!<\\/nav>)<[^<]*)*<\\/nav>/gi, '')
+    .replace(/<footer\\b[^<]*(?:(?!<\\/footer>)<[^<]*)*<\\/footer>/gi, '')
+    .replace(/<header\\b[^<]*(?:(?!<\\/header>)<[^<]*)*<\\/header>/gi, '')
+    .replace(/<h1[^>]*>(.*?)<\\/h1>/gi, '\\n# $1\\n')
+    .replace(/<h2[^>]*>(.*?)<\\/h2>/gi, '\\n## $1\\n')
+    .replace(/<h3[^>]*>(.*?)<\\/h3>/gi, '\\n### $1\\n')
+    .replace(/<pre[^>]*><code[^>]*>(.*?)<\\/code><\\/pre>/gis, '\\n\`\`\`\\n$1\\n\`\`\`\\n')
+    .replace(/<code[^>]*>(.*?)<\\/code>/gi, '\`$1\`')
+    .replace(/<a\\s+(?:[^>]*?\\s+)?href="([^"]*)"[^>]*>(.*?)<\\/a>/gi, '[$2]($1)')
+    .replace(/<li[^>]*>(.*?)<\\/li>/gi, '\\n* $1')
+    .replace(/<p[^>]*>(.*?)<\\/p>/gi, '\\n$1\\n')
+    .replace(/<br\\s*\\/?>/gi, '\\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\\n{3,}/g, '\\n\\n')
+    .trim();
+}
+
+async function fetchUrl(targetUrl) {
+  return new Promise((resolve) => {
+    try {
+      const client = targetUrl.startsWith('https') ? https : http;
+      client.get(targetUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 RivoCode/1.0' },
+        timeout: 12000,
+      }, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; if (data.length > 500000) res.destroy(); });
+        res.on('end', () => resolve(htmlToMarkdown(data)));
+      }).on('error', (e) => resolve(\`[Fetch error: \${e.message}]\`));
+    } catch (e) { resolve(\`[URL error: \${e.message}]\`); }
+  });
+}
+
+if (require.main === module) {
+  const url = process.argv[2];
+  if (url) fetchUrl(url).then(console.log);
+}
+
+module.exports = { htmlToMarkdown, fetchUrl };
+`
+    try {
+      fs.writeFileSync(webJsFile, webSource, 'utf8')
+    } catch {}
+  }
+
   return {
     isReturningWork,
     context,
