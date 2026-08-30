@@ -482,10 +482,17 @@ const renderCodeBlock = (code: Code, state: RenderState): ReactNode[] => {
 
   lines.forEach((line, index) => {
     const displayLine = line === '' ? ' ' : line
+    let fgColor = palette.codeTextFg
+    if (code.lang === 'diff') {
+      if (line.startsWith('+')) fgColor = '#22c55e'
+      else if (line.startsWith('-')) fgColor = '#ef4444'
+      else if (line.startsWith('@@') || line.startsWith('diff')) fgColor = '#eab308'
+    }
+
     nodes.push(
       <span
         key={nextKey()}
-        fg={palette.codeTextFg}
+        fg={fgColor}
         bg={palette.codeMonochrome ? undefined : palette.codeBackground}
       >
         {displayLine}

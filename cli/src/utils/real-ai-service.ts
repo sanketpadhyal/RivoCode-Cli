@@ -523,26 +523,47 @@ export async function executeLocalTool(
   }
 }
 
-// Fallback: If model outputs markdown code blocks with a file header, auto-create them on disk
-function autoExtractAndWriteCodeBlocks(projectRoot: string, text: string): string[] {
-  const writtenFiles: string[] = []
-  // Matches patterns like: ```python calculator.py or // File: calculator.py or Save as `calculator.py`
-  const codeBlockRegex = /```(?:[a-zA-Z0-9_-]+)?\s*(?:(?:\/\/|#)\s*(?:file:)?\s*([a-zA-Z0-9_./-]+\.[a-zA-Z0-9]+))?\n([\s\S]*?)```/gi
-  let match: RegExpExecArray | null
+// Generate compact snippet diff (up to 5 lines with + in green and - in red)
+function generateCompactDiff(oldText: string | null, newText: string): string {
+  if (oldText === null) {
+    const newLines = newText.split('\n').filter((l) => l.trim().length > 0)
+    const sample = newLines.slice(0, 3).map((l) => `+ ${l}`).join('\n')
+    return sample + (newLines.length > 3 ? `\n+ ... (+${newLines.length - 3} more lines)` : '')
+  }
 
-  while ((match = codeBlockRegex.exec(text)) !== null) {
-    const filename = match[1]?.trim()
-    const content = match[2]
-    if (filename && content && !filename.includes('bash') && !filename.includes('sh')) {
-      try {
-        const filePath = path.isAbsolute(filename) ? filename : path.join(projectRoot, filename)
-        fs.mkdirSync(path.dirname(filePath), { recursive: true })
-        fs.writeFileSync(filePath, content, 'utf-8')
-        writtenFiles.push(filename)
-      } catch (_e) {}
+  const oldLines = oldText.split('\n')
+  const newLines = newText.split('\n')
+  const diffEntries: string[] = []
+
+  let oldIdx = 0
+  let newIdx = 0
+  while ((oldIdx < oldLines.length || newIdx < newLines.length) && diffEntries.length < 5) {
+    const oLine = oldLines[oldIdx]
+    const nLine = newLines[newIdx]
+
+    if (oLine === nLine) {
+      oldIdx++
+      newIdx++
+      continue
+    }
+
+    if (oLine !== undefined && (nLine === undefined || !newLines.slice(newIdx, newIdx + 5).includes(oLine))) {
+      diffEntries.push(`- ${oLine.trim() || ' '}`)
+      oldIdx++
+    } else if (nLine !== undefined) {
+      diffEntries.push(`+ ${nLine.trim() || ' '}`)
+      newIdx++
+    } else {
+      oldIdx++
+      newIdx++
     }
   }
-  return writtenFiles
+
+  if (diffEntries.length === 0) {
+    return '+ // Updated content'
+  }
+
+  return diffEntries.slice(0, 5).join('\n')
 }
 
 export async function executeRealAiStream({
@@ -910,7 +931,8 @@ STRICT BEHAVIOR RULES:
 
           let toolActionNotice = '\n\n'
           if (tc.name === 'write_file') {
-            const lineCount = (parsedArgs.content || '').split('\n').length
+            const newContentStr = parsedArgs.content || ''
+            const lineCount = newContentStr.split('\n').length
             toolActionNotice += `● **WriteFile**(\`${parsedArgs.path}\`)\n`
             if (oldContent !== null) {
               const oldLines = oldContent.split('\n').length
@@ -919,6 +941,12 @@ STRICT BEHAVIOR RULES:
               toolActionNotice += `  ⎿  Modified: \`${diffTag} lines\` (${oldLines} → ${lineCount} lines)\n`
             } else {
               toolActionNotice += `  ⎿  Created file (\`+${lineCount} lines\`)\n`
+            }
+
+            // Generate compact colored diff snippet (up to 5 changed lines)
+            const diffSnippet = generateCompactDiff(oldContent, newContentStr)
+            if (diffSnippet) {
+              toolActionNotice += `\`\`\`diff\n${diffSnippet}\n\`\`\`\n`
             }
           } else if (tc.name === 'run_terminal_command') {
             const cleanOutput = toolExec.result.trim()
