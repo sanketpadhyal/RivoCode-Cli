@@ -1181,7 +1181,6 @@ export const Chat = ({
       onBashHistoryDown: navigateDown,
       onPasteImage: () => {
         const placeholderPath = addClipboardPlaceholder()
-        const currentCount = useChatStore.getState().pendingAttachments.filter(a => a.kind === 'image').length + 1
 
         setTimeout(() => {
           const result = readClipboardImage()
@@ -1196,12 +1195,11 @@ export const Chat = ({
           const cwd = getProjectRoot() ?? process.cwd()
           addPendingImageFromFile(result.imagePath, cwd, placeholderPath).then(() => {
             setInputValue((prev) => {
-              const before = prev.text.slice(0, prev.cursorPosition)
-              const after = prev.text.slice(prev.cursorPosition)
-              const tag = `[Image ${currentCount}] `
+              const imagePathRegex = /(?:'|")?(\/(?:[^\n'"\0]+\/)*(?:Screenshot|clipboard|[^\n'"\0]+)\.(?:png|jpe?g|webp|gif|bmp|tiff))(?:'|")?/gi
+              const cleaned = prev.text.replace(imagePathRegex, '').replace(/\[Image \d+\]\s*/g, '').trim()
               return {
-                text: before + tag + after,
-                cursorPosition: before.length + tag.length,
+                text: cleaned,
+                cursorPosition: cleaned.length,
                 lastEditDueToNav: false,
               }
             })
@@ -1215,16 +1213,13 @@ export const Chat = ({
       },
       onPasteImagePath: (imagePath: string) => {
         const cwd = getProjectRoot() ?? process.cwd()
-        const currentCount = useChatStore.getState().pendingAttachments.filter(a => a.kind === 'image').length + 1
         validateAndAddImage(imagePath, cwd).then(() => {
           setInputValue((prev) => {
             const imagePathRegex = /(?:'|")?(\/(?:[^\n'"\0]+\/)*(?:Screenshot|clipboard|[^\n'"\0]+)\.(?:png|jpe?g|webp|gif|bmp|tiff))(?:'|")?/gi
-            const cleaned = prev.text.replace(imagePathRegex, '').trim()
-            const tag = `[Image ${currentCount}] `
-            const newText = cleaned ? (cleaned.includes(tag) ? cleaned : `${cleaned} ${tag}`) : tag
+            const cleaned = prev.text.replace(imagePathRegex, '').replace(/\[Image \d+\]\s*/g, '').trim()
             return {
-              text: newText,
-              cursorPosition: newText.length,
+              text: cleaned,
+              cursorPosition: cleaned.length,
               lastEditDueToNav: false,
             }
           })
@@ -1248,16 +1243,13 @@ export const Chat = ({
 
         if (isImg) {
           const cwd = getProjectRoot() ?? process.cwd()
-          const currentCount = useChatStore.getState().pendingAttachments.filter(a => a.kind === 'image').length + 1
           validateAndAddImage(cleanText, cwd).then(() => {
             setInputValue((prev) => {
               const imagePathRegex = /(?:'|")?(\/(?:[^\n'"\0]+\/)*(?:Screenshot|clipboard|[^\n'"\0]+)\.(?:png|jpe?g|webp|gif|bmp|tiff))(?:'|")?/gi
-              const cleaned = prev.text.replace(imagePathRegex, '').trim()
-              const tag = `[Image ${currentCount}] `
-              const newText = cleaned ? (cleaned.includes(tag) ? cleaned : `${cleaned} ${tag}`) : tag
+              const cleaned = prev.text.replace(imagePathRegex, '').replace(/\[Image \d+\]\s*/g, '').trim()
               return {
-                text: newText,
-                cursorPosition: newText.length,
+                text: cleaned,
+                cursorPosition: cleaned.length,
                 lastEditDueToNav: false,
               }
             })

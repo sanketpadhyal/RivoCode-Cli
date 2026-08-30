@@ -199,15 +199,11 @@ export const ChatInputBar = ({
     const match = value.text.match(imagePathRegex)
     if (match && match[1]) {
       const extractedPath = match[1].replace(/\\ /g, ' ').trim()
-      const textWithoutPath = value.text.replace(match[0], '').trim()
-      
-      const count = useChatStore.getState().pendingAttachments.filter(a => a.kind === 'image').length + 1
-      const tag = `[Image ${count}] `
-      const newText = textWithoutPath ? `${textWithoutPath} ${tag}` : tag
+      const textWithoutPath = value.text.replace(match[0], '').replace(/\[Image \d+\]\s*/g, '').trim()
 
       setInputValue({
-        text: newText,
-        cursorPosition: newText.length,
+        text: textWithoutPath,
+        cursorPosition: textWithoutPath.length,
         lastEditDueToNav: false,
       })
 
