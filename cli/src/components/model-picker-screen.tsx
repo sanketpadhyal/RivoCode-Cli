@@ -259,7 +259,7 @@ export const ModelPickerScreen = ({
           <span fg={theme.muted} attributes={TextAttributes.BOLD}>
             Recommended
           </span>
-          {'\n'}
+          {'\n\n'}
           {filteredModels.map((model, idx) => {
             const isSelected = idx === selectedIndex
 
@@ -283,7 +283,7 @@ export const ModelPickerScreen = ({
                 ) : null}
                 {'\n'}
                 <span fg={theme.muted}>       {model.description}</span>
-                {idx < filteredModels.length - 1 ? '\n' : ''}
+                {idx < filteredModels.length - 1 ? '\n\n' : ''}
               </React.Fragment>
             )
           })}
