@@ -413,6 +413,18 @@ export const MultipleChoiceForm: React.FC<MultipleChoiceFormProps> = ({
           return
         }
 
+        const num = parseInt(key.char || key.name || '', 10)
+        if (!isNaN(num) && num >= 1 && num <= currentQuestion.options.length) {
+          preventDefault()
+          const optIdx = num - 1
+          if (questions.length === 1 && !currentQuestion.multiSelect) {
+            onSubmit([{ question: currentQuestion.question, answer: getOptionLabel(currentQuestion.options[optIdx]) }])
+            return
+          }
+          handleSelectOption(currentQuestionIndex, optIdx, 'keyboard')
+          return
+        }
+
         if (isPlainEnterKey(key) || key.name === 'space') {
           preventDefault()
 
@@ -427,6 +439,8 @@ export const MultipleChoiceForm: React.FC<MultipleChoiceFormProps> = ({
               : currentOptionIndex
           if (currentQuestion.multiSelect) {
             handleToggleOption(currentQuestionIndex, optionIdx)
+          } else if (questions.length === 1 && optionIdx !== CUSTOM_OPTION_INDEX) {
+            onSubmit([{ question: currentQuestion.question, answer: getOptionLabel(currentQuestion.options[optionIdx]) }])
           } else {
             handleSelectOption(currentQuestionIndex, optionIdx, 'keyboard')
           }

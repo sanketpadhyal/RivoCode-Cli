@@ -257,22 +257,40 @@ export const ChatInputBar = ({
   const borderColor = theme[modeConfig.color]
 
   if (askUserState) {
+    const isCommand = askUserState.questions[0]?.header === 'Command'
+    const boxTitle = isCommand ? 'Command' : askUserTitle
     return (
       <box
-        title={askUserTitle}
-        titleAlignment="center"
+        title={boxTitle}
+        titleAlignment="left"
         style={{
           width: '100%',
+          maxHeight: isCompactHeight ? 8 : 13,
+          flexDirection: 'column',
           borderStyle: 'single',
-          borderColor: theme.primary,
+          borderColor: isCommand ? theme.secondary : theme.primary,
           customBorderChars: BORDER_CHARS,
+          paddingLeft: 1,
+          paddingRight: 1,
+          backgroundColor: theme.surface,
         }}
       >
-        <MultipleChoiceForm
-          questions={askUserState.questions}
-          onSubmit={handleFormSubmit}
-          onSkip={handleFormSkip}
-        />
+        <scrollbox
+          style={{
+            flexGrow: 1,
+            rootOptions: { flexDirection: 'column', flexGrow: 1 },
+            wrapperOptions: { flexGrow: 1, flexDirection: 'column' },
+            contentOptions: { flexDirection: 'column', flexGrow: 1 },
+          }}
+          scrollbarOptions={{ visible: false }}
+          verticalScrollbarOptions={{ visible: true, trackOptions: { width: 1 } }}
+        >
+          <MultipleChoiceForm
+            questions={askUserState.questions}
+            onSubmit={handleFormSubmit}
+            onSkip={handleFormSkip}
+          />
+        </scrollbox>
       </box>
     )
   }
