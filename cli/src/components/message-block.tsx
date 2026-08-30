@@ -12,6 +12,7 @@ import { UserErrorBanner } from './user-error-banner'
 import { ValidationErrorPopover } from './validation-error-popover'
 import { useTheme } from '../hooks/use-theme'
 import { useWhyDidYouUpdateById } from '../hooks/use-why-did-you-update'
+import { useChatStore } from '../state/chat-store'
 import { getCliEnv } from '../utils/env'
 import { type MarkdownPalette } from '../utils/markdown-renderer'
 import { formatCwd } from '../utils/path-helpers'
@@ -143,6 +144,7 @@ export const MessageBlock = memo(({
   isLastMessage,
 }: MessageBlockProps) => {
   const [showValidationPopover, setShowValidationPopover] = useState(false)
+  const selectedModel = useChatStore((state) => state.selectedModel)
 
   const bashCwd = metadata?.bashCwd ? formatCwd(metadata.bashCwd) : undefined
 
@@ -191,39 +193,91 @@ export const MessageBlock = memo(({
       style={{
         flexDirection: 'column',
         width: '100%',
+        marginTop: 0,
+        marginBottom: 1,
       }}
     >
       {isUser && !bashCwd && (
-        <box style={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-          <text
-            attributes={TextAttributes.DIM}
-            style={{
-              wrapMode: 'none',
-              fg: timestampColor,
-            }}
-          >
-            {`[${timestamp}]`}
-          </text>
+        <box
+          style={{
+            flexDirection: 'column',
+            width: '100%',
+            gap: 0,
+          }}
+        >
+          <box style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 1 }}>
+            <text style={{ wrapMode: 'none' }}>
+              <span fg={timestampColor} attributes={TextAttributes.DIM}>
+                {`[${timestamp}] `}
+              </span>
+              <span fg={theme.primary} attributes={TextAttributes.BOLD}>
+                ❯{' '}
+              </span>
+            </text>
 
-          {validationErrors && validationErrors.length > 0 && (
-            <Button
-              onClick={() => setShowValidationPopover(!showValidationPopover)}
-            >
-              <text
-                style={{
-                  fg: theme.error,
-                  wrapMode: 'none',
-                }}
+            <box style={{ flexGrow: 1, flexShrink: 1 }}>
+              {blocks ? (
+                <BlocksRenderer
+                  sourceBlocks={blocks}
+                  messageId={messageId}
+                  isLoading={isLoading}
+                  isComplete={isComplete}
+                  isUser={isUser}
+                  textColor={resolvedTextColor}
+                  availableWidth={availableWidth}
+                  markdownPalette={markdownPalette}
+                  onToggleCollapsed={onToggleCollapsed}
+                  onBuildFast={onBuildFast}
+                  onBuildMax={onBuildMax}
+                  onBuildLite={onBuildLite}
+                  isLastMessage={isLastMessage}
+                  contentToCopy={undefined}
+                />
+              ) : (
+                <UserContentWithCopyButton
+                  content={content}
+                  messageId={messageId}
+                  isLoading={isLoading}
+                  isComplete={isComplete}
+                  isUser={isUser}
+                  textColor={resolvedTextColor}
+                  codeBlockWidth={markdownOptions.codeBlockWidth}
+                  palette={markdownOptions.palette}
+                  showCopyButton={false}
+                />
+              )}
+            </box>
+
+            {validationErrors && validationErrors.length > 0 && (
+              <Button
+                onClick={() => setShowValidationPopover(!showValidationPopover)}
               >
-                [!]
-              </text>
-            </Button>
+                <text
+                  style={{
+                    fg: theme.error,
+                    wrapMode: 'none',
+                  }}
+                >
+                  [!]
+                </text>
+              </Button>
+            )}
+          </box>
+
+          {((attachments && attachments.length > 0) ||
+            (textAttachments && textAttachments.length > 0) ||
+            (fileAttachments && fileAttachments.length > 0)) && (
+            <MessageAttachments
+              imageAttachments={attachments ?? []}
+              textAttachments={textAttachments ?? []}
+              fileAttachments={fileAttachments ?? []}
+            />
           )}
         </box>
       )}
 
       {bashCwd && (
-        <box style={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
+        <box style={{ flexDirection: 'row', alignItems: 'center', gap: 1, marginBottom: 1 }}>
           <text
             attributes={TextAttributes.DIM}
             style={{
@@ -268,56 +322,64 @@ export const MessageBlock = memo(({
           </box>
         )}
 
-      <box style={{ flexDirection: 'column', gap: 1, width: '100%' }}>
-        {blocks ? (
-          <box
-            style={{
-              flexDirection: 'column',
-              gap: 1,
-              width: '100%',
-            }}
-          >
-            <BlocksRenderer
-              sourceBlocks={blocks}
-              messageId={messageId}
-              isLoading={isLoading}
-              isComplete={isComplete}
-              isUser={isUser}
-              textColor={resolvedTextColor}
-              availableWidth={availableWidth}
-              markdownPalette={markdownPalette}
-              onToggleCollapsed={onToggleCollapsed}
-              onBuildFast={onBuildFast}
-              onBuildMax={onBuildMax}
-              onBuildLite={onBuildLite}
-              isLastMessage={isLastMessage}
-              contentToCopy={isUser ? content : undefined}
-            />
+      {isAi && (
+        <box style={{ flexDirection: 'column', gap: 1, width: '100%', marginTop: 0 }}>
+          <box style={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
+            <text style={{ wrapMode: 'none' }}>
+              <span fg={theme.primary} attributes={TextAttributes.BOLD}>
+                ✦{' '}
+              </span>
+              <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+                RivoCode
+              </span>
+              <span fg={theme.muted}>
+                {' '}({selectedModel ?? 'deepseek'})
+              </span>
+            </text>
           </box>
-        ) : (
-          <UserContentWithCopyButton
-            content={content}
-            messageId={messageId}
-            isLoading={isLoading}
-            isComplete={isComplete}
-            isUser={isUser}
-            textColor={resolvedTextColor}
-            codeBlockWidth={markdownOptions.codeBlockWidth}
-            palette={markdownOptions.palette}
-            showCopyButton={isUser}
-          />
-        )}
-        {isUser &&
-          ((attachments && attachments.length > 0) ||
-            (textAttachments && textAttachments.length > 0) ||
-            (fileAttachments && fileAttachments.length > 0)) && (
-            <MessageAttachments
-              imageAttachments={attachments ?? []}
-              textAttachments={textAttachments ?? []}
-              fileAttachments={fileAttachments ?? []}
-            />
-          )}
-      </box>
+
+          <box style={{ flexDirection: 'column', gap: 1, width: '100%', paddingLeft: 0 }}>
+            {blocks ? (
+              <box
+                style={{
+                  flexDirection: 'column',
+                  gap: 1,
+                  width: '100%',
+                }}
+              >
+                <BlocksRenderer
+                  sourceBlocks={blocks}
+                  messageId={messageId}
+                  isLoading={isLoading}
+                  isComplete={isComplete}
+                  isUser={isUser}
+                  textColor={resolvedTextColor}
+                  availableWidth={availableWidth}
+                  markdownPalette={markdownPalette}
+                  onToggleCollapsed={onToggleCollapsed}
+                  onBuildFast={onBuildFast}
+                  onBuildMax={onBuildMax}
+                  onBuildLite={onBuildLite}
+                  isLastMessage={isLastMessage}
+                  contentToCopy={undefined}
+                />
+              </box>
+            ) : (
+              <UserContentWithCopyButton
+                content={content}
+                messageId={messageId}
+                isLoading={isLoading}
+                isComplete={isComplete}
+                isUser={isUser}
+                textColor={resolvedTextColor}
+                codeBlockWidth={markdownOptions.codeBlockWidth}
+                palette={markdownOptions.palette}
+                showCopyButton={false}
+              />
+            )}
+          </box>
+        </box>
+      )}
 
       {isAi && userError && <UserErrorBanner error={userError} />}
 

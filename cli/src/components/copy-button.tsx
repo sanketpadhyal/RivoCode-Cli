@@ -35,7 +35,7 @@ export function useCopyToClipboard(text: string): {
   return { isCopied, copy }
 }
 
-export const COPY_ICON_COLLAPSED = '⎘'
+export const COPY_ICON_COLLAPSED = ''
 export const COPY_ICON_EXPANDED = '[⎘ copy]'
 export const COPY_ICON_COPIED = '[✔ copied]'
 
@@ -47,7 +47,7 @@ export const getCopyIconText = (
   const space = leadingSpace ? ' ' : ''
   if (isCopied) return `${space}${COPY_ICON_COPIED}`
   if (isHovered) return `${space}${COPY_ICON_EXPANDED}`
-  return `${space}${COPY_ICON_COLLAPSED}`
+  return ''
 }
 
 export const copyButtonHandlers = {

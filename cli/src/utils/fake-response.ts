@@ -30,7 +30,7 @@ export async function simulateFakeAiResponse({
 
   if (lower === 'hey' || lower === 'hello' || lower === 'hi') {
     reasoningText = `Recognized friendly greeting. Initializing RivoCode agent assistance on ${selectedModel}.`
-    responseText = `Hello! 👋 I am **RivoCode**, your agentic AI coding assistant created by **Sanket Padhyal** (running on **${selectedModel}**).\n\nI'm connected to your workspace (\`${projectRoot}\`) and ready to help you:\n\n- 🔍 **Explore Codebase**: Read, search, and analyze project files\n- ⚡ **Build & Refactor**: Write code, create components, fix bugs\n- 🛠️ **Run Terminal Commands**: Execute builds, tests, and scripts\n\nHow can I help you build today?`
+    responseText = `Hello! 👋 I am **RivoCode**, your agentic AI coding assistant created by **Sanket Padhyal** (running on **${selectedModel}**).\n\nI'm connected to your workspace (\`${projectRoot}\`) and ready to help you:\n\n  • **Explore Codebase**: Read, search, and analyze project files\n  • **Build & Refactor**: Write code, create components, fix bugs\n  • **Run Commands**: Execute builds, tests, and scripts\n\nHow can I help you build today?`
   } else if (lower.includes('test') || lower.includes('check')) {
     reasoningText = `Checking testing suites and project verification scripts with ${selectedModel}.`
     responseText = `I'm analyzing the workspace for test suites using **${selectedModel}**.\n\nEverything looks clear and ready. You can specify a test command or file to run checks on.`
