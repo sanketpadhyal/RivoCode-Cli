@@ -242,14 +242,6 @@ export const App = ({
     )
   }
 
-  if (showProjectPicker) {
-    return (
-      <ProjectPickerScreen
-        onSelectProject={onProjectChange}
-        initialPath={projectRoot}
-      />
-    )
-  }
 
   return (
     <AuthedSurface
