@@ -1,3 +1,4 @@
+import { TextAttributes } from '@opentui/core'
 import { useKeyboard } from '@opentui/react'
 import React, { useCallback, useMemo, useState } from 'react'
 
@@ -14,49 +15,20 @@ export interface ModelOption {
   name: string
   badge?: string
   description: string
-  category: 'Recommended' | 'More'
 }
 
 export const AVAILABLE_MODELS: ModelOption[] = [
   {
-    id: 'glm-5.3-flash:cloud',
-    name: 'glm-5.3-flash:cloud',
-    badge: '(Upgrade required)',
-    description:
-      'Fast reasoning for coding and agentic workloads with 1M context and native image understanding',
-    category: 'Recommended',
+    id: 'groq',
+    name: 'groq',
+    badge: '(Fast)',
+    description: 'Ultra-fast low-latency inference on Groq LPUs',
   },
   {
-    id: 'glm-5.3:cloud',
-    name: 'glm-5.3:cloud',
-    description:
-      'Long-horizon coding and agentic engineering with deep reasoning and a 1M context',
-    category: 'Recommended',
-  },
-  {
-    id: 'deepseek-v4-flash:cloud',
-    name: 'deepseek-v4-flash:cloud',
-    description: 'Fast coding and agentic tool use with 1M context',
-    category: 'Recommended',
-  },
-  {
-    id: 'gemma4:31b-cloud',
-    name: 'gemma4:31b-cloud',
-    description: 'Agentic workflows and multimodal reasoning',
-    category: 'Recommended',
-  },
-  {
-    id: 'gemma4:26b',
-    name: 'gemma4:26b',
-    description:
-      'Agentic workflows and multimodal reasoning, ~19GB, (not downloaded)',
-    category: 'Recommended',
-  },
-  {
-    id: 'gemma4:12b',
-    name: 'gemma4:12b',
-    description: 'Fast local coding and reasoning model',
-    category: 'More',
+    id: 'gpt-oss',
+    name: 'gpt-oss',
+    badge: '(High Reasoning)',
+    description: 'Open-source flagship reasoning model for complex coding',
   },
 ]
 
@@ -87,15 +59,6 @@ export const ModelPickerScreen = ({
         m.description.toLowerCase().includes(query),
     )
   }, [filterText])
-
-  const recommendedModels = useMemo(
-    () => filteredModels.filter((m) => m.category === 'Recommended'),
-    [filteredModels],
-  )
-  const moreModels = useMemo(
-    () => filteredModels.filter((m) => m.category === 'More'),
-    [filteredModels],
-  )
 
   useKeyboard(
     useCallback(
@@ -176,8 +139,6 @@ export const ModelPickerScreen = ({
     ),
   )
 
-  let globalIndexCounter = 0
-
   return (
     <box
       style={{
@@ -198,11 +159,15 @@ export const ModelPickerScreen = ({
 
         <box style={{ flexDirection: 'row', alignItems: 'center' }}>
           <text style={{ wrapMode: 'none' }}>
-            <b>
-              <span fg={theme.foreground}>Select model for </span>
-              <span fg={theme.primary}>RivoCode</span>
-              <span fg={theme.foreground}>: </span>
-            </b>
+            <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+              Select model for{' '}
+            </span>
+            <span fg={theme.primary} attributes={TextAttributes.BOLD}>
+              RivoCode
+            </span>
+            <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+              :{' '}
+            </span>
             {filterText.length > 0 ? (
               <span fg={theme.primary}>{filterText}</span>
             ) : (
@@ -211,97 +176,48 @@ export const ModelPickerScreen = ({
           </text>
         </box>
 
-        {recommendedModels.length > 0 && (
-          <box style={{ flexDirection: 'column', marginTop: 1, gap: 0 }}>
+        <box style={{ flexDirection: 'column', marginTop: 1, gap: 1 }}>
+          <text style={{ wrapMode: 'none', fg: theme.muted }}>
+            <span attributes={TextAttributes.BOLD}>Recommended</span>
+          </text>
+
+          {filteredModels.map((model, idx) => {
+            const isSelected = idx === selectedIndex
+
+            return (
+              <box
+                key={model.id}
+                style={{
+                  flexDirection: 'column',
+                  marginBottom: 1,
+                }}
+              >
+                <text style={{ wrapMode: 'none' }}>
+                  <span fg={isSelected ? theme.primary : theme.muted}>
+                    {isSelected ? '▶ ' : '  '}
+                  </span>
+                  <span
+                    fg={theme.foreground}
+                    attributes={isSelected ? TextAttributes.BOLD : undefined}
+                  >
+                    {model.name}
+                  </span>
+                  {model.badge ? (
+                    <span fg={theme.muted}> {model.badge}</span>
+                  ) : null}
+                  {'\n'}
+                  <span fg={theme.muted}>    {model.description}</span>
+                </text>
+              </box>
+            )
+          })}
+
+          {filteredModels.length === 0 && (
             <text style={{ wrapMode: 'none', fg: theme.muted }}>
-              <b>Recommended</b>
+              <span>  No matching models found</span>
             </text>
-
-            {recommendedModels.map((model) => {
-              const itemIndex = globalIndexCounter++
-              const isSelected = itemIndex === selectedIndex
-
-              return (
-                <box
-                  key={model.id}
-                  style={{
-                    flexDirection: 'column',
-                    marginTop: 0,
-                    marginBottom: 0,
-                  }}
-                >
-                  <text style={{ wrapMode: 'none' }}>
-                    {isSelected ? (
-                      <>
-                        <span fg={theme.primary}>▶ </span>
-                        <b>
-                          <span fg={theme.foreground}>{model.name}</span>
-                        </b>
-                      </>
-                    ) : (
-                      <>
-                        <span>  </span>
-                        <span fg={theme.foreground}>{model.name}</span>
-                      </>
-                    )}
-                    {model.badge && (
-                      <span fg={theme.muted}> {model.badge}</span>
-                    )}
-                  </text>
-                  <text style={{ wrapMode: 'none', fg: theme.muted, paddingLeft: 4 }}>
-                    <span>{model.description}</span>
-                  </text>
-                </box>
-              )
-            })}
-          </box>
-        )}
-
-        {moreModels.length > 0 && (
-          <box style={{ flexDirection: 'column', marginTop: 1, gap: 0 }}>
-            <text style={{ wrapMode: 'none', fg: theme.muted }}>
-              <b>More</b>
-            </text>
-
-            {moreModels.map((model) => {
-              const itemIndex = globalIndexCounter++
-              const isSelected = itemIndex === selectedIndex
-
-              return (
-                <box
-                  key={model.id}
-                  style={{
-                    flexDirection: 'column',
-                    marginTop: 0,
-                    marginBottom: 0,
-                  }}
-                >
-                  <text style={{ wrapMode: 'none' }}>
-                    {isSelected ? (
-                      <>
-                        <span fg={theme.primary}>▶ </span>
-                        <b>
-                          <span fg={theme.foreground}>{model.name}</span>
-                        </b>
-                      </>
-                    ) : (
-                      <>
-                        <span>  </span>
-                        <span fg={theme.foreground}>{model.name}</span>
-                      </>
-                    )}
-                    {model.badge && (
-                      <span fg={theme.muted}> {model.badge}</span>
-                    )}
-                  </text>
-                  <text style={{ wrapMode: 'none', fg: theme.muted, paddingLeft: 4 }}>
-                    <span>{model.description}</span>
-                  </text>
-                </box>
-              )
-            })}
-          </box>
-        )}
+          )}
+        </box>
       </box>
 
       <box style={{ marginTop: 1 }}>

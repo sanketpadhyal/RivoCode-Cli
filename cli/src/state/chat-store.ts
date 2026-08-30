@@ -199,7 +199,7 @@ const initialState: ChatStoreState = {
   pendingBashMessages: [],
   suggestedFollowups: null,
   clickedFollowupsMap: new Map<string, Set<number>>(),
-  selectedModel: 'glm-5.3-flash:cloud',
+  selectedModel: 'groq',
 }
 
 export const useChatStore = create<ChatStore>()(
