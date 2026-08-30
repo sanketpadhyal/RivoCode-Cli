@@ -211,6 +211,10 @@ export async function testApiKeyConnection(
       Authorization: `Bearer ${apiKey.trim()}`,
     }
 
+    if (provider === 'gemini') {
+      headers['x-goog-api-key'] = apiKey.trim()
+    }
+
     if (provider === 'openrouter') {
       headers['HTTP-Referer'] = 'https://github.com/sanketpadhyal/RivoCode-Cli'
       headers['X-Title'] = 'RivoCode CLI'
@@ -233,16 +237,25 @@ export async function testApiKeyConnection(
     clearTimeout(timeoutId)
 
     if (!response.ok) {
-      const errText = await response.text().catch(() => '')
-      if (response.status === 401) {
+      let errMessage = ''
+      try {
+        const parsedErr = await response.json()
+        const errObj = Array.isArray(parsedErr) ? parsedErr[0]?.error : parsedErr?.error
+        errMessage = errObj?.message || ''
+      } catch {
+        const errText = await response.text().catch(() => '')
+        errMessage = errText.slice(0, 80)
+      }
+
+      if (response.status === 401 || response.status === 400) {
         return {
           success: false,
-          error: 'Invalid API key (401 Unauthorized). Please check your key.',
+          error: `Invalid API key: ${errMessage || 'Google AI Studio keys start with AIza... (get one free at aistudio.google.com/app/apikey)'}`,
         }
       }
       return {
         success: false,
-        error: `API returned error ${response.status}: ${errText.slice(0, 80) || response.statusText}`,
+        error: `API error (${response.status}): ${errMessage || response.statusText}`,
       }
     }
 
@@ -535,6 +548,10 @@ STRICT BEHAVIOR RULES:
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
+    }
+
+    if (route.provider === 'gemini') {
+      headers['x-goog-api-key'] = apiKey.trim()
     }
 
     if (route.provider === 'openrouter') {
