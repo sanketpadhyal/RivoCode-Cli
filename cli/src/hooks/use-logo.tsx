@@ -37,28 +37,9 @@ function getRivoImageBase64(): string | null {
 }
 
 export const useLogo = ({
-  availableWidth,
+  availableWidth: _availableWidth,
 }: UseLogoOptions): LogoResult => {
-  const inlineImageSequence = useMemo(() => {
-    if (!supportsInlineImages()) return null
-    const base64 = getRivoImageBase64()
-    if (!base64) return null
-    return renderInlineImage(base64, {
-      width: Math.min(availableWidth, 14),
-      height: 6,
-      filename: 'rivo.png',
-    })
-  }, [availableWidth])
-
   const component = useMemo(() => {
-    if (inlineImageSequence) {
-      return (
-        <box style={{ flexDirection: 'column', marginBottom: 1 }}>
-          <text style={{ wrapMode: 'none' }}>{inlineImageSequence}</text>
-        </box>
-      )
-    }
-
     // Small, compact Rivo Icon rendering
     return (
       <box style={{ flexDirection: 'column', marginBottom: 1 }}>
@@ -109,7 +90,7 @@ export const useLogo = ({
         </text>
       </box>
     )
-  }, [inlineImageSequence])
+  }, [])
 
   return { component, textBlock: 'RIVOCODE' }
 }
