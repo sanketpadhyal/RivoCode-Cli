@@ -56,7 +56,7 @@ export const SigningInScreen = ({ onComplete }: SigningInScreenProps) => {
       <text style={{ wrapMode: 'none' }}>
         <span fg={theme.foreground}>Welcome to the </span>
         <b>
-          <span fg={theme.primary}>RivoCode CLI</span>
+          <span fg={theme.primary}>Rivo CLI</span>
         </b>
         <span fg={theme.foreground}>. You are in good hands.</span>
       </text>
