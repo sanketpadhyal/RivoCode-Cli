@@ -77,8 +77,11 @@ export const ChatHeader = memo(function ChatHeader({
             RivoCode CLI
           </span>
         </text>
-        <text style={{ wrapMode: 'none', fg: theme.muted }}>
-          <span>Made by Sanket Padhyal</span>
+        <text style={{ wrapMode: 'none' }}>
+          <span fg={theme.muted}>Made by </span>
+          <span bg="#581c87" fg="#f3e8ff" attributes={TextAttributes.BOLD}>
+            {' Sanket Padhyal '}
+          </span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
           <span>{selectedModel ? `${selectedModel} (${modeLabel})` : 'Gemini 3.6 Flash (High)'}</span>
