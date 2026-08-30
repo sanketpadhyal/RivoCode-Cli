@@ -32,7 +32,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     id: 'gpt-oss',
     name: 'gpt-oss',
     badge: '(High Reasoning)',
-    icon: '✦',
+    icon: '\u{f074a}',
     iconColor: '#10A37F',
     description: 'Open-source flagship reasoning model for complex coding',
   },
