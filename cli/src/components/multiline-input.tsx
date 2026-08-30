@@ -202,8 +202,7 @@ export const MultilineInput = forwardRef<
   const renderer = useRenderer()
   const appContext = useAppContext()
   const { keyHandler } = appContext
-  const hookBlinkValue = useChatStore((state) => state.isFocusSupported)
-  const effectiveShouldBlinkCursor = shouldBlinkCursor ?? hookBlinkValue
+  const effectiveShouldBlinkCursor = shouldBlinkCursor ?? true
 
   const scrollBoxRef = useRef<ScrollBoxRenderable | null>(null)
   const [lastActivity, setLastActivity] = useState(Date.now())
@@ -1094,7 +1093,7 @@ export const MultilineInput = forwardRef<
                 visible={true}
                 focused={focused}
                 shouldBlink={effectiveShouldBlinkCursor}
-                color={supportsTruecolor() ? theme.info : 'lime'}
+                color={theme.primary}
                 key={lastActivity}
               />
             )}
