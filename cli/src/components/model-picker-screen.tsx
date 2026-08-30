@@ -16,6 +16,7 @@ export interface ModelOption {
   badge?: string
   description: string
   icon: string
+  iconPadding: string
   iconColor: string
 }
 
@@ -25,6 +26,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     name: 'groq',
     badge: '(Fast)',
     icon: 'g',
+    iconPadding: '  ',
     iconColor: '#FF4800',
     description: 'Ultra-fast low-latency inference on Groq LPUs',
   },
@@ -33,6 +35,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     name: 'gpt-oss',
     badge: '(High Reasoning)',
     icon: '❃',
+    iconPadding: '  ',
     iconColor: '#10A37F',
     description: 'Open-source flagship reasoning model for complex coding',
   },
@@ -41,6 +44,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     name: 'deepseek',
     badge: '(Coding & Agentic)',
     icon: '🐋',
+    iconPadding: ' ',
     iconColor: '#38BDF8',
     description: 'Deep reasoning model with superior code intelligence',
   },
@@ -58,7 +62,8 @@ export const ModelPickerScreen = ({
   onBack,
 }: ModelPickerScreenProps) => {
   const theme = useTheme()
-  const { contentMaxWidth } = useTerminalDimensions()
+  const { contentMaxWidth, terminalHeight } = useTerminalDimensions()
+  const isCompactHeight = terminalHeight < 22
   const [filterText, setFilterText] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [scrollOffset, setScrollOffset] = useState(0)
@@ -215,7 +220,6 @@ export const ModelPickerScreen = ({
     <box
       style={{
         flexDirection: 'column',
-        justifyContent: 'space-between',
         height: '100%',
         width: '100%',
         paddingLeft: 2,
@@ -225,9 +229,11 @@ export const ModelPickerScreen = ({
       }}
     >
       <box style={{ flexDirection: 'column', gap: 1 }}>
-        <box style={{ marginBottom: 1 }}>
-          {logoComponent}
-        </box>
+        {!isCompactHeight && (
+          <box style={{ marginBottom: 1 }}>
+            {logoComponent}
+          </box>
+        )}
 
         <box style={{ flexDirection: 'row', alignItems: 'center' }}>
           <text style={{ wrapMode: 'none' }}>
@@ -277,7 +283,7 @@ export const ModelPickerScreen = ({
                 key={model.id}
                 style={{
                   flexDirection: 'column',
-                  marginBottom: 1,
+                  marginBottom: isCompactHeight ? 0 : 1,
                 }}
               >
                 <text style={{ wrapMode: 'none' }}>
@@ -285,8 +291,9 @@ export const ModelPickerScreen = ({
                     {isSelected ? '▶ ' : '  '}
                   </span>
                   <span fg={model.iconColor} attributes={TextAttributes.BOLD}>
-                    {model.icon}{' '}
+                    {model.icon}
                   </span>
+                  <span>{model.iconPadding}</span>
                   <span
                     fg={theme.foreground}
                     attributes={isSelected ? TextAttributes.BOLD : undefined}
