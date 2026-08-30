@@ -107,6 +107,8 @@ export const ApiKeySetupScreen = ({
       // Save key in env and local storage
       if (route.provider === 'groq') {
         process.env.GROQ_API_KEY = trimmed
+      } else if (route.provider === 'gemini') {
+        process.env.GEMINI_API_KEY = trimmed
       } else {
         process.env.OPENROUTER_API_KEY = trimmed
       }

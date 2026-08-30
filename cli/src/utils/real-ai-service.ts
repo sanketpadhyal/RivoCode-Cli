@@ -211,7 +211,7 @@ export async function testApiKeyConnection(
       Authorization: `Bearer ${apiKey.trim()}`,
     }
 
-    if (!isGroq) {
+    if (provider === 'openrouter') {
       headers['HTTP-Referer'] = 'https://github.com/sanketpadhyal/RivoCode-Cli'
       headers['X-Title'] = 'RivoCode CLI'
     }
