@@ -450,6 +450,7 @@ const AGENT_TOOLS = [
 ]
 
 const sessionAllowedCommands = new Set<string>()
+const sessionAllowedFiles = new Set<string>()
 
 export async function executeLocalTool(
   projectRoot: string,
@@ -458,9 +459,60 @@ export async function executeLocalTool(
 ): Promise<{ success: boolean; result: string }> {
   try {
     if (name === 'write_file') {
-      const filePath = path.isAbsolute(args.path)
-        ? args.path
-        : path.join(projectRoot, args.path)
+      const relPath = args.path || ''
+      const filePath = path.isAbsolute(relPath)
+        ? relPath
+        : path.join(projectRoot, relPath)
+
+      const autoAccept = useChatStore.getState().autoAcceptEdits
+      if (
+        !autoAccept &&
+        relPath &&
+        !sessionAllowedFiles.has(relPath) &&
+        !sessionAllowedFiles.has(filePath)
+      ) {
+        try {
+          const isExisting = fs.existsSync(filePath)
+          const verb = isExisting ? 'edit' : 'create'
+          const askRes: any = await AskUserBridge.request(`edit_perm_${Date.now()}`, [
+            {
+              header: 'Command',
+              question: `Requesting permission to ${verb} file:\n  ${relPath}\n\nDo you want to proceed?`,
+              options: [
+                '1. Yes',
+                `2. Yes, and always allow in this conversation for '${relPath}'`,
+                '3. No',
+              ],
+              multiSelect: false,
+            },
+          ])
+
+          if (askRes?.skipped) {
+            return {
+              success: false,
+              result: `Edit cancelled by user: ${relPath}`,
+            }
+          }
+
+          const answerText =
+            askRes?.answers?.[0]?.selectedOption ||
+            askRes?.answers?.[0]?.otherText ||
+            askRes?.answers?.[0]?.option ||
+            ''
+          const answerStr = String(answerText).toLowerCase()
+
+          if (answerStr.includes('always allow') || answerStr.includes('always')) {
+            sessionAllowedFiles.add(relPath)
+            sessionAllowedFiles.add(filePath)
+          } else if (answerStr.includes('no') || answerStr.includes('3. no')) {
+            return {
+              success: false,
+              result: `Edit cancelled by user: ${relPath}`,
+            }
+          }
+        } catch (_askErr) {}
+      }
+
       fs.mkdirSync(path.dirname(filePath), { recursive: true })
       fs.writeFileSync(filePath, args.content, 'utf-8')
       return {

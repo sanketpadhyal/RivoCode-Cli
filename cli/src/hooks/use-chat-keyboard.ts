@@ -46,6 +46,7 @@ export type ChatKeyboardHandlers = {
   onHistoryDown: () => void
 
   onToggleAgentMode: () => void
+  onToggleAutoAcceptEdits?: () => void
   onUnfocusAgent: () => void
 
   onClearQueue: () => void
@@ -148,6 +149,9 @@ function dispatchAction(
       return true
     case 'toggle-agent-mode':
       handlers.onToggleAgentMode()
+      return true
+    case 'toggle-auto-accept-edits':
+      handlers.onToggleAutoAcceptEdits?.()
       return true
     case 'unfocus-agent':
       handlers.onUnfocusAgent()

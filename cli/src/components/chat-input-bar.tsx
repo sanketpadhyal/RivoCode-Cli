@@ -117,6 +117,7 @@ export const ChatInputBar = ({
 }: ChatInputBarProps) => {
   const inputMode = useChatStore((state) => state.inputMode)
   const setInputMode = useChatStore((state) => state.setInputMode)
+  const autoAcceptEdits = useChatStore((state) => state.autoAcceptEdits)
 
   const modeConfig = getInputModeConfig(inputMode)
   const askUserState = useChatStore((state) => state.askUserState)
@@ -395,6 +396,24 @@ export const ChatInputBar = ({
             cursorPosition={cursorPosition}
           />
         </box>
+        {autoAcceptEdits && (
+          <box
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+              paddingLeft: 1,
+              paddingRight: 1,
+            }}
+          >
+            <text style={{ wrapMode: 'none' }}>
+              <span fg="#f43f5e">
+                {'⚡ auto accept edits is on'}
+              </span>
+            </text>
+          </box>
+        )}
         <InputModeBanner />
       </>
     )
@@ -500,6 +519,25 @@ export const ChatInputBar = ({
           </box>
         </box>
       </ClickableTitleBox>
+      {autoAcceptEdits && (
+        <box
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+            paddingLeft: 1,
+            paddingRight: 1,
+            marginTop: 0,
+          }}
+        >
+          <text style={{ wrapMode: 'none' }}>
+            <span fg="#f43f5e">
+              {'⚡ auto accept edits is on'}
+            </span>
+          </text>
+        </box>
+      )}
       <InputModeBanner />
     </>
   )

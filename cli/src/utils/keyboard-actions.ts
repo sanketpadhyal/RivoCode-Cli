@@ -57,6 +57,7 @@ export type ChatKeyboardAction =
   | { type: 'history-down' }
 
   | { type: 'toggle-agent-mode' }
+  | { type: 'toggle-auto-accept-edits' }
   | { type: 'unfocus-agent' }
 
   | { type: 'toggle-all' }
@@ -241,7 +242,15 @@ export function resolveChatKeyboardAction(
   }
 
   if (
-    (isShiftTab || isTab) &&
+    isShiftTab &&
+    !state.slashMenuActive &&
+    !state.mentionMenuActive
+  ) {
+    return { type: 'toggle-auto-accept-edits' }
+  }
+
+  if (
+    isTab &&
     !state.slashMenuActive &&
     !state.mentionMenuActive
   ) {

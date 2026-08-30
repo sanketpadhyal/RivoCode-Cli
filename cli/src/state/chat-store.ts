@@ -78,6 +78,7 @@ export type ChatStoreState = {
   suggestedFollowups: SuggestedFollowupsState | null
   clickedFollowupsMap: ClickedFollowupsMap
   selectedModel: string | null
+  autoAcceptEdits: boolean
 }
 
 const findLatestFollowupInBlocks = (
@@ -164,6 +165,8 @@ type ChatStoreActions = {
   setSuggestedFollowups: (state: SuggestedFollowupsState | null) => void
   markFollowupClicked: (toolCallId: string, index: number) => void
   setSelectedModel: (model: string | null) => void
+  setAutoAcceptEdits: (value: boolean) => void
+  toggleAutoAcceptEdits: () => void
   reset: () => void
 }
 
@@ -200,11 +203,22 @@ const initialState: ChatStoreState = {
   suggestedFollowups: null,
   clickedFollowupsMap: new Map<string, Set<number>>(),
   selectedModel: 'groq',
+  autoAcceptEdits: false,
 }
 
 export const useChatStore = create<ChatStore>()(
   immer((set) => ({
     ...initialState,
+
+    setAutoAcceptEdits: (value) =>
+      set((state) => {
+        state.autoAcceptEdits = value
+      }),
+
+    toggleAutoAcceptEdits: () =>
+      set((state) => {
+        state.autoAcceptEdits = !state.autoAcceptEdits
+      }),
 
     setSelectedModel: (model) =>
       set((state) => {

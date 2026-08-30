@@ -1137,6 +1137,9 @@ export const Chat = ({
       onHistoryUp: navigateUp,
       onHistoryDown: navigateDown,
       onToggleAgentMode: toggleAgentMode,
+      onToggleAutoAcceptEdits: () => {
+        useChatStore.getState().toggleAutoAcceptEdits()
+      },
       onUnfocusAgent: () => {
         setFocusedAgentId(null)
         setInputFocused(true)
