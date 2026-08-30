@@ -81,7 +81,7 @@ export function initProjectWorkspace(projectRoot: string): WorkspaceInitResult {
       createdAt: new Date().toISOString(),
       lastActive: new Date().toISOString(),
       sessionCount: 1,
-      lastModel: 'deepseek',
+      lastModel: 'gemini-3.6-flash',
       lastAgentMode: 'DEFAULT',
     }
   }
@@ -90,10 +90,9 @@ export function initProjectWorkspace(projectRoot: string): WorkspaceInitResult {
 
   // 2. Settings File
   let settings: ProjectSettingsData = {
-    model: 'deepseek',
+    model: 'gemini-3.6-flash',
     agentMode: 'DEFAULT',
     theme: 'dark',
-    version: '1.0.0',
   }
 
   if (fs.existsSync(settingsFile)) {

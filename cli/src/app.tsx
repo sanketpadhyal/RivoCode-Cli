@@ -12,6 +12,7 @@ import { ContinueWorkScreen } from './workspace/continue-work-screen'
 import {
   initProjectWorkspace,
   updateProjectContext,
+  updateProjectSettings,
 } from './workspace/project-context'
 import { ModelPickerScreen } from './components/model-picker-screen'
 import { ApiKeySetupScreen } from './components/api-key-setup-screen'
@@ -243,7 +244,7 @@ export const App = ({
           const modelToUse =
             workspaceInit.settings.model ||
             workspaceInit.context.lastModel ||
-            'deepseek'
+            'gemini-3.6-flash'
           useChatStore.getState().setSelectedModel(modelToUse)
           trustWorkspace(projectRoot)
           setIsWorkspaceTrusted(true)
@@ -276,6 +277,7 @@ export const App = ({
         onSelectModel={(model) => {
           useChatStore.getState().setSelectedModel(model.name)
           updateProjectContext(projectRoot, { lastModel: model.name })
+          updateProjectSettings(projectRoot, { model: model.name })
           setIsModelSelected(true)
           setIsApiKeyConfigured(false)
         }}

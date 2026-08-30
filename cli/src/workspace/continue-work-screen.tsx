@@ -29,7 +29,7 @@ export const ContinueWorkScreen = ({
   const options = [
     {
       title: 'Continue previous work',
-      desc: `Resume with previous context (${context.lastModel || 'deepseek'})`,
+      desc: `Resume with previous context (${context.lastModel || 'gemini-3.6-flash'})`,
       action: onContinue,
     },
     {
