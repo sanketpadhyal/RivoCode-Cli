@@ -723,6 +723,8 @@ STRICT BEHAVIOR RULES:
                     : b,
                 ),
               )
+              // Smooth streaming pacing
+              await new Promise((resolve) => setTimeout(resolve, 8))
             }
 
             if (delta.tool_calls) {
@@ -789,6 +791,9 @@ STRICT BEHAVIOR RULES:
         if (!tc || !tc.name) continue
         try {
           const parsedArgs = JSON.parse(tc.args || '{}')
+          const filePath = parsedArgs.path ? (path.isAbsolute(parsedArgs.path) ? parsedArgs.path : path.join(projectRoot, parsedArgs.path)) : ''
+          const oldContent = (tc.name === 'write_file' && filePath && fs.existsSync(filePath)) ? fs.readFileSync(filePath, 'utf-8') : null
+
           const toolExec = executeLocalTool(projectRoot, tc.name, parsedArgs)
           toolResultsForHistory.push(`[${tc.name}]\nResult: ${toolExec.result}`)
 
@@ -796,7 +801,14 @@ STRICT BEHAVIOR RULES:
           if (tc.name === 'write_file') {
             const lineCount = (parsedArgs.content || '').split('\n').length
             toolActionNotice += `● **WriteFile**(\`${parsedArgs.path}\`)\n`
-            toolActionNotice += `  ⎿  Wrote ${lineCount} lines\n`
+            if (oldContent !== null) {
+              const oldLines = oldContent.split('\n').length
+              const diff = lineCount - oldLines
+              const diffTag = diff >= 0 ? `+${diff}` : `${diff}`
+              toolActionNotice += `  ⎿  Modified: \`${diffTag} lines\` (${oldLines} → ${lineCount} lines)\n`
+            } else {
+              toolActionNotice += `  ⎿  Created file (\`+${lineCount} lines\`)\n`
+            }
           } else if (tc.name === 'run_terminal_command') {
             const cleanOutput = toolExec.result.trim()
             toolActionNotice += `● **Bash**(\`${parsedArgs.command}\`)\n`
