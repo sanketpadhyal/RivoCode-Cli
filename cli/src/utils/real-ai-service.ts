@@ -6,6 +6,7 @@ import path from 'path'
 import { AskUserBridge } from '@rivocode/common/utils/ask-user-bridge'
 import { getProjectRoot } from '../project-files'
 import { useChatStore } from '../state/chat-store'
+import { performNativeOcr } from './ocr-helper'
 
 import type { MessageUpdater } from './message-updater'
 import type { AgentMode } from './constants'
@@ -447,6 +448,23 @@ const AGENT_TOOLS = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'ocr_image',
+      description: 'Extract text from an image or screenshot using high-speed native Apple Vision OCR',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'Absolute or relative path to the image or screenshot file',
+          },
+        },
+        required: ['path'],
+      },
+    },
+  },
 ]
 
 const sessionAllowedCommands = new Set<string>()
@@ -615,6 +633,12 @@ export async function executeLocalTool(
         : projectRoot
       const files = fs.readdirSync(targetDir)
       return { success: true, result: files.join('\n') }
+    }
+
+    if (name === 'ocr_image' || name === 'read_image_text') {
+      const imgPath = args.path ? (path.isAbsolute(args.path) ? args.path : path.join(projectRoot, args.path)) : ''
+      const ocrResult = performNativeOcr(imgPath)
+      return { success: true, result: ocrResult }
     }
 
     return { success: false, result: `Unknown tool: ${name}` }
@@ -1100,6 +1124,11 @@ STRICT BEHAVIOR RULES:
             const displayFolder = folder.startsWith(os.homedir()) ? '~' + folder.slice(os.homedir().length) : folder
             toolActionNotice += `● **ListDir**(\`${displayFolder}\`)\n`
             toolActionNotice += `  ⎿  ${filesCount} files, ${dirsCount} directories\n`
+          } else if (tc.name === 'ocr_image' || tc.name === 'read_image_text') {
+            const imgDisplay = parsedArgs.path ? (parsedArgs.path.startsWith(os.homedir()) ? '~' + parsedArgs.path.slice(os.homedir().length) : parsedArgs.path) : 'image'
+            toolActionNotice += `● **Vision OCR**(\`${imgDisplay}\`)\n`
+            const preview = (toolExec.result || '').split('\n').filter(Boolean).slice(0, 2).join(' ')
+            toolActionNotice += `  ⎿  ${preview.slice(0, 80) || 'Text extracted'}\n`
           } else {
             toolActionNotice += `● **${tc.name}**\n`
           }
