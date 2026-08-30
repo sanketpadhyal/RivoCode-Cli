@@ -11,7 +11,7 @@ export interface ThinkingStateInfo {
 const VERB_CATEGORIES = {
   // Prune / Cut / Remove / Strip / Clean / Truncate
   CUT_AND_PRUNE: {
-    icons: ['✂', '✄', '✂️', '🧹', '🪓', '🪚', '🪄'],
+    icons: ['✂', '✄', '✁', '✃', '⎚', '⌗', '⌿'],
     words: [
       'Trimming', 'Pruning', 'Excising', 'Slicing', 'Stripping', 'Carving', 'Clipping',
       'Shaving', 'Condensing', 'Decoupling', 'Purging', 'Distilling', 'Streamlining',
@@ -25,7 +25,7 @@ const VERB_CATEGORIES = {
 
   // Fix / Bug / Debug / Error / Crash / Patch / Repair
   DEBUG_AND_FIX: {
-    icons: ['🔧', '🔍', '🛠', '⚡', '🩺', '🩹', '🎯', '🪛'],
+    icons: ['⚙', '⚡', '⌖', '⌁', '⌘', '⌥', '⍾', '⚑', '⎔'],
     words: [
       'Diagnosing', 'Investigating', 'Debugging', 'Troubleshooting', 'Pinpointing',
       'Isolating', 'Untangling', 'Rectifying', 'Patching', 'Resolving', 'Deconstructing',
@@ -40,7 +40,7 @@ const VERB_CATEGORIES = {
 
   // Build / Create / Implement / Write / Add / Scaffold / Make
   BUILD_AND_CREATE: {
-    icons: ['🏗', '⚡', '✦', '🛠', '✨', '✎', '🔨', '🚀', '📦'],
+    icons: ['✦', '◈', '⟡', '⊞', '⟁', '⎔', '⟠', '✎', '⌬'],
     words: [
       'Architecting', 'Crafting', 'Constructing', 'Engineering', 'Implementing',
       'Synthesizing', 'Composing', 'Generating', 'Assembling', 'Forging', 'Devising',
@@ -55,7 +55,7 @@ const VERB_CATEGORIES = {
 
   // Search / Find / Inspect / Scan / Read / Explore / View / Locate
   SEARCH_AND_INSPECT: {
-    icons: ['🔍', '🔎', '👁', '🔬', '🧭', '📡', '📑', '🔭'],
+    icons: ['⌕', '◎', '◈', '⎚', '⌖', '⍾', '§', '⟡'],
     words: [
       'Scanning', 'Inspecting', 'Surveying', 'Exploring', 'Examining', 'Probing',
       'Traversing', 'Locating', 'Auditing', 'Reviewing', 'Indexing', 'Querying',
@@ -69,7 +69,7 @@ const VERB_CATEGORIES = {
 
   // Optimize / Speed up / Refactor / Enhance / Turbo / Polish
   OPTIMIZE_AND_REFACTOR: {
-    icons: ['⚡', '🚀', '💎', '✨', '🏎', '🪄', '⚙', '🔥'],
+    icons: ['⚡', '✦', '⟡', '⌬', '⌁', '◈', '⎔', '✶'],
     words: [
       'Optimizing', 'Accelerating', 'Polishing', 'Enhancing', 'Upgrading', 'Supercharging',
       'Elevating', 'Fine-tuning', 'Modernizing', 'Refining', 'Boosting', 'Turbocharging',
@@ -82,7 +82,7 @@ const VERB_CATEGORIES = {
 
   // Test / Verify / Check / Bench / Validate / Assert
   TEST_AND_VERIFY: {
-    icons: ['🧪', '🎯', '✓', '🔬', '📊', '⚖', '📋'],
+    icons: ['✓', '✔', '⌖', '◈', '⊞', '⍾', '⚑'],
     words: [
       'Validating', 'Verifying', 'Benchmarking', 'Simulating', 'Stress-testing',
       'Assessing', 'Measuring', 'Proving', 'Confirming', 'Auditing assertions',
@@ -94,7 +94,7 @@ const VERB_CATEGORIES = {
 
   // Deep Reasoning / Cognitive / General AI Thought
   GENERAL_REASONING: {
-    icons: ['✦', '🧠', '💡', '◈', '⟡', '⚡', '⚙', '🌌', '🔮'],
+    icons: ['✦', '◈', '⟡', '◆', '◇', '⚡', '⚙', '✶', '⌬', '⎔'],
     words: [
       'Reasoning', 'Analyzing', 'Deliberating', 'Synthesizing', 'Formulating',
       'Conceptualizing', 'Evaluating', 'Deducing', 'Strategizing', 'Inferring',
