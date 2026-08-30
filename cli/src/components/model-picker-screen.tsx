@@ -15,6 +15,8 @@ export interface ModelOption {
   name: string
   badge?: string
   description: string
+  icon: string
+  iconColor: string
 }
 
 export const AVAILABLE_MODELS: ModelOption[] = [
@@ -22,13 +24,25 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     id: 'groq',
     name: 'groq',
     badge: '(Fast)',
+    icon: '⚡',
+    iconColor: '#F55036',
     description: 'Ultra-fast low-latency inference on Groq LPUs',
   },
   {
     id: 'gpt-oss',
     name: 'gpt-oss',
     badge: '(High Reasoning)',
+    icon: '✳',
+    iconColor: '#10A37F',
     description: 'Open-source flagship reasoning model for complex coding',
+  },
+  {
+    id: 'deepseek',
+    name: 'deepseek',
+    badge: '(Coding & Agentic)',
+    icon: '◈',
+    iconColor: '#1D82FE',
+    description: 'Deep reasoning model with superior code intelligence',
   },
 ]
 
@@ -196,6 +210,9 @@ export const ModelPickerScreen = ({
                   <span fg={isSelected ? theme.primary : theme.muted}>
                     {isSelected ? '▶ ' : '  '}
                   </span>
+                  <span fg={model.iconColor}>
+                    {model.icon}{' '}
+                  </span>
                   <span
                     fg={theme.foreground}
                     attributes={isSelected ? TextAttributes.BOLD : undefined}
@@ -206,7 +223,7 @@ export const ModelPickerScreen = ({
                     <span fg={theme.muted}> {model.badge}</span>
                   ) : null}
                   {'\n'}
-                  <span fg={theme.muted}>    {model.description}</span>
+                  <span fg={theme.muted}>       {model.description}</span>
                 </text>
               </box>
             )
