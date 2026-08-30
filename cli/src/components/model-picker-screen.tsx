@@ -229,7 +229,7 @@ export const ModelPickerScreen = ({
     <box
       style={{
         flexDirection: 'column',
-        height: '100%',
+        flexGrow: 1,
         width: '100%',
         paddingLeft: 2,
         paddingRight: 2,

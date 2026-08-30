@@ -206,7 +206,7 @@ export const ApiKeySetupScreen = ({
       style={{
         flexDirection: 'column',
         justifyContent: 'space-between',
-        height: '100%',
+        flexGrow: 1,
         width: '100%',
         paddingLeft: 2,
         paddingTop: 1,

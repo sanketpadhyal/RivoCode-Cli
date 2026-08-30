@@ -77,6 +77,7 @@ export const App = ({
     setActiveTopBanner,
     closeTopBanner,
     chatSessionId,
+    selectedModel,
   } = useChatStore(
     useShallow((store) => ({
       setInputFocused: store.setInputFocused,
@@ -86,6 +87,7 @@ export const App = ({
       setActiveTopBanner: store.setActiveTopBanner,
       closeTopBanner: store.closeTopBanner,
       chatSessionId: store.chatSessionId,
+      selectedModel: store.selectedModel,
     })),
   )
 
@@ -281,9 +283,10 @@ export const App = ({
   }
 
   if (!isApiKeyConfigured) {
-    const activeModel = useChatStore.getState().selectedModel ?? 'groq'
+    const activeModel = selectedModel || 'gemini-3.6-flash'
     return (
       <ApiKeySetupScreen
+        key={`apikey-${activeModel}`}
         modelName={activeModel}
         onComplete={() => {
           setIsApiKeyConfigured(true)
