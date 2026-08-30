@@ -39,42 +39,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     iconColor: '#10A37F',
     description: 'Free Llama 3.3 70B on OpenRouter (Free at openrouter.ai/keys)',
   },
-  {
-    id: 'openrouter-claude',
-    name: 'claude-3.7-sonnet',
-    badge: '(OpenRouter · Anthropic Flagship)',
-    icon: '🔮',
-    iconPadding: ' ',
-    iconColor: '#D97706',
-    description: 'Claude 3.7 Sonnet via OpenRouter · World-class reasoning & full-stack coding',
-  },
-  {
-    id: 'openrouter-deepseek',
-    name: 'deepseek-v3',
-    badge: '(OpenRouter · DeepSeek V3)',
-    icon: '🐳',
-    iconPadding: ' ',
-    iconColor: '#3B82F6',
-    description: 'DeepSeek V3 671B via OpenRouter · Ultra-low cost, massive coding capacity',
-  },
-  {
-    id: 'openrouter-r1',
-    name: 'deepseek-r1',
-    badge: '(OpenRouter · Reasoning Specialist)',
-    icon: '🧠',
-    iconPadding: ' ',
-    iconColor: '#8B5CF6',
-    description: 'DeepSeek R1 via OpenRouter · Deep reasoning model for complex bugs and architecture',
-  },
-  {
-    id: 'openrouter-qwen',
-    name: 'qwen-2.5-coder',
-    badge: '(OpenRouter · 32B Coder)',
-    icon: '⚡',
-    iconPadding: ' ',
-    iconColor: '#06B6D4',
-    description: 'Qwen 2.5 Coder 32B via OpenRouter · 128k context coding specialist',
-  },
 ]
 
 interface ModelPickerScreenProps {
