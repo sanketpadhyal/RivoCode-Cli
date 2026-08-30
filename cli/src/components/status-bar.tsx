@@ -6,6 +6,7 @@ import { ScrollToBottomButton } from './scroll-to-bottom-button'
 import { ShimmerText } from './shimmer-text'
 
 import { useTheme } from '../hooks/use-theme'
+import { useChatStore } from '../state/chat-store'
 import { formatElapsedTime } from '../utils/format-elapsed-time'
 
 import type { StatusIndicatorState } from '../utils/status-indicator-state'
@@ -58,6 +59,7 @@ export const StatusBar = ({
   onStop,
 }: StatusBarProps) => {
   const theme = useTheme()
+  const liveTokens = useChatStore((state) => state.liveTokenCount)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
 
   const shouldShowTimer =
@@ -137,25 +139,44 @@ export const StatusBar = ({
 
       case 'waiting':
         return (
-          <ShimmerText
-            text="thinking..."
-            interval={SHIMMER_INTERVAL_MS}
-            primaryColor={theme.secondary}
-          />
+          <box style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <span fg="#f97316">✱ </span>
+            <ShimmerText
+              text="Contemplating..."
+              interval={SHIMMER_INTERVAL_MS}
+              primaryColor="#f97316"
+            />
+            <span fg="#f97316">
+              {liveTokens > 0
+                ? ` (${elapsedSeconds}s · ↓ ${liveTokens.toLocaleString()} tokens)`
+                : ` (${elapsedSeconds}s)`}
+            </span>
+          </box>
         )
 
       case 'streaming':
         return (
-          <ShimmerText
-            text="executing..."
-            interval={SHIMMER_INTERVAL_MS}
-            primaryColor="#eab308"
-          />
+          <box style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <span fg="#f97316">✱ </span>
+            <ShimmerText
+              text="Generating..."
+              interval={SHIMMER_INTERVAL_MS}
+              primaryColor="#f97316"
+            />
+            <span fg="#f97316">
+              {` (${elapsedSeconds}s · ↓ ${liveTokens.toLocaleString()} tokens)`}
+            </span>
+          </box>
         )
     }
   }
 
   const renderElapsedTime = () => {
+    // Timer is already rendered inline inside waiting / streaming indicators
+    if (statusIndicatorState.kind === 'waiting' || statusIndicatorState.kind === 'streaming') {
+      return null
+    }
+
     if (!shouldShowTimer || elapsedSeconds === 0) {
       return null
     }

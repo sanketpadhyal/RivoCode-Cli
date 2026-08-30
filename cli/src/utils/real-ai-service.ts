@@ -1021,6 +1021,8 @@ STRICT BEHAVIOR RULES:
               }
               accumulatedThinking += reasoningChunk
               const currentReasoning = accumulatedThinking
+              const liveTokens = Math.max(1, Math.ceil((accumulatedContent.length + accumulatedThinking.length) / 4))
+              useChatStore.getState().setLiveTokenCount(liveTokens)
               updater.updateAiMessageBlocks((blocks) =>
                 blocks.map((b) =>
                   b.type === 'text' &&
@@ -1036,6 +1038,8 @@ STRICT BEHAVIOR RULES:
               turnContent += contentChunk
               accumulatedContent += contentChunk
               const currentContent = accumulatedContent
+              const liveTokens = Math.max(1, Math.ceil((accumulatedContent.length + accumulatedThinking.length) / 4))
+              useChatStore.getState().setLiveTokenCount(liveTokens)
               updater.updateAiMessageBlocks((blocks) =>
                 blocks.map((b) =>
                   b.type === 'text' &&

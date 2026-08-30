@@ -79,6 +79,7 @@ export type ChatStoreState = {
   clickedFollowupsMap: ClickedFollowupsMap
   selectedModel: string | null
   autoAcceptEdits: boolean
+  liveTokenCount: number
 }
 
 const findLatestFollowupInBlocks = (
@@ -167,6 +168,7 @@ type ChatStoreActions = {
   setSelectedModel: (model: string | null) => void
   setAutoAcceptEdits: (value: boolean) => void
   toggleAutoAcceptEdits: () => void
+  setLiveTokenCount: (tokens: number) => void
   reset: () => void
 }
 
@@ -204,11 +206,17 @@ const initialState: ChatStoreState = {
   clickedFollowupsMap: new Map<string, Set<number>>(),
   selectedModel: 'groq',
   autoAcceptEdits: false,
+  liveTokenCount: 0,
 }
 
 export const useChatStore = create<ChatStore>()(
   immer((set) => ({
     ...initialState,
+
+    setLiveTokenCount: (tokens) =>
+      set((state) => {
+        state.liveTokenCount = tokens
+      }),
 
     setAutoAcceptEdits: (value) =>
       set((state) => {
