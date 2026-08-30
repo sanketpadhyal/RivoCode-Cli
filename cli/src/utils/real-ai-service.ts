@@ -32,9 +32,11 @@ export function ensureApiKeysFileExists() {
     const template = `# RivoCode API Keys Configuration
 # Free keys available at:
 # Groq: https://console.groq.com/keys
+# Gemini: https://aistudio.google.com/app/apikey
 # OpenRouter: https://openrouter.ai/keys
 
 GROQ_API_KEY=
+GEMINI_API_KEY=
 OPENROUTER_API_KEY=
 DEEPSEEK_API_KEY=
 `
@@ -63,6 +65,7 @@ export function parseDotApiKeys(): ApiKeysConfig {
           if (!val) continue
           const keyUpper = k.trim().toUpperCase()
           if (keyUpper.includes('GROQ')) result.groq = val
+          else if (keyUpper.includes('GEMINI') || keyUpper.includes('GOOGLE')) result.gemini = val
           else if (keyUpper.includes('OPENROUTER')) result.openrouter = val
           else if (keyUpper.includes('DEEPSEEK')) result.deepseek = val
           else if (keyUpper.includes('OPENAI')) result.openai = val
@@ -94,6 +97,7 @@ export function saveStoredApiKey(provider: keyof ApiKeysConfig, key: string) {
 
     const dotContent = `# RivoCode API Keys Configuration
 GROQ_API_KEY=${current.groq || ''}
+GEMINI_API_KEY=${current.gemini || ''}
 OPENROUTER_API_KEY=${current.openrouter || ''}
 DEEPSEEK_API_KEY=${current.deepseek || ''}
 `
@@ -101,11 +105,13 @@ DEEPSEEK_API_KEY=${current.deepseek || ''}
   } catch (_e) {}
 }
 
-export function resolveApiKey(provider: 'groq' | 'openrouter'): string | null {
+export function resolveApiKey(provider: 'groq' | 'openrouter' | 'gemini'): string | null {
   const envKey =
     provider === 'groq'
       ? process.env.GROQ_API_KEY
-      : process.env.OPENROUTER_API_KEY
+      : provider === 'gemini'
+        ? (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY)
+        : process.env.OPENROUTER_API_KEY
 
   if (envKey && envKey.trim().length > 0) {
     return envKey.trim()
@@ -129,11 +135,11 @@ export function isApiConnected(modelName?: string): boolean {
     const route = resolveModelRoute(modelName)
     return Boolean(resolveApiKey(route.provider))
   }
-  return Boolean(resolveApiKey('groq') || resolveApiKey('openrouter'))
+  return Boolean(resolveApiKey('groq') || resolveApiKey('gemini') || resolveApiKey('openrouter'))
 }
 
 export interface ModelRoute {
-  provider: 'groq' | 'openrouter'
+  provider: 'groq' | 'openrouter' | 'gemini'
   endpoint: string
   modelId: string
   displayName: string
@@ -142,6 +148,16 @@ export interface ModelRoute {
 
 export function resolveModelRoute(modelName: string): ModelRoute {
   const normalized = (modelName || 'groq').toLowerCase()
+
+  if (normalized.includes('gemini')) {
+    return {
+      provider: 'gemini',
+      endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+      modelId: 'gemini-2.0-flash',
+      displayName: 'Gemini 2.0 Flash (Google AI Studio)',
+      apiKeyUrl: 'https://aistudio.google.com/app/apikey',
+    }
+  }
 
   if (normalized.includes('qwen')) {
     return {
@@ -173,17 +189,22 @@ export function resolveModelRoute(modelName: string): ModelRoute {
 }
 
 export async function testApiKeyConnection(
-  provider: 'groq' | 'openrouter',
+  provider: 'groq' | 'openrouter' | 'gemini',
   apiKey: string,
 ): Promise<{ success: boolean; error?: string; message?: string }> {
   try {
-    const isGroq = provider === 'groq'
-    const endpoint = isGroq
-      ? 'https://api.groq.com/openai/v1/chat/completions'
-      : 'https://openrouter.ai/api/v1/chat/completions'
-    const model = isGroq
-      ? 'openai/gpt-oss-120b'
-      : 'meta-llama/llama-3.3-70b-instruct:free'
+    const endpoint =
+      provider === 'groq'
+        ? 'https://api.groq.com/openai/v1/chat/completions'
+        : provider === 'gemini'
+          ? 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
+          : 'https://openrouter.ai/api/v1/chat/completions'
+    const model =
+      provider === 'groq'
+        ? 'openai/gpt-oss-120b'
+        : provider === 'gemini'
+          ? 'gemini-2.0-flash'
+          : 'meta-llama/llama-3.3-70b-instruct:free'
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -427,8 +448,18 @@ export async function executeRealAiStream({
   // 1. If API key is missing, provide a clear, actionable guide
   if (!apiKey) {
     const envVarName =
-      route.provider === 'groq' ? 'GROQ_API_KEY' : 'OPENROUTER_API_KEY'
-    const missingMessage = `⚠️ **API Key Required for ${route.displayName}**\n\nTo start chatting and executing live coding tasks with RivoCode:\n\n1. **Get your free API key** (100% free tier, instant setup):\n   • **${route.provider === 'groq' ? 'Groq Console' : 'OpenRouter'}**: [${route.apiKeyUrl}](${route.apiKeyUrl})\n\n2. **Set it in your terminal environment**:\n   \`\`\`bash\n   export ${envVarName}="your_api_key_here"\n   \`\`\`\n\n3. **Or save it to RivoCode configuration**:\n   \`\`\`bash\n   mkdir -p ~/.rivocode && echo '{"${route.provider}": "your_api_key_here"}' > ~/.rivocode/keys.json\n   \`\`\`\n\nOnce set, run \`rivo\` or send your message again!`
+      route.provider === 'groq'
+        ? 'GROQ_API_KEY'
+        : route.provider === 'gemini'
+          ? 'GEMINI_API_KEY'
+          : 'OPENROUTER_API_KEY'
+    const providerName =
+      route.provider === 'groq'
+        ? 'Groq Console'
+        : route.provider === 'gemini'
+          ? 'Google AI Studio'
+          : 'OpenRouter'
+    const missingMessage = `⚠️ **API Key Required for ${route.displayName}**\n\nTo start chatting and executing live coding tasks with RivoCode:\n\n1. **Get your free API key** (100% free tier, instant setup):\n   • **${providerName}**: [${route.apiKeyUrl}](${route.apiKeyUrl})\n\n2. **Set it in your terminal environment**:\n   \`\`\`bash\n   export ${envVarName}="your_api_key_here"\n   \`\`\`\n\n3. **Or save it to RivoCode configuration**:\n   \`\`\`bash\n   mkdir -p ~/.rivocode && echo '{"${route.provider}": "your_api_key_here"}' > ~/.rivocode/keys.json\n   \`\`\`\n\nOnce set, run \`rivo\` or send your message again!`
 
     updater.addBlock({
       type: 'text',
