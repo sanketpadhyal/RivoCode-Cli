@@ -157,6 +157,56 @@ export interface ModelRoute {
 export function resolveModelRoute(modelName: string): ModelRoute {
   const normalized = (modelName || 'groq').toLowerCase()
 
+  if (normalized.includes('claude')) {
+    return {
+      provider: 'openrouter',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      modelId: 'anthropic/claude-3.7-sonnet',
+      displayName: 'Claude 3.7 Sonnet (OpenRouter)',
+      apiKeyUrl: 'https://openrouter.ai/keys',
+    }
+  }
+
+  if (normalized.includes('deepseek-v3') || (normalized.includes('openrouter') && normalized.includes('deepseek'))) {
+    return {
+      provider: 'openrouter',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      modelId: 'deepseek/deepseek-chat',
+      displayName: 'DeepSeek V3 (OpenRouter)',
+      apiKeyUrl: 'https://openrouter.ai/keys',
+    }
+  }
+
+  if (normalized.includes('r1') || normalized.includes('reasoning')) {
+    return {
+      provider: 'openrouter',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      modelId: 'deepseek/deepseek-r1',
+      displayName: 'DeepSeek R1 (OpenRouter)',
+      apiKeyUrl: 'https://openrouter.ai/keys',
+    }
+  }
+
+  if (normalized.includes('coder') || (normalized.includes('openrouter') && normalized.includes('qwen'))) {
+    return {
+      provider: 'openrouter',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      modelId: 'qwen/qwen-2.5-coder-32b-instruct',
+      displayName: 'Qwen 2.5 Coder 32B (OpenRouter)',
+      apiKeyUrl: 'https://openrouter.ai/keys',
+    }
+  }
+
+  if (normalized.includes('openrouter')) {
+    return {
+      provider: 'openrouter',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      modelId: 'meta-llama/llama-3.3-70b-instruct:free',
+      displayName: 'OpenRouter Free',
+      apiKeyUrl: 'https://openrouter.ai/keys',
+    }
+  }
+
   if (normalized.includes('gemini')) {
     return {
       provider: 'gemini',
@@ -177,23 +227,13 @@ export function resolveModelRoute(modelName: string): ModelRoute {
     }
   }
 
-  if (normalized.includes('qwen') || normalized.includes('coder') || normalized.includes('27b')) {
+  if (normalized.includes('qwen') || normalized.includes('27b')) {
     return {
       provider: 'groq',
       endpoint: 'https://api.groq.com/openai/v1/chat/completions',
       modelId: 'qwen/qwen3.8-27b',
       displayName: 'Qwen 3.8 27B (Groq)',
       apiKeyUrl: 'https://console.groq.com/keys',
-    }
-  }
-
-  if (normalized.includes('openrouter')) {
-    return {
-      provider: 'openrouter',
-      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-      modelId: 'meta-llama/llama-3.3-70b-instruct:free',
-      displayName: 'OpenRouter Free',
-      apiKeyUrl: 'https://openrouter.ai/keys',
     }
   }
 
