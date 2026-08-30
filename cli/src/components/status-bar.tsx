@@ -82,6 +82,20 @@ export const StatusBar = ({
     }
   }, [timerStartTime, lastUserPrompt])
 
+  const prevTokensRef = React.useRef(liveTokens)
+  const [tokenTrend, setTokenTrend] = React.useState<'up' | 'down'>('up')
+
+  React.useEffect(() => {
+    if (liveTokens > prevTokensRef.current) {
+      setTokenTrend('up')
+    } else if (liveTokens < prevTokensRef.current && liveTokens > 0) {
+      setTokenTrend('down')
+    }
+    prevTokensRef.current = liveTokens
+  }, [liveTokens])
+
+  const trendArrow = tokenTrend === 'up' ? '↑' : '↓'
+
   const shouldShowTimer =
     statusIndicatorState?.kind === 'waiting' ||
     statusIndicatorState?.kind === 'streaming' ||
@@ -168,7 +182,7 @@ export const StatusBar = ({
             />
             <span fg="#f97316">
               {liveTokens > 0
-                ? ` [${elapsedSeconds}s · ${liveTokens.toLocaleString()} tokens]`
+                ? ` [${elapsedSeconds}s · ${trendArrow} ${liveTokens.toLocaleString()} tokens]`
                 : ` [${elapsedSeconds}s]`}
             </span>
           </>
@@ -184,7 +198,7 @@ export const StatusBar = ({
               primaryColor="#f97316"
             />
             <span fg="#f97316">
-              {` [${elapsedSeconds}s · ${liveTokens.toLocaleString()} tokens]`}
+              {` [${elapsedSeconds}s · ${trendArrow} ${liveTokens.toLocaleString()} tokens]`}
             </span>
           </>
         )
