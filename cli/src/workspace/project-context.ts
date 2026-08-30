@@ -231,11 +231,71 @@ module.exports = { htmlToMarkdown, fetchUrl };
     } catch {}
   }
 
+  // 6. Texts File (.rivocode/texts.json) for chat persistence
+  const textsFile = path.join(rivoDir, 'texts.json')
+  if (!fs.existsSync(textsFile)) {
+    try {
+      fs.writeFileSync(textsFile, JSON.stringify([], null, 2), 'utf8')
+    } catch {}
+  }
+
   return {
     isReturningWork,
     context,
     settings,
   }
+}
+
+export function saveChatTexts(projectRoot: string, messages: any[]): void {
+  try {
+    const rivoDir = getProjectRivocodeDir(projectRoot)
+    if (!fs.existsSync(rivoDir)) {
+      fs.mkdirSync(rivoDir, { recursive: true })
+    }
+    const textsFile = path.join(rivoDir, 'texts.json')
+    fs.writeFileSync(textsFile, JSON.stringify(messages, null, 2), 'utf8')
+  } catch (_e) {}
+}
+
+export function loadChatTexts(projectRoot: string): any[] | null {
+  try {
+    const rivoDir = getProjectRivocodeDir(projectRoot)
+    const textsFile = path.join(rivoDir, 'texts.json')
+    if (fs.existsSync(textsFile)) {
+      const raw = fs.readFileSync(textsFile, 'utf8')
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed
+      }
+    }
+  } catch (_e) {}
+  return null
+}
+
+export function clearChatTexts(projectRoot: string): void {
+  try {
+    const rivoDir = getProjectRivocodeDir(projectRoot)
+    const textsFile = path.join(rivoDir, 'texts.json')
+    fs.writeFileSync(textsFile, JSON.stringify([], null, 2), 'utf8')
+  } catch (_e) {}
+}
+
+export function updateProjectSettings(
+  projectRoot: string,
+  updates: Partial<ProjectSettingsData>,
+): void {
+  try {
+    const rivoDir = getProjectRivocodeDir(projectRoot)
+    const settingsFile = path.join(rivoDir, 'settings.json')
+    let current: ProjectSettingsData = {}
+    if (fs.existsSync(settingsFile)) {
+      try {
+        current = JSON.parse(fs.readFileSync(settingsFile, 'utf8'))
+      } catch {}
+    }
+    const updated = { ...current, ...updates }
+    fs.writeFileSync(settingsFile, JSON.stringify(updated, null, 2), 'utf8')
+  } catch (_e) {}
 }
 
 export function updateProjectContext(

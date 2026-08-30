@@ -6,6 +6,7 @@ import path from 'path'
 import { AskUserBridge } from '@rivocode/common/utils/ask-user-bridge'
 import { getProjectRoot } from '../project-files'
 import { useChatStore } from '../state/chat-store'
+import { updateProjectSettings } from '../workspace/project-context'
 import { performNativeOcr } from './ocr-helper'
 import { fetchWebContent } from './web-helper'
 
@@ -540,6 +541,9 @@ export async function executeLocalTool(
           if (answerStr.includes('always allow') || answerStr.includes('always')) {
             sessionAllowedFiles.add(relPath)
             sessionAllowedFiles.add(filePath)
+            updateProjectSettings(projectRoot, {
+              allowedFiles: Array.from(sessionAllowedFiles),
+            })
           } else if (answerStr.includes('no') || answerStr.includes('3. no')) {
             return {
               success: false,
@@ -600,6 +604,9 @@ export async function executeLocalTool(
             answerStr.startsWith('3')
           ) {
             sessionAllowedCommands.add(cmdPrefix)
+            updateProjectSettings(projectRoot, {
+              allowedCommands: Array.from(sessionAllowedCommands),
+            })
           }
 
           if (

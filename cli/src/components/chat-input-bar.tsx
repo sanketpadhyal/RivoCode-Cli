@@ -21,6 +21,7 @@ import { tryGetProjectRoot } from '../project-files'
 import { useChatStore } from '../state/chat-store'
 import { shouldInterceptChatInputKey } from '../utils/chat-input-key-intercept'
 import { getInputModeConfig } from '../utils/input-modes'
+import { getTokenStats } from '../utils/context-compactor'
 import { BORDER_CHARS } from '../utils/ui-constants'
 
 import type { useTheme } from '../hooks/use-theme'
@@ -118,6 +119,9 @@ export const ChatInputBar = ({
   const inputMode = useChatStore((state) => state.inputMode)
   const setInputMode = useChatStore((state) => state.setInputMode)
   const autoAcceptEdits = useChatStore((state) => state.autoAcceptEdits)
+  const messages = useChatStore((state) => state.messages)
+  const selectedModel = useChatStore((state) => state.selectedModel)
+  const tokenStats = getTokenStats(messages, selectedModel)
 
   const modeConfig = getInputModeConfig(inputMode)
   const askUserState = useChatStore((state) => state.askUserState)
@@ -406,24 +410,33 @@ export const ChatInputBar = ({
             cursorPosition={cursorPosition}
           />
         </box>
-        {autoAcceptEdits && (
-          <box
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-              paddingLeft: 1,
-              paddingRight: 1,
-            }}
-          >
+        <box
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            paddingLeft: 1,
+            paddingRight: 1,
+          }}
+        >
+          <box style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {autoAcceptEdits && (
+              <text style={{ wrapMode: 'none' }}>
+                <span fg="#f43f5e">
+                  {'⚡ auto accept edits is on'}
+                </span>
+              </text>
+            )}
+          </box>
+          <box style={{ flexDirection: 'row', alignItems: 'center' }}>
             <text style={{ wrapMode: 'none' }}>
-              <span fg="#f43f5e">
-                {'⚡ auto accept edits is on'}
+              <span fg={theme.muted}>
+                {`◷ ${tokenStats.formattedTokens} / ${tokenStats.formattedMax} (${tokenStats.percent}%)`}
               </span>
             </text>
           </box>
-        )}
+        </box>
         <InputModeBanner />
       </>
     )
@@ -529,25 +542,34 @@ export const ChatInputBar = ({
           </box>
         </box>
       </ClickableTitleBox>
-      {autoAcceptEdits && (
-        <box
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-            paddingLeft: 1,
-            paddingRight: 1,
-            marginTop: 0,
-          }}
-        >
+      <box
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+          paddingLeft: 1,
+          paddingRight: 1,
+          marginTop: 0,
+        }}
+      >
+        <box style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {autoAcceptEdits ? (
+            <text style={{ wrapMode: 'none' }}>
+              <span fg="#f43f5e">
+                {'⚡ auto accept edits is on'}
+              </span>
+            </text>
+          ) : null}
+        </box>
+        <box style={{ flexDirection: 'row', alignItems: 'center' }}>
           <text style={{ wrapMode: 'none' }}>
-            <span fg="#f43f5e">
-              {'⚡ auto accept edits is on'}
+            <span fg={theme.muted}>
+              {`◷ ${tokenStats.formattedTokens} / ${tokenStats.formattedMax} (${tokenStats.percent}%)`}
             </span>
           </text>
         </box>
-      )}
+      </box>
       <InputModeBanner />
     </>
   )

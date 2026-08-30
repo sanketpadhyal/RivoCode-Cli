@@ -90,6 +90,8 @@ import {
 import { createPasteHandler } from './utils/strings'
 import { setTerminalTitle } from './utils/terminal-title'
 import { computeInputLayoutMetrics } from './utils/text-layout'
+import { loadChatTexts, saveChatTexts, clearChatTexts } from './workspace/project-context'
+import { compactChatHistory } from './utils/context-compactor'
 
 import type { CommandResult } from './commands/command-registry'
 import type { MultilineInputHandle } from './components/multiline-input'
@@ -200,6 +202,32 @@ export const Chat = ({
       setAgentMode(initialMode)
     }
   }, [initialMode, setAgentMode])
+
+  // 1. Recover existing chat session from .rivocode/texts.json on startup
+  useEffect(() => {
+    const cwd = getProjectRoot() ?? process.cwd()
+    const recovered = loadChatTexts(cwd)
+    if (recovered && recovered.length > 0 && messages.length === 0) {
+      setMessages(recovered)
+    }
+  }, [])
+
+  // 2. Auto-save chats to .rivocode/texts.json and perform context compacting when needed
+  useEffect(() => {
+    if (messages.length > 0) {
+      const cwd = getProjectRoot() ?? process.cwd()
+      saveChatTexts(cwd, messages)
+
+      // Automatically compact context if message history exceeds 18 turns
+      if (messages.length > 18) {
+        const compacted = compactChatHistory(messages, 18)
+        if (compacted.length !== messages.length) {
+          setMessages(compacted)
+          saveChatTexts(cwd, compacted)
+        }
+      }
+    }
+  }, [messages, setMessages])
 
   const {
     messageTree,

@@ -18,6 +18,8 @@ import { LOGIN_WEBSITE_URL, WEBSITE_URL } from '../login/constants'
 import { startNewChat } from '../project-files'
 import { useChatStore } from '../state/chat-store'
 import { stopActiveRun } from '../utils/active-run'
+import { clearChatTexts } from '../workspace/project-context'
+import { getProjectRoot } from '../project-files'
 import { useFeedbackStore } from '../state/feedback-store'
 import { useLoginStore } from '../state/login-store'
 import { AGENT_MODES, END_SESSION_MESSAGE, IS_FREEBUFF } from '../utils/constants'
@@ -280,6 +282,7 @@ const ALL_COMMANDS: CommandDefinition[] = [
       params.setMessages(() => [])
       params.clearMessages()
       startNewChat()
+      clearChatTexts(getProjectRoot() ?? process.cwd())
       params.saveToHistory(params.inputValue.trim())
       clearInput(params)
       if (trimmedArgs) {
