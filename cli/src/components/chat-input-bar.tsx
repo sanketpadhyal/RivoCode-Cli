@@ -382,17 +382,27 @@ export const ChatInputBar = ({
     )
   }
 
+  const modeLabel = useMemo(() => {
+    switch (agentMode) {
+      case 'LITE':
+        return 'lite'
+      case 'MAX':
+        return 'max'
+      case 'PLAN':
+        return 'plan'
+      case 'DEFAULT':
+      default:
+        return 'high'
+    }
+  }, [agentMode])
+
   return (
     <>
-      <ClickableTitleBox
-        title={inputBoxTitle}
-        titleAlignment="center"
-        onTitleClick={onQueuePreviewClick}
+      <box
         style={{
           width: '100%',
           borderStyle: 'single',
-          borderColor,
-          customBorderChars: BORDER_CHARS,
+          borderColor: '#2d3748',
           paddingLeft: 1,
           paddingRight: 1,
           paddingTop: 0,
@@ -400,6 +410,7 @@ export const ChatInputBar = ({
           flexDirection: 'column',
           gap: hasAnyPreview ? 1 : 0,
         }}
+        border={['top', 'bottom']}
       >
         {hasSlashSuggestions ? (
           <SuggestionMenu
@@ -422,67 +433,58 @@ export const ChatInputBar = ({
         ) : null}
         <box
           style={{
-            flexDirection: 'column',
-            justifyContent: shouldCenterInputVertically
-              ? 'center'
-              : 'flex-start',
-            minHeight: shouldCenterInputVertically ? 3 : undefined,
-            gap: 0,
+            flexDirection: 'row',
+            alignItems: shouldCenterInputVertically ? 'center' : 'flex-start',
+            width: '100%',
+            paddingTop: 0,
+            paddingBottom: 0,
           }}
         >
-          <box
-            style={{
-              flexDirection: 'row',
-              alignItems: shouldCenterInputVertically ? 'center' : 'flex-start',
-              width: '100%',
-            }}
-          >
-            {modeConfig.label && (
-              <box style={{ flexShrink: 0, paddingRight: 1 }}>
-                <text>
-                  <span
-                    bg={theme.info}
-                    fg={theme.background}
-                  >{` ${modeConfig.label} `}</span>
-                </text>
-              </box>
-            )}
-            {modeConfig.icon && (
-              <box
-                style={{
-                  flexShrink: 0,
-                  paddingRight: 1,
-                }}
-              >
-                <text style={{ fg: theme[modeConfig.color] }}>
-                  {modeConfig.icon}
-                </text>
-              </box>
-            )}
-            {!modeConfig.label && !modeConfig.icon && (
-              <box style={{ flexShrink: 0, paddingRight: 1 }}>
-                <text style={{ fg: theme.primary, attributes: TextAttributes.BOLD }}>
-                  ❯
-                </text>
-              </box>
-            )}
-            <box style={{ flexGrow: 1, minWidth: 0 }}>
-              <MultilineInput
-                value={inputValue}
-                onChange={handleInputChange}
-                onSubmit={handleSubmit}
-                onPaste={onPaste}
-                onKeyIntercept={handleKeyIntercept}
-                placeholder={effectivePlaceholder}
-                focused={inputFocused && !feedbackMode}
-                maxHeight={Math.floor(terminalHeight / 2)}
-                ref={inputRef}
-                cursorPosition={cursorPosition}
-              />
+          {modeConfig.label && (
+            <box style={{ flexShrink: 0, paddingRight: 1 }}>
+              <text>
+                <span
+                  bg={theme.info}
+                  fg={theme.background}
+                >{` ${modeConfig.label} `}</span>
+              </text>
             </box>
+          )}
+          {modeConfig.icon && (
+            <box
+              style={{
+                flexShrink: 0,
+                paddingRight: 1,
+              }}
+            >
+              <text style={{ fg: theme[modeConfig.color] }}>
+                {modeConfig.icon}
+              </text>
+            </box>
+          )}
+          {!modeConfig.label && !modeConfig.icon && (
+            <box style={{ flexShrink: 0, paddingRight: 1 }}>
+              <text style={{ fg: theme.secondary, attributes: TextAttributes.BOLD }}>
+                {'>'}
+              </text>
+            </box>
+          )}
+          <box style={{ flexGrow: 1, minWidth: 0 }}>
+            <MultilineInput
+              value={inputValue}
+              onChange={handleInputChange}
+              onSubmit={handleSubmit}
+              onPaste={onPaste}
+              onKeyIntercept={handleKeyIntercept}
+              placeholder=""
+              focused={inputFocused && !feedbackMode}
+              maxHeight={Math.floor(terminalHeight / 2)}
+              ref={inputRef}
+              cursorPosition={cursorPosition}
+            />
           </box>
         </box>
-      </ClickableTitleBox>
+      </box>
       <box
         style={{
           flexDirection: 'row',
@@ -496,18 +498,11 @@ export const ChatInputBar = ({
         }}
       >
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
-          <span fg={theme.foreground}>enter</span>
-          <span> send · </span>
-          <span fg={theme.foreground}>shift+enter</span>
-          <span> newline · </span>
-          <span fg={theme.foreground}>/</span>
-          <span> commands</span>
+          <span>? for shortcuts</span>
         </text>
 
-        <text style={{ wrapMode: 'none' }}>
-          <span fg={theme.secondary}>
-            {`[ ${selectedModel ?? 'deepseek'} ]`}
-          </span>
+        <text style={{ wrapMode: 'none', fg: theme.muted }}>
+          <span>{`${selectedModel ?? 'deepseek'} · ${modeLabel}`}</span>
         </text>
       </box>
       <InputModeBanner />

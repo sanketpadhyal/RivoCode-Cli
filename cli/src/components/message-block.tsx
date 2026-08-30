@@ -207,11 +207,8 @@ export const MessageBlock = memo(({
         >
           <box style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 1 }}>
             <text style={{ wrapMode: 'none' }}>
-              <span fg={timestampColor} attributes={TextAttributes.DIM}>
-                {`[${timestamp}] `}
-              </span>
-              <span fg={theme.primary} attributes={TextAttributes.BOLD}>
-                ❯{' '}
+              <span fg={theme.secondary} attributes={TextAttributes.BOLD}>
+                {'> '}
               </span>
             </text>
 
@@ -324,20 +321,6 @@ export const MessageBlock = memo(({
 
       {isAi && (
         <box style={{ flexDirection: 'column', gap: 1, width: '100%', marginTop: 0 }}>
-          <box style={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-            <text style={{ wrapMode: 'none' }}>
-              <span fg={theme.primary} attributes={TextAttributes.BOLD}>
-                ✦{' '}
-              </span>
-              <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
-                RivoCode
-              </span>
-              <span fg={theme.muted}>
-                {' '}({selectedModel ?? 'deepseek'})
-              </span>
-            </text>
-          </box>
-
           <box style={{ flexDirection: 'column', gap: 1, width: '100%', paddingLeft: 0 }}>
             {blocks ? (
               <box
