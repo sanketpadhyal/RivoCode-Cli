@@ -207,7 +207,7 @@ export const MessageBlock = memo(({
         >
           <box style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 1 }}>
             <text style={{ wrapMode: 'none' }}>
-              <span fg={theme.secondary} attributes={TextAttributes.BOLD}>
+              <span fg="#facc15" attributes={TextAttributes.BOLD}>
                 {'> '}
               </span>
             </text>
@@ -220,7 +220,7 @@ export const MessageBlock = memo(({
                   isLoading={isLoading}
                   isComplete={isComplete}
                   isUser={isUser}
-                  textColor={resolvedTextColor}
+                  textColor="#ffffff"
                   availableWidth={availableWidth}
                   markdownPalette={markdownPalette}
                   onToggleCollapsed={onToggleCollapsed}
@@ -237,7 +237,7 @@ export const MessageBlock = memo(({
                   isLoading={isLoading}
                   isComplete={isComplete}
                   isUser={isUser}
-                  textColor={resolvedTextColor}
+                  textColor="#ffffff"
                   codeBlockWidth={markdownOptions.codeBlockWidth}
                   palette={markdownOptions.palette}
                   showCopyButton={false}

@@ -354,8 +354,8 @@ export const ChatInputBar = ({
             </box>
           )}
           {!modeConfig.label && !modeConfig.icon && (
-            <box style={{ flexShrink: 0 }}>
-              <text style={{ fg: theme.primary }}>❯</text>
+            <box style={{ flexShrink: 0, paddingRight: 1 }}>
+              <text style={{ fg: '#facc15' }}>❯</text>
             </box>
           )}
           <MultilineInput
@@ -393,13 +393,14 @@ export const ChatInputBar = ({
           paddingBottom: 0,
           flexDirection: 'column',
           gap: hasAnyPreview ? 1 : 0,
+          backgroundColor: theme.surface,
         }}
       >
         {hasSlashSuggestions ? (
           <SuggestionMenu
             items={slashSuggestionItems}
             selectedIndex={slashSelectedIndex}
-            maxVisible={normalModeMaxVisible}
+            maxVisible={5}
             prefix="/"
             onItemClick={onSlashItemClick}
           />
@@ -408,7 +409,7 @@ export const ChatInputBar = ({
           <SuggestionMenu
             items={[...agentSuggestionItems, ...fileSuggestionItems]}
             selectedIndex={agentSelectedIndex}
-            maxVisible={normalModeMaxVisible}
+            maxVisible={5}
             prefix="@"
             onItemClick={onMentionItemClick}
             footer={mentionMenuFooter}
@@ -451,6 +452,11 @@ export const ChatInputBar = ({
                 <text style={{ fg: theme[modeConfig.color] }}>
                   {modeConfig.icon}
                 </text>
+              </box>
+            )}
+            {!modeConfig.label && !modeConfig.icon && (
+              <box style={{ flexShrink: 0, paddingRight: 1 }}>
+                <text style={{ fg: '#facc15' }}>❯</text>
               </box>
             )}
             <box style={{ flexGrow: 1, minWidth: 0 }}>

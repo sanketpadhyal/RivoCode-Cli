@@ -46,8 +46,8 @@ export const UserContentWithCopyButton = memo(
       return (
         <text
           key={`message-content-${messageId}`}
-          style={{ wrapMode: 'word', fg: textColor }}
-          attributes={isUser ? TextAttributes.ITALIC : undefined}
+          style={{ wrapMode: 'word', fg: isUser ? '#ffffff' : textColor }}
+          attributes={isUser ? TextAttributes.BOLD : undefined}
         >
           <ContentWithMarkdown
             content={normalizedContent}
