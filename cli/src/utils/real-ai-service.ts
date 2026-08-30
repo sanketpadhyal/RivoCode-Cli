@@ -816,25 +816,11 @@ AUTONOMOUS CAPABILITIES (YOU HAVE FULL LOCAL SYSTEM & INTERNET ACCESS):
 - ocr_image(path): Extract text from images, screenshots, or UI mockups using native Apple Vision OCR.
 - fetch_web_content(url): Fetch real-time web documentation, online articles, APIs, GitHub repositories, and packages.
 
-AUTONOMOUS WEB RESEARCH & 100% ACCURACY RULES:
-- NEVER guess or hallucinate API signatures, package methods, documentation, user profiles, or project links!
-- If the user mentions any URL, GitHub repository, portfolio, external API, documentation, or if you are not 100% certain of any answer, PROACTIVELY and AUTONOMOUSLY fetch the web content or search the internet immediately on your own without waiting for the user to tell you to web search!
-- Always verify external details and project facts via fetch_web_content or shell search commands before answering.
-
-HOW TO EXECUTE ACTIONS:
-When you need to perform an action, you can either call the tool function or output an action tag:
-<action name="fetch_web_content">{"url": "https://github.com/sanketpadhyal"}</action>
-<action name="ocr_image">{"path": "screenshot.png"}</action>
-<action name="write_file">{"path": "calculator.py", "content": "..."}</action>
-<action name="run_terminal_command">{"command": "python3 calculator.py"}</action>
-<action name="read_files">{"paths": ["src/app.ts"]}</action>
-<action name="list_directory">{"path": "."}</action>
-
-STRICT BEHAVIOR RULES:
+AUTONOMOUS TASK COMPLETION RULES:
+- NEVER STOP after just reading files or searching! You must IMMEDIATELY proceed to write the necessary code using write_file, execute tests/commands, and finish the entire user request.
+- Do NOT say "I have read the files, should I proceed?" or "Here is what I plan to do" without actually writing the code! Take immediate action and write the files.
 - NEVER tell the user to manually create files, copy-paste code, or run bash commands when you can do it yourself!
-- When asked to build, create, or modify a file or feature, ALWAYS create the file directly in the workspace.
-- When asked to run, test, or check code, ALWAYS execute the command directly and inspect the results.
-- Take immediate autonomous action. Do not ask for confirmation for basic file creation, web research, or inspection.`
+- Complete the entire end-to-end task in one go so the user doesn't need to ask you to continue.`
 
   const existingMessages = useChatStore.getState().messages
   const recentMessages = existingMessages.slice(-8)
@@ -893,6 +879,8 @@ STRICT BEHAVIOR RULES:
     })
 
     let maxTokensSetting = route.provider === 'openrouter' ? 4096 : undefined
+    let hasExecutedInspection = false
+    let hasExecutedModification = false
 
     while (turns < maxTurns && !signal.aborted) {
       turns++
@@ -1141,6 +1129,7 @@ STRICT BEHAVIOR RULES:
       if (pendingToolCalls.length === 0) {
         const autoCreated = autoExtractAndWriteCodeBlocks(projectRoot, turnContent)
         if (autoCreated.length > 0) {
+          hasExecutedModification = true
           const autoNotice = `\n\n✦ **Auto-created file(s) in workspace**: ${autoCreated.map((f) => `\`${f}\``).join(', ')}`
           accumulatedContent += autoNotice
           updater.updateAiMessageBlocks((blocks) =>
@@ -1151,6 +1140,30 @@ STRICT BEHAVIOR RULES:
             ),
           )
         }
+
+        // If model only inspected and didn't write code or take action yet, auto-drive continuation!
+        if (
+          hasExecutedInspection &&
+          !hasExecutedModification &&
+          turns < 6 &&
+          (turnContent.length < 350 ||
+            turnContent.toLowerCase().includes('let me') ||
+            turnContent.toLowerCase().includes('will now') ||
+            turnContent.toLowerCase().includes('next step'))
+        ) {
+          hasExecutedInspection = false
+          chatHistory.push({
+            role: 'assistant',
+            content: turnContent || 'I have inspected the files.',
+          })
+          chatHistory.push({
+            role: 'user',
+            content:
+              'Great! Now proceed immediately to write the code changes using write_file or execute the necessary terminal commands to complete the entire implementation.',
+          })
+          continue
+        }
+
         break
       }
 
@@ -1160,6 +1173,17 @@ STRICT BEHAVIOR RULES:
       for (const tc of pendingToolCalls) {
         if (!tc || !tc.name) continue
         try {
+          if (
+            tc.name === 'read_files' ||
+            tc.name === 'list_directory' ||
+            tc.name === 'ocr_image' ||
+            tc.name === 'fetch_web_content'
+          ) {
+            hasExecutedInspection = true
+          } else if (tc.name === 'write_file' || tc.name === 'run_terminal_command') {
+            hasExecutedModification = true
+          }
+
           const parsedArgs = JSON.parse(tc.args || '{}')
           const filePath = parsedArgs.path ? (path.isAbsolute(parsedArgs.path) ? parsedArgs.path : path.join(projectRoot, parsedArgs.path)) : ''
           const oldContent = (tc.name === 'write_file' && filePath && fs.existsSync(filePath)) ? fs.readFileSync(filePath, 'utf-8') : null
