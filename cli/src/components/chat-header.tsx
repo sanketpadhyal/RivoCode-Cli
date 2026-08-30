@@ -74,7 +74,7 @@ export const ChatHeader = memo(function ChatHeader({
       <box style={{ flexDirection: 'column', gap: 0 }}>
         <text style={{ wrapMode: 'none' }}>
           <span fg={theme.primary} attributes={TextAttributes.BOLD}>
-            RivoCode CLI 1.0.0
+            RivoCode CLI
           </span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
