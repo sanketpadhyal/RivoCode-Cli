@@ -63,7 +63,7 @@ export const ModelPickerScreen = ({
 }: ModelPickerScreenProps) => {
   const theme = useTheme()
   const { contentMaxWidth, terminalHeight } = useTerminalDimensions()
-  const isCompactHeight = terminalHeight < 22
+  const isCompactHeight = terminalHeight < 26
   const [filterText, setFilterText] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [scrollOffset, setScrollOffset] = useState(0)
@@ -224,8 +224,8 @@ export const ModelPickerScreen = ({
         width: '100%',
         paddingLeft: 2,
         paddingRight: 2,
-        paddingTop: 1,
-        paddingBottom: 1,
+        paddingTop: 0,
+        paddingBottom: 0,
       }}
     >
       <box style={{ flexDirection: 'column' }}>
