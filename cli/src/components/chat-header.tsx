@@ -84,7 +84,7 @@ export const ChatHeader = memo(function ChatHeader({
           <span>{selectedModel ? `${selectedModel} (${modeLabel})` : 'Gemini 3.6 Flash (High)'}</span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.secondary }}>
-          <span>{projectRoot.startsWith(os.homedir()) ? '~' + projectRoot.slice(os.homedir().length) : projectRoot}</span>
+          <span>{(projectRoot || process.cwd()).startsWith(os.homedir()) ? '~' + (projectRoot || process.cwd()).slice(os.homedir().length) : (projectRoot || process.cwd())}</span>
         </text>
       </box>
     </box>
