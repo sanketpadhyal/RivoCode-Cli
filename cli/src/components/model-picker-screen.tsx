@@ -48,24 +48,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     iconColor: '#38BDF8',
     description: 'DeepSeek R1 reasoning on Groq LPUs · 100% free API tier',
   },
-  {
-    id: 'openrouter-free',
-    name: 'openrouter-free',
-    badge: '(Auto Free Router)',
-    icon: '⎇',
-    iconPadding: '  ',
-    iconColor: '#8B5CF6',
-    description: 'Auto-routes across top free open-weights coding LLMs',
-  },
-  {
-    id: 'gemini-flash',
-    name: 'gemini-flash',
-    badge: '(Free Tier · 1M Context)',
-    icon: '✦',
-    iconPadding: '  ',
-    iconColor: '#4E86E4',
-    description: 'Gemini 2.0 Flash (Free API key at aistudio.google.com)',
-  },
 ]
 
 interface ModelPickerScreenProps {
