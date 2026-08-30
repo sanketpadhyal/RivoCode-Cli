@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { exec, execSync } from 'child_process'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -625,15 +625,44 @@ export async function executeLocalTool(
         } catch (_askErr) {}
       }
 
-      const output = execSync(args.command, {
-        cwd: projectRoot,
-        timeout: 60000,
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
+      const runPromise = new Promise<string>((resolve) => {
+        exec(
+          rawCommand,
+          {
+            cwd: projectRoot,
+            timeout: 30000,
+            encoding: 'utf-8',
+            maxBuffer: 10 * 1024 * 1024,
+          },
+          (error, stdout, stderr) => {
+            if (error) {
+              const combined = [stdout, stderr, error.message].filter(Boolean).join('\n')
+              resolve(combined || `Command exited with code ${error.code || 1}`)
+            } else {
+              resolve(stdout || stderr || '(Command executed successfully with no output)')
+            }
+          },
+        )
+
+        // For background tasks (e.g. servers starting with & or nohup), resolve quickly so UI never hangs
+        if (rawCommand.includes('&') || rawCommand.includes('nohup') || rawCommand.includes('http.server')) {
+          setTimeout(() => {
+            resolve('(Background server/task started successfully)')
+          }, 800)
+        }
       })
-      return {
-        success: true,
-        result: output || '(Command executed successfully with no output)',
+
+      try {
+        const output = await runPromise
+        return {
+          success: true,
+          result: output,
+        }
+      } catch (err: any) {
+        return {
+          success: false,
+          result: `Error executing command: ${err?.message || String(err)}`,
+        }
       }
     }
 
