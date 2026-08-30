@@ -129,6 +129,21 @@ export const ChatInputBar = ({
   const { submitAnswers, skip } = useAskUserBridge()
   const [askUserTitle] = React.useState(' Some questions for you ')
 
+  const selectedModel = useChatStore((state) => state.selectedModel)
+  const modeLabel = React.useMemo(() => {
+    switch (agentMode) {
+      case 'LITE':
+        return 'lite'
+      case 'MAX':
+        return 'max'
+      case 'PLAN':
+        return 'plan'
+      case 'DEFAULT':
+      default:
+        return 'high'
+    }
+  }, [agentMode])
+
   const handleKeyIntercept = useEvent(
     (key: {
       name?: string
@@ -252,7 +267,6 @@ export const ChatInputBar = ({
     onInterruptStream()
   }
 
-  const selectedModel = useChatStore((state) => state.selectedModel)
   const effectivePlaceholder =
     inputMode === 'default' ? inputPlaceholder : modeConfig.placeholder
   const borderColor =
@@ -381,20 +395,6 @@ export const ChatInputBar = ({
       </>
     )
   }
-
-  const modeLabel = useMemo(() => {
-    switch (agentMode) {
-      case 'LITE':
-        return 'lite'
-      case 'MAX':
-        return 'max'
-      case 'PLAN':
-        return 'plan'
-      case 'DEFAULT':
-      default:
-        return 'high'
-    }
-  }, [agentMode])
 
   return (
     <>
