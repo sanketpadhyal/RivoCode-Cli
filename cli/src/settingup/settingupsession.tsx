@@ -23,15 +23,14 @@ function hasExistingWorkspace(): boolean {
 
 interface SettingUpSessionProps {
   onComplete: () => void
+  isReturning?: boolean
 }
 
-export const SettingUpSession = ({ onComplete }: SettingUpSessionProps) => {
+export const SettingUpSession = ({ onComplete, isReturning = false }: SettingUpSessionProps) => {
   const theme = useTheme()
   const { contentMaxWidth } = useTerminalDimensions()
   const [frameIndex, setFrameIndex] = useState(0)
   const [setupStep, setSetupStep] = useState(0)
-
-  const isReturning = useMemo(() => hasExistingWorkspace(), [])
 
   const { component: logoComponent } = useLogo({
     availableWidth: contentMaxWidth,

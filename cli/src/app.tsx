@@ -1,4 +1,6 @@
 import { isRetryableStatusCode, getErrorStatusCode } from '@rivocode/sdk'
+import fs from 'fs'
+import path from 'path'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 
@@ -208,6 +210,10 @@ export const App = ({
     handleLoginSuccess(DEFAULT_BYPASS_USER)
   }, [handleLoginSuccess])
 
+  const hadExistingWorkspace = useMemo(
+    () => fs.existsSync(path.join(projectRoot, '.rivocode', 'context.json')),
+    [projectRoot],
+  )
   const workspaceInit = useMemo(
     () => initProjectWorkspace(projectRoot),
     [projectRoot],
@@ -221,6 +227,7 @@ export const App = ({
   if (!isSettingUpComplete) {
     return (
       <SettingUpSession
+        isReturning={hadExistingWorkspace}
         onComplete={() => {
           setIsSettingUpComplete(true)
         }}
