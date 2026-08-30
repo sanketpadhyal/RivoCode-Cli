@@ -1,4 +1,5 @@
 import { useKeyboard } from '@opentui/react'
+import { TextAttributes } from '@opentui/core'
 import React, { useCallback, useState } from 'react'
 
 import { useTheme } from '../hooks/use-theme'
@@ -11,41 +12,6 @@ interface WorkspaceTrustScreenProps {
   workspacePath: string
   onTrust: () => void
 }
-
-const FolderArt = () => (
-  <box style={{ flexDirection: 'column', marginBottom: 1 }}>
-    <text style={{ wrapMode: 'none' }}>
-      <span fg="#EAB308">  ▄▄▄▄▄▄▄▄▄▄▄▄▄</span>
-    </text>
-    <text style={{ wrapMode: 'none' }}>
-      <span fg="#EAB308">  █            █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▄</span>
-    </text>
-    <text style={{ wrapMode: 'none' }}>
-      <span fg="#EAB308">  █</span>
-      <span fg="#FFFFFF">  ┌──────────────────────────────────────────┐</span>
-      <span fg="#EAB308">  █</span>
-    </text>
-    <text style={{ wrapMode: 'none' }}>
-      <span fg="#EAB308">  █</span>
-      <span fg="#FFFFFF">  │                                          │</span>
-      <span fg="#EAB308">  █</span>
-    </text>
-    <text style={{ wrapMode: 'none' }}>
-      <span fg="#FBBF24">  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▄</span>
-      <span fg="#FFFFFF">                  │</span>
-      <span fg="#EAB308">  █</span>
-    </text>
-    <text style={{ wrapMode: 'none' }}>
-      <span fg="#FBBF24">  █                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█</span>
-    </text>
-    <text style={{ wrapMode: 'none' }}>
-      <span fg="#FBBF24">  █                                                  █</span>
-    </text>
-    <text style={{ wrapMode: 'none' }}>
-      <span fg="#FBBF24">  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀</span>
-    </text>
-  </box>
-)
 
 export const WorkspaceTrustScreen = ({
   workspacePath,
@@ -114,59 +80,69 @@ export const WorkspaceTrustScreen = ({
         paddingBottom: 1,
       }}
     >
-      <box style={{ flexDirection: 'column', gap: 1 }}>
-        <FolderArt />
-        <box style={{ flexDirection: 'column' }}>
-          <text style={{ wrapMode: 'none' }}>
-            <span fg="#ffb703">
-              <b>Accessing workspace:</b>
-            </span>
-          </text>
-          <text style={{ wrapMode: 'none', fg: theme.foreground }}>
-            <b>{workspacePath}</b>
-          </text>
-        </box>
-
-        <box style={{ flexDirection: 'column', marginTop: 1 }}>
-          <text style={{ wrapMode: 'none', fg: theme.foreground }}>
-            <b>Do you trust the contents of this project?</b>
-          </text>
-          <text style={{ wrapMode: 'word' }}>
-            <span fg="#55ff55">RivoCode</span>
-            <span fg={theme.secondary}> requires permission to read, edit, and execute files here.</span>
-          </text>
-        </box>
-
-        <box style={{ flexDirection: 'column', marginTop: 1, gap: 0 }}>
-          {options.map((opt, idx) => {
-            const isSelected = idx === selectedIndex
-            return (
-              <text key={idx} style={{ wrapMode: 'none' }}>
-                {isSelected ? (
-                  <>
-                    <span fg="#55ff55">&gt; </span>
-                    <b>
-                      <span fg="#55ff55">{opt.label}</span>
-                    </b>
-                  </>
-                ) : (
-                  <>
-                    <span>  </span>
-                    <span fg={theme.muted}>{opt.label}</span>
-                  </>
-                )}
-              </text>
-            )
-          })}
-        </box>
-
-        <box style={{ marginTop: 1 }}>
-          <text style={{ wrapMode: 'none', fg: theme.muted }}>
-            <span>↑/↓ Navigate · </span>
-            <span fg={theme.foreground}>enter</span>
-            <span> Confirm</span>
-          </text>
-        </box>
+      <box style={{ flexDirection: 'column' }}>
+        <text style={{ wrapMode: 'none' }}>
+          <span fg="#EAB308">  ▄▄▄▄▄▄▄▄▄▄▄▄▄</span>
+          {'\n'}
+          <span fg="#EAB308">  █            █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▄</span>
+          {'\n'}
+          <span fg="#EAB308">  █</span>
+          <span fg="#FFFFFF">  ┌──────────────────────────────────────────┐</span>
+          <span fg="#EAB308">  █</span>
+          {'\n'}
+          <span fg="#EAB308">  █</span>
+          <span fg="#FFFFFF">  │                                          │</span>
+          <span fg="#EAB308">  █</span>
+          {'\n'}
+          <span fg="#FBBF24">  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▄</span>
+          <span fg="#FFFFFF">                  │</span>
+          <span fg="#EAB308">  █</span>
+          {'\n'}
+          <span fg="#FBBF24">  █                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█</span>
+          {'\n'}
+          <span fg="#FBBF24">  █                                                  █</span>
+          {'\n'}
+          <span fg="#FBBF24">  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀</span>
+          {'\n\n'}
+          <span fg="#ffb703" attributes={TextAttributes.BOLD}>
+            Accessing workspace:
+          </span>
+          {'\n'}
+          <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+            {workspacePath}
+          </span>
+          {'\n\n'}
+          <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+            Do you trust the contents of this project?
+          </span>
+          {'\n'}
+          <span fg="#55ff55">RivoCode</span>
+          <span fg={theme.secondary}>
+            {' '}requires permission to read, edit, and execute files here.
+          </span>
+          {'\n\n'}
+          {selectedIndex === 0 ? (
+            <>
+              <span fg="#55ff55" attributes={TextAttributes.BOLD}>
+                &gt; Yes, I trust this folder
+              </span>
+              {'\n'}
+              <span fg={theme.muted}>  No, exit</span>
+            </>
+          ) : (
+            <>
+              <span fg={theme.muted}>  Yes, I trust this folder</span>
+              {'\n'}
+              <span fg="#55ff55" attributes={TextAttributes.BOLD}>
+                &gt; No, exit
+              </span>
+            </>
+          )}
+          {'\n\n'}
+          <span fg={theme.muted}>↑/↓ Navigate · </span>
+          <span fg={theme.foreground}>enter</span>
+          <span fg={theme.muted}> Confirm</span>
+        </text>
       </box>
 
       <box
