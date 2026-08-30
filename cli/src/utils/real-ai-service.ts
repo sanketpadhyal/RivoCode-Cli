@@ -1171,15 +1171,7 @@ AUTONOMOUS TASK COMPLETION RULES:
         }
 
         // If model only inspected and didn't write code or take action yet, auto-drive continuation!
-        if (
-          hasExecutedInspection &&
-          !hasExecutedModification &&
-          turns < 6 &&
-          (turnContent.length < 350 ||
-            turnContent.toLowerCase().includes('let me') ||
-            turnContent.toLowerCase().includes('will now') ||
-            turnContent.toLowerCase().includes('next step'))
-        ) {
+        if (hasExecutedInspection && !hasExecutedModification && turns < 15) {
           hasExecutedInspection = false
           chatHistory.push({
             role: 'assistant',
@@ -1188,7 +1180,7 @@ AUTONOMOUS TASK COMPLETION RULES:
           chatHistory.push({
             role: 'user',
             content:
-              'Great! Now proceed immediately to write the code changes using write_file or execute the necessary terminal commands to complete the entire implementation.',
+              'Great! Now proceed immediately to write the complete code changes using write_file or execute the required terminal commands to complete the entire implementation.',
           })
           continue
         }
@@ -1202,18 +1194,22 @@ AUTONOMOUS TASK COMPLETION RULES:
       for (const tc of pendingToolCalls) {
         if (!tc || !tc.name) continue
         try {
-          if (
+          const parsedArgs = JSON.parse(tc.args || '{}')
+          const cmdStr = (parsedArgs.command || '').trim()
+
+          const isInspectCmd =
             tc.name === 'read_files' ||
             tc.name === 'list_directory' ||
             tc.name === 'ocr_image' ||
-            tc.name === 'fetch_web_content'
-          ) {
+            tc.name === 'fetch_web_content' ||
+            (tc.name === 'run_terminal_command' &&
+              /^(sed\s+-n|grep|cat|head|tail|wc|find|ls|file|stat|view)\b/i.test(cmdStr))
+
+          if (isInspectCmd) {
             hasExecutedInspection = true
           } else if (tc.name === 'write_file' || tc.name === 'run_terminal_command') {
             hasExecutedModification = true
           }
-
-          const parsedArgs = JSON.parse(tc.args || '{}')
           const filePath = parsedArgs.path ? (path.isAbsolute(parsedArgs.path) ? parsedArgs.path : path.join(projectRoot, parsedArgs.path)) : ''
           const oldContent = (tc.name === 'write_file' && filePath && fs.existsSync(filePath)) ? fs.readFileSync(filePath, 'utf-8') : null
 
