@@ -139,7 +139,7 @@ export const StatusBar = ({
 
       case 'waiting':
         return (
-          <box style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <>
             <span fg="#f97316">✱ </span>
             <ShimmerText
               text="Contemplating..."
@@ -151,12 +151,12 @@ export const StatusBar = ({
                 ? ` (${elapsedSeconds}s · ↓ ${liveTokens.toLocaleString()} tokens)`
                 : ` (${elapsedSeconds}s)`}
             </span>
-          </box>
+          </>
         )
 
       case 'streaming':
         return (
-          <box style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <>
             <span fg="#f97316">✱ </span>
             <ShimmerText
               text="Generating..."
@@ -166,7 +166,7 @@ export const StatusBar = ({
             <span fg="#f97316">
               {` (${elapsedSeconds}s · ↓ ${liveTokens.toLocaleString()} tokens)`}
             </span>
-          </box>
+          </>
         )
     }
   }
