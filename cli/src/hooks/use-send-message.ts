@@ -242,6 +242,7 @@ export const useSendMessage = ({
 
   const sendMessage = useCallback<SendMessageFn>(
     async ({ content, agentMode, postUserMessage, attachments }) => {
+      useChatStore.getState().setLiveTokenCount(0)
       isChainInProgressRef.current = true
       updateChainInProgress(true)
       setCanProcessQueue(false)

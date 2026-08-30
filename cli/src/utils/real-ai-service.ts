@@ -761,6 +761,7 @@ export async function executeRealAiStream({
   signal: AbortSignal
   onComplete: (runState: RunState) => void
 }) {
+  useChatStore.getState().setLiveTokenCount(0)
   const projectRoot = getProjectRoot()
   const selectedModel = useChatStore.getState().selectedModel ?? 'groq'
   const route = resolveModelRoute(selectedModel)

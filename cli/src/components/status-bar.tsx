@@ -79,10 +79,11 @@ export const StatusBar = ({
   useEffect(() => {
     if (statusIndicatorState?.kind === 'waiting' || statusIndicatorState?.kind === 'streaming') {
       setThinkingState(getContextualThinkingState(lastUserPrompt))
+      prevTokensRef.current = 0
     }
   }, [timerStartTime, lastUserPrompt])
 
-  const prevTokensRef = React.useRef(liveTokens)
+  const prevTokensRef = React.useRef(0)
   const [tokenTrend, setTokenTrend] = React.useState<'up' | 'down'>('up')
 
   React.useEffect(() => {
