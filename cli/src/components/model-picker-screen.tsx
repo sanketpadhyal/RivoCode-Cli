@@ -51,6 +51,8 @@ interface ModelPickerScreenProps {
   onBack: () => void
 }
 
+const MAX_VISIBLE_ITEMS = 4
+
 export const ModelPickerScreen = ({
   onSelectModel,
   onBack,
@@ -59,6 +61,7 @@ export const ModelPickerScreen = ({
   const { contentMaxWidth } = useTerminalDimensions()
   const [filterText, setFilterText] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [scrollOffset, setScrollOffset] = useState(0)
 
   const { component: logoComponent } = useLogo({
     availableWidth: contentMaxWidth,
@@ -73,6 +76,21 @@ export const ModelPickerScreen = ({
         m.description.toLowerCase().includes(query),
     )
   }, [filterText])
+
+  // Keep selected index within bounds and adjust scroll offset
+  useEffect(() => {
+    if (selectedIndex >= filteredModels.length) {
+      setSelectedIndex(Math.max(0, filteredModels.length - 1))
+    }
+  }, [filteredModels.length, selectedIndex])
+
+  useEffect(() => {
+    if (selectedIndex < scrollOffset) {
+      setScrollOffset(selectedIndex)
+    } else if (selectedIndex >= scrollOffset + MAX_VISIBLE_ITEMS) {
+      setScrollOffset(selectedIndex - MAX_VISIBLE_ITEMS + 1)
+    }
+  }, [selectedIndex, scrollOffset])
 
   useKeyboard(
     useCallback(
@@ -90,6 +108,40 @@ export const ModelPickerScreen = ({
             key.preventDefault()
           }
           onBack()
+          return
+        }
+
+        if (key.name === 'pageup') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
+            key.preventDefault()
+          }
+          setSelectedIndex((prev) => Math.max(0, prev - MAX_VISIBLE_ITEMS))
+          return
+        }
+
+        if (key.name === 'pagedown') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
+            key.preventDefault()
+          }
+          setSelectedIndex((prev) =>
+            Math.min(filteredModels.length - 1, prev + MAX_VISIBLE_ITEMS),
+          )
+          return
+        }
+
+        if (key.name === 'home') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
+            key.preventDefault()
+          }
+          setSelectedIndex(0)
+          return
+        }
+
+        if (key.name === 'end') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
+            key.preventDefault()
+          }
+          setSelectedIndex(Math.max(0, filteredModels.length - 1))
           return
         }
 
@@ -141,17 +193,23 @@ export const ModelPickerScreen = ({
           }
           setFilterText((prev) => prev.slice(0, -1))
           setSelectedIndex(0)
+          setScrollOffset(0)
           return
         }
 
         if (key.sequence && key.sequence.length === 1 && !key.ctrl && !key.meta) {
           setFilterText((prev) => prev + key.sequence)
           setSelectedIndex(0)
+          setScrollOffset(0)
         }
       },
       [filteredModels, onBack, onSelectModel, selectedIndex],
     ),
   )
+
+  const visibleModels = useMemo(() => {
+    return filteredModels.slice(scrollOffset, scrollOffset + MAX_VISIBLE_ITEMS)
+  }, [filteredModels, scrollOffset])
 
   return (
     <box
@@ -191,12 +249,28 @@ export const ModelPickerScreen = ({
         </box>
 
         <box style={{ flexDirection: 'column', marginTop: 1, gap: 1 }}>
-          <text style={{ wrapMode: 'none', fg: theme.muted }}>
-            <span attributes={TextAttributes.BOLD}>Recommended</span>
-          </text>
+          <box style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <text style={{ wrapMode: 'none', fg: theme.muted }}>
+              <span attributes={TextAttributes.BOLD}>Recommended</span>
+            </text>
+            {filteredModels.length > MAX_VISIBLE_ITEMS && (
+              <text style={{ wrapMode: 'none', fg: theme.muted }}>
+                <span>
+                  {selectedIndex + 1}/{filteredModels.length}
+                </span>
+              </text>
+            )}
+          </box>
 
-          {filteredModels.map((model, idx) => {
-            const isSelected = idx === selectedIndex
+          {scrollOffset > 0 && (
+            <text style={{ wrapMode: 'none', fg: theme.muted }}>
+              <span>  ▲ more models above</span>
+            </text>
+          )}
+
+          {visibleModels.map((model, vIdx) => {
+            const actualIdx = scrollOffset + vIdx
+            const isSelected = actualIdx === selectedIndex
 
             return (
               <box
@@ -229,6 +303,12 @@ export const ModelPickerScreen = ({
             )
           })}
 
+          {scrollOffset + MAX_VISIBLE_ITEMS < filteredModels.length && (
+            <text style={{ wrapMode: 'none', fg: theme.muted }}>
+              <span>  ▼ more models below</span>
+            </text>
+          )}
+
           {filteredModels.length === 0 && (
             <text style={{ wrapMode: 'none', fg: theme.muted }}>
               <span>  No matching models found</span>
@@ -240,6 +320,8 @@ export const ModelPickerScreen = ({
       <box style={{ marginTop: 1 }}>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
           <span>↑/↓ navigate · </span>
+          <span fg={theme.foreground}>pgup/pgdn</span>
+          <span> scroll · </span>
           <span fg={theme.foreground}>enter</span>
           <span> select · </span>
           <span fg={theme.foreground}>←</span>
