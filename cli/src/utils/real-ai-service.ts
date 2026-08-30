@@ -153,8 +153,8 @@ export function resolveModelRoute(modelName: string): ModelRoute {
     return {
       provider: 'gemini',
       endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-      modelId: 'gemini-2.5-flash',
-      displayName: 'Gemini 2.5 Flash (Google AI Studio)',
+      modelId: 'gemini-3.6-flash',
+      displayName: 'Gemini 3.6 Flash (Google AI Studio)',
       apiKeyUrl: 'https://aistudio.google.com/app/apikey',
     }
   }
@@ -203,7 +203,7 @@ export async function testApiKeyConnection(
       provider === 'groq'
         ? 'openai/gpt-oss-120b'
         : provider === 'gemini'
-          ? 'gemini-2.5-flash'
+          ? 'gemini-3.6-flash'
           : 'meta-llama/llama-3.3-70b-instruct:free'
 
     const headers: Record<string, string> = {
