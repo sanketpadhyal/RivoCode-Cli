@@ -181,8 +181,8 @@ export function resolveModelRoute(modelName: string): ModelRoute {
     return {
       provider: 'groq',
       endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-      modelId: 'qwen-2.5-coder-32b',
-      displayName: 'Qwen 2.5 Coder 32B (Groq)',
+      modelId: 'llama-3.1-8b-instant',
+      displayName: 'Llama 3.1 8B Instant (Groq)',
       apiKeyUrl: 'https://console.groq.com/keys',
     }
   }
@@ -200,8 +200,8 @@ export function resolveModelRoute(modelName: string): ModelRoute {
   return {
     provider: 'groq',
     endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-    modelId: 'llama-3.3-70b-versatile',
-    displayName: 'Llama 3.3 70B Versatile (Groq)',
+    modelId: 'llama-3.1-8b-instant',
+    displayName: 'Llama 3.1 8B Instant (Groq)',
     apiKeyUrl: 'https://console.groq.com/keys',
   }
 }
@@ -211,22 +211,44 @@ export async function testApiKeyConnection(
   apiKey: string,
 ): Promise<{ success: boolean; error?: string; message?: string }> {
   try {
+    if (provider === 'groq') {
+      const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
+        headers: { Authorization: `Bearer ${apiKey.trim()}` },
+      })
+      if (!modelsRes.ok) {
+        const err = await modelsRes.json().catch(() => ({}))
+        return { success: false, error: err?.error?.message || 'Invalid Groq API key' }
+      }
+      const data = await modelsRes.json().catch(() => ({}))
+      const availableIds: string[] = (data.data || []).map((m: any) => m.id)
+      return {
+        success: true,
+        message: `Connected! (${availableIds.length} models available)`,
+      }
+    }
+
+    if (provider === 'deepseek') {
+      const modelsRes = await fetch('https://api.deepseek.com/models', {
+        headers: { Authorization: `Bearer ${apiKey.trim()}` },
+      })
+      if (!modelsRes.ok) {
+        const err = await modelsRes.json().catch(() => ({}))
+        return { success: false, error: err?.error?.message || 'Invalid DeepSeek API key' }
+      }
+      return {
+        success: true,
+        message: 'Connected to DeepSeek V3 successfully!',
+      }
+    }
+
     const endpoint =
-      provider === 'groq'
-        ? 'https://api.groq.com/openai/v1/chat/completions'
-        : provider === 'gemini'
-          ? 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
-          : provider === 'deepseek'
-            ? 'https://api.deepseek.com/chat/completions'
-            : 'https://openrouter.ai/api/v1/chat/completions'
+      provider === 'gemini'
+        ? 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
+        : 'https://openrouter.ai/api/v1/chat/completions'
     const model =
-      provider === 'groq'
-        ? 'llama-3.3-70b-versatile'
-        : provider === 'gemini'
-          ? 'gemini-3.6-flash'
-          : provider === 'deepseek'
-            ? 'deepseek-chat'
-            : 'meta-llama/llama-3.3-70b-instruct:free'
+      provider === 'gemini'
+        ? 'gemini-3.6-flash'
+        : 'meta-llama/llama-3.3-70b-instruct:free'
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
