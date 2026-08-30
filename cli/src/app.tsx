@@ -5,7 +5,14 @@ import { useShallow } from 'zustand/react/shallow'
 import { Chat } from './chat'
 import { ChatHistoryScreen } from './components/chat-history-screen'
 import { ChatRuntimeProvider } from './contexts/chat-runtime-context'
+import { SettingUpSession } from './settingup/settingupsession'
+import { ContinueWorkScreen } from './workspace/continue-work-screen'
+import {
+  initProjectWorkspace,
+  updateProjectContext,
+} from './workspace/project-context'
 import { ModelPickerScreen } from './components/model-picker-screen'
+import { ApiKeySetupScreen } from './components/api-key-setup-screen'
 import { WorkspaceTrustScreen } from './components/workspace-trust-screen'
 import { DEFAULT_BYPASS_USER, saveUserCredentials } from './utils/auth'
 import {
@@ -198,8 +205,48 @@ export const App = ({
     handleLoginSuccess(DEFAULT_BYPASS_USER)
   }, [handleLoginSuccess])
 
+  const workspaceInit = useMemo(
+    () => initProjectWorkspace(projectRoot),
+    [projectRoot],
+  )
+  const [isSettingUpComplete, setIsSettingUpComplete] = useState(false)
+  const [continueWorkDismissed, setContinueWorkDismissed] = useState(false)
   const [isWorkspaceTrusted, setIsWorkspaceTrusted] = useState(false)
   const [isModelSelected, setIsModelSelected] = useState(false)
+  const [isApiKeyConfigured, setIsApiKeyConfigured] = useState(false)
+
+  if (!isSettingUpComplete) {
+    return (
+      <SettingUpSession
+        onComplete={() => {
+          setIsSettingUpComplete(true)
+        }}
+      />
+    )
+  }
+
+  if (workspaceInit.isReturningWork && !continueWorkDismissed) {
+    return (
+      <ContinueWorkScreen
+        context={workspaceInit.context}
+        onContinue={() => {
+          const modelToUse =
+            workspaceInit.settings.model ||
+            workspaceInit.context.lastModel ||
+            'deepseek'
+          useChatStore.getState().setSelectedModel(modelToUse)
+          trustWorkspace(projectRoot)
+          setIsWorkspaceTrusted(true)
+          setIsModelSelected(true)
+          setIsApiKeyConfigured(true)
+          setContinueWorkDismissed(true)
+        }}
+        onStartFresh={() => {
+          setContinueWorkDismissed(true)
+        }}
+      />
+    )
+  }
 
   if (!isWorkspaceTrusted) {
     return (
@@ -218,10 +265,26 @@ export const App = ({
       <ModelPickerScreen
         onSelectModel={(model) => {
           useChatStore.getState().setSelectedModel(model.name)
+          updateProjectContext(projectRoot, { lastModel: model.name })
           setIsModelSelected(true)
         }}
         onBack={() => {
           setIsWorkspaceTrusted(false)
+        }}
+      />
+    )
+  }
+
+  if (!isApiKeyConfigured) {
+    const activeModel = useChatStore.getState().selectedModel ?? 'groq'
+    return (
+      <ApiKeySetupScreen
+        modelName={activeModel}
+        onComplete={() => {
+          setIsApiKeyConfigured(true)
+        }}
+        onBack={() => {
+          setIsModelSelected(false)
         }}
       />
     )

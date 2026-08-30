@@ -15,12 +15,10 @@
     "sdk"
   ],
   "bin": {
-    "rivo": "./cli/src/entry.ts",
-    "rivocode": "./cli/src/entry.ts"
+    "rivo": "./cli/src/entry.ts"
   },
   "scripts": {
     "rivo": "bun --cwd cli dev",
-    "rivocode": "bun --cwd cli dev",
     "start": "bun run rivo",
     "start-cli": "bun run rivo",
     "dev": "bun run rivo",

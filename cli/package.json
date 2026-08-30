@@ -5,8 +5,7 @@
   "private": true,
   "type": "module",
   "bin": {
-    "rivo": "./src/entry.ts",
-    "rivocode": "./src/entry.ts"
+    "rivo": "./src/entry.ts"
   },
   "exports": {
     ".": {

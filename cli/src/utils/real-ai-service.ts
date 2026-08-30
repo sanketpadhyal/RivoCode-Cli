@@ -1,3 +1,4 @@
+import { execSync } from 'child_process'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -43,7 +44,6 @@ DEEPSEEK_API_KEY=
   } catch (_e) {}
 }
 
-// Auto-run on module load
 ensureApiKeysFileExists()
 
 export function parseDotApiKeys(): ApiKeysConfig {
@@ -92,7 +92,6 @@ export function saveStoredApiKey(provider: keyof ApiKeysConfig, key: string) {
     current[provider] = key.trim()
     fs.writeFileSync(KEYS_FILE, JSON.stringify(current, null, 2), 'utf-8')
 
-    // Also update .apikeys file
     const dotContent = `# RivoCode API Keys Configuration
 GROQ_API_KEY=${current.groq || ''}
 OPENROUTER_API_KEY=${current.openrouter || ''}
@@ -133,7 +132,7 @@ export function isApiConnected(modelName?: string): boolean {
   return Boolean(resolveApiKey('groq') || resolveApiKey('openrouter'))
 }
 
-interface ModelRoute {
+export interface ModelRoute {
   provider: 'groq' | 'openrouter'
   endpoint: string
   modelId: string
@@ -141,35 +140,25 @@ interface ModelRoute {
   apiKeyUrl: string
 }
 
-function resolveModelRoute(modelName: string): ModelRoute {
+export function resolveModelRoute(modelName: string): ModelRoute {
   const normalized = (modelName || 'groq').toLowerCase()
 
-  if (normalized.includes('deepseek')) {
-    const groqKey = resolveApiKey('groq')
-    if (groqKey) {
-      return {
-        provider: 'groq',
-        endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-        modelId: 'deepseek-r1-distill-llama-70b',
-        displayName: 'DeepSeek R1 (Groq)',
-        apiKeyUrl: 'https://console.groq.com/keys',
-      }
-    }
+  if (normalized.includes('qwen')) {
     return {
-      provider: 'openrouter',
-      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-      modelId: 'deepseek/deepseek-r1:free',
-      displayName: 'DeepSeek R1 (OpenRouter Free)',
-      apiKeyUrl: 'https://openrouter.ai/keys',
+      provider: 'groq',
+      endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+      modelId: 'qwen/qwen3.8-27b',
+      displayName: 'Qwen 3.8 27B (Groq)',
+      apiKeyUrl: 'https://console.groq.com/keys',
     }
   }
 
-  if (normalized.includes('gpt-oss') || normalized.includes('openrouter')) {
+  if (normalized.includes('openrouter')) {
     return {
       provider: 'openrouter',
       endpoint: 'https://openrouter.ai/api/v1/chat/completions',
       modelId: 'meta-llama/llama-3.3-70b-instruct:free',
-      displayName: 'Llama 3.3 70B (OpenRouter Free)',
+      displayName: 'OpenRouter Free',
       apiKeyUrl: 'https://openrouter.ai/keys',
     }
   }
@@ -177,9 +166,219 @@ function resolveModelRoute(modelName: string): ModelRoute {
   return {
     provider: 'groq',
     endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-    modelId: 'llama-3.3-70b-versatile',
-    displayName: 'Llama 3.3 70B (Groq)',
+    modelId: 'openai/gpt-oss-120b',
+    displayName: 'GPT-OSS 120B (Groq)',
     apiKeyUrl: 'https://console.groq.com/keys',
+  }
+}
+
+export async function testApiKeyConnection(
+  provider: 'groq' | 'openrouter',
+  apiKey: string,
+): Promise<{ success: boolean; error?: string; message?: string }> {
+  try {
+    const isGroq = provider === 'groq'
+    const endpoint = isGroq
+      ? 'https://api.groq.com/openai/v1/chat/completions'
+      : 'https://openrouter.ai/api/v1/chat/completions'
+    const model = isGroq
+      ? 'openai/gpt-oss-120b'
+      : 'meta-llama/llama-3.3-70b-instruct:free'
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey.trim()}`,
+    }
+
+    if (!isGroq) {
+      headers['HTTP-Referer'] = 'https://github.com/sanketpadhyal/RivoCode-Cli'
+      headers['X-Title'] = 'RivoCode CLI'
+    }
+
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: 'Say "RivoCode Connected"' }],
+        max_tokens: 10,
+      }),
+      signal: controller.signal,
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '')
+      if (response.status === 401) {
+        return {
+          success: false,
+          error: 'Invalid API key (401 Unauthorized). Please check your key.',
+        }
+      }
+      return {
+        success: false,
+        error: `API returned error ${response.status}: ${errText.slice(0, 80) || response.statusText}`,
+      }
+    }
+
+    const data = (await response.json()) as any
+    const reply = data.choices?.[0]?.message?.content?.trim() || 'Connected'
+    return {
+      success: true,
+      message: reply,
+    }
+  } catch (err: any) {
+    if (err.name === 'AbortError') {
+      return {
+        success: false,
+        error: 'Connection timed out (10s). Check your internet connection.',
+      }
+    }
+    return {
+      success: false,
+      error: err.message || 'Failed to connect to API endpoint',
+    }
+  }
+}
+
+const AGENT_TOOLS = [
+  {
+    type: 'function',
+    function: {
+      name: 'write_file',
+      description: 'Create or overwrite a file in the workspace project directory',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'Relative path of the file to write within the project (e.g. "calculator.py" or "src/app.ts")',
+          },
+          content: {
+            type: 'string',
+            description: 'The complete code or text content to write to the file',
+          },
+        },
+        required: ['path', 'content'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'run_terminal_command',
+      description: 'Execute a bash/shell command in the workspace directory',
+      parameters: {
+        type: 'object',
+        properties: {
+          command: {
+            type: 'string',
+            description: 'The shell command to run (e.g. "python3 calculator.py" or "npm test")',
+          },
+        },
+        required: ['command'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'read_files',
+      description: 'Read the contents of files from the workspace',
+      parameters: {
+        type: 'object',
+        properties: {
+          paths: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Array of file paths to read',
+          },
+        },
+        required: ['paths'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'list_directory',
+      description: 'List files and folders in a workspace directory',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'Directory path to list (defaults to current project root)',
+          },
+        },
+      },
+    },
+  },
+]
+
+export function executeLocalTool(
+  projectRoot: string,
+  name: string,
+  args: Record<string, any>,
+): { success: boolean; result: string } {
+  try {
+    if (name === 'write_file') {
+      const filePath = path.isAbsolute(args.path)
+        ? args.path
+        : path.join(projectRoot, args.path)
+      fs.mkdirSync(path.dirname(filePath), { recursive: true })
+      fs.writeFileSync(filePath, args.content, 'utf-8')
+      return {
+        success: true,
+        result: `Successfully wrote ${args.content.length} characters to ${args.path}`,
+      }
+    }
+
+    if (name === 'run_terminal_command') {
+      const output = execSync(args.command, {
+        cwd: projectRoot,
+        timeout: 30000,
+        encoding: 'utf-8',
+      })
+      return {
+        success: true,
+        result: output || '(Command executed successfully with no output)',
+      }
+    }
+
+    if (name === 'read_files') {
+      const results: string[] = []
+      for (const p of args.paths || []) {
+        const filePath = path.isAbsolute(p) ? p : path.join(projectRoot, p)
+        if (fs.existsSync(filePath)) {
+          results.push(`=== ${p} ===\n${fs.readFileSync(filePath, 'utf-8')}`)
+        } else {
+          results.push(`=== ${p} ===\nFile not found`)
+        }
+      }
+      return { success: true, result: results.join('\n\n') }
+    }
+
+    if (name === 'list_directory') {
+      const targetDir = args.path
+        ? path.isAbsolute(args.path)
+          ? args.path
+          : path.join(projectRoot, args.path)
+        : projectRoot
+      const files = fs.readdirSync(targetDir)
+      return { success: true, result: files.join('\n') }
+    }
+
+    return { success: false, result: `Unknown tool: ${name}` }
+  } catch (err: any) {
+    return {
+      success: false,
+      result: `Error executing tool ${name}: ${err.message || String(err)}`,
+    }
   }
 }
 
@@ -205,7 +404,8 @@ export async function executeRealAiStream({
 
   // 1. If API key is missing, provide a clear, actionable guide
   if (!apiKey) {
-    const envVarName = route.provider === 'groq' ? 'GROQ_API_KEY' : 'OPENROUTER_API_KEY'
+    const envVarName =
+      route.provider === 'groq' ? 'GROQ_API_KEY' : 'OPENROUTER_API_KEY'
     const missingMessage = `⚠️ **API Key Required for ${route.displayName}**\n\nTo start chatting and executing live coding tasks with RivoCode:\n\n1. **Get your free API key** (100% free tier, instant setup):\n   • **${route.provider === 'groq' ? 'Groq Console' : 'OpenRouter'}**: [${route.apiKeyUrl}](${route.apiKeyUrl})\n\n2. **Set it in your terminal environment**:\n   \`\`\`bash\n   export ${envVarName}="your_api_key_here"\n   \`\`\`\n\n3. **Or save it to RivoCode configuration**:\n   \`\`\`bash\n   mkdir -p ~/.rivocode && echo '{"${route.provider}": "your_api_key_here"}' > ~/.rivocode/keys.json\n   \`\`\`\n\nOnce set, run \`rivo\` or send your message again!`
 
     updater.addBlock({
@@ -233,23 +433,34 @@ You are running in mode: ${agentMode}.
 You are connected to the user's workspace at: ${projectRoot}.
 Host Platform: ${os.platform()} (${os.arch()}).
 
-Guidelines:
-- Provide concise, clean, production-ready code with complete implementations.
-- Reference workspace files using Markdown formatting.
-- When generating code or plans, format them clearly with syntax highlighting.
-- Be proactive, efficient, and precise.`
+YOU HAVE REAL SYSTEM TOOLS ATTACHED:
+- write_file(path, content): Create or overwrite files directly on the user's workspace.
+- run_terminal_command(command): Execute shell/terminal commands directly.
+- read_files(paths): Read workspace files.
+- list_directory(path): List folder contents.
+
+AUTONOMOUS EXECUTION RULES:
+- NEVER tell the user to manually create, copy-paste, or save files if they asked you to build, create, or modify code. ALWAYS use write_file to create the file directly in the workspace.
+- When asked to run tests or execute code, use run_terminal_command.
+- Be proactive and take direct action.`
 
   const existingMessages = useChatStore.getState().messages
-  const chatHistory: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> = [
-    { role: 'system', content: systemPrompt },
-  ]
+  const chatHistory: Array<{
+    role: 'user' | 'assistant' | 'system' | 'tool'
+    content?: string
+    tool_call_id?: string
+    tool_calls?: any[]
+  }> = [{ role: 'system', content: systemPrompt }]
 
   for (const msg of existingMessages) {
     if (msg.id === aiMessageId) continue
     const role = msg.type === 'user' ? 'user' : 'assistant'
     const textContent =
       msg.blocks
-        ?.filter((b) => b.type === 'text' && (b as TextContentBlock).textType !== 'reasoning')
+        ?.filter(
+          (b) =>
+            b.type === 'text' && (b as TextContentBlock).textType !== 'reasoning',
+        )
         .map((b) => (b as TextContentBlock).content)
         .join('\n') || msg.content
 
@@ -263,6 +474,7 @@ Guidelines:
   let hasThinkingBlock = false
   let accumulatedThinking = ''
   let accumulatedContent = ''
+  const pendingToolCalls: Array<{ id: string; name: string; args: string }> = []
 
   try {
     const headers: Record<string, string> = {
@@ -271,7 +483,8 @@ Guidelines:
     }
 
     if (route.provider === 'openrouter') {
-      headers['HTTP-Referer'] = 'https://github.com/sanketpadhyal/RivoCode-Cli'
+      headers['HTTP-Referer'] =
+        'https://github.com/sanketpadhyal/RivoCode-Cli'
       headers['X-Title'] = 'RivoCode CLI'
     }
 
@@ -281,6 +494,7 @@ Guidelines:
       body: JSON.stringify({
         model: route.modelId,
         messages: chatHistory,
+        tools: AGENT_TOOLS,
         stream: true,
         temperature: 0.7,
       }),
@@ -344,7 +558,8 @@ Guidelines:
             const currentReasoning = accumulatedThinking
             updater.updateAiMessageBlocks((blocks) =>
               blocks.map((b) =>
-                b.type === 'text' && (b as TextContentBlock).textType === 'reasoning'
+                b.type === 'text' &&
+                (b as TextContentBlock).textType === 'reasoning'
                   ? { ...b, content: currentReasoning }
                   : b,
               ),
@@ -357,30 +572,85 @@ Guidelines:
             const currentContent = accumulatedContent
             updater.updateAiMessageBlocks((blocks) =>
               blocks.map((b) =>
-                b.type === 'text' && (b as TextContentBlock).textType === 'text'
+                b.type === 'text' &&
+                (b as TextContentBlock).textType === 'text'
                   ? { ...b, content: currentContent }
                   : b,
               ),
             )
           }
+
+          if (delta.tool_calls) {
+            for (const tc of delta.tool_calls) {
+              const index = tc.index ?? 0
+              if (!pendingToolCalls[index]) {
+                pendingToolCalls[index] = {
+                  id: tc.id || `call_${index}`,
+                  name: tc.function?.name || '',
+                  args: '',
+                }
+              }
+              if (tc.function?.name) {
+                pendingToolCalls[index].name = tc.function.name
+              }
+              if (tc.function?.arguments) {
+                pendingToolCalls[index].args += tc.function.arguments
+              }
+            }
+          }
         } catch (_jsonErr) {}
       }
     }
 
-    useChatStore.getState().setFollowups([
-      {
-        label: 'Explain next steps',
-        prompt: 'What are the recommended next steps for this task?',
-      },
-      {
-        label: 'Run checks',
-        prompt: 'Check the project for any errors or missing dependencies',
-      },
-      {
-        label: 'Build feature',
-        prompt: 'Help me implement the next component or feature',
-      },
-    ])
+    // Execute any function tool calls generated by the model
+    if (pendingToolCalls.length > 0) {
+      for (const tc of pendingToolCalls) {
+        if (!tc || !tc.name) continue
+        try {
+          const parsedArgs = JSON.parse(tc.args || '{}')
+          const toolExec = executeLocalTool(projectRoot, tc.name, parsedArgs)
+
+          let toolActionNotice = `\n\n⚡ **Executed Action [${tc.name}]**\n`
+          if (tc.name === 'write_file') {
+            toolActionNotice += `Created file: \`${parsedArgs.path}\` in workspace.`
+          } else if (tc.name === 'run_terminal_command') {
+            toolActionNotice += `Command: \`${parsedArgs.command}\`\nOutput:\n\`\`\`\n${toolExec.result}\n\`\`\``
+          } else {
+            toolActionNotice += `${toolExec.result}`
+          }
+
+          accumulatedContent += toolActionNotice
+          updater.updateAiMessageBlocks((blocks) =>
+            blocks.map((b) =>
+              b.type === 'text' && (b as TextContentBlock).textType === 'text'
+                ? { ...b, content: accumulatedContent }
+                : b,
+            ),
+          )
+        } catch (_e) {}
+      }
+    }
+
+    try {
+      useChatStore.getState().setSuggestedFollowups({
+        toolCallId: aiMessageId,
+        suggestions: [
+          {
+            label: 'Explain next steps',
+            prompt: 'What are the recommended next steps for this task?',
+          },
+          {
+            label: 'Run checks',
+            prompt: 'Check the project for any errors or missing dependencies',
+          },
+          {
+            label: 'Build feature',
+            prompt: 'Help me implement the next component or feature',
+          },
+        ],
+        clickedIndices: new Set(),
+      })
+    } catch (_e) {}
 
     updater.markComplete()
 

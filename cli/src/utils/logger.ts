@@ -122,22 +122,8 @@ function sendAnalyticsAndLog(
   msg?: string,
   ...args: any[]
 ): void {
-  if (!IS_CI && !IS_TEST) {
-    let projectRoot: string | undefined
-    try {
-      projectRoot = getProjectRoot()
-    } catch {
-      projectRoot = undefined
-    }
-    if (projectRoot) {
-      const logTarget =
-        IS_DEV
-          ? path.join(projectRoot, '.rivocode', 'cli.jsonl')
-          : path.join(getCurrentChatDir(), CHAT_LOG_FILENAME)
-
-      setLogPath(logTarget)
-    }
-  }
+  // File logging disabled — RivoCode is a silent local-first CLI.
+  // No debug or error logs are written to disk.
 
   const isStringOnly = typeof data === 'string' && msg === undefined
   const normalizedData = isStringOnly ? undefined : data

@@ -8,9 +8,7 @@ if (!parsedEnv.success) {
 
 export const env = parsedEnv.data
 
-if (env.NEXT_PUBLIC_CB_ENVIRONMENT !== 'prod') {
-  console.log('Using environment:', env.NEXT_PUBLIC_CB_ENVIRONMENT)
-}
+
 
 export const IS_DEV = env.NEXT_PUBLIC_CB_ENVIRONMENT === 'dev'
 export const IS_TEST = env.NEXT_PUBLIC_CB_ENVIRONMENT === 'test'

@@ -127,37 +127,14 @@ export function getFingerprintId(): Promise<string> {
 export async function calculateFingerprint(): Promise<string> {
   try {
     const fingerprint = await calculateEnhancedFingerprint()
-    logger.debug(
-      {
-        fingerprintType: 'enhanced_cli',
-        fingerprintId: fingerprint.substring(0, 20) + '...',
-      },
-      'Enhanced CLI fingerprint generated successfully',
-    )
     trackEvent(AnalyticsEvent.FINGERPRINT_GENERATED, {
       fingerprintType: 'enhanced_cli',
       success: true,
     })
     return fingerprint
   } catch (enhancedError) {
-    logger.info(
-      {
-        errorMessage:
-          enhancedError instanceof Error ? enhancedError.message : String(enhancedError),
-        fingerprintType: 'enhanced_failed_fallback',
-      },
-      'Enhanced CLI fingerprinting failed, using legacy fallback',
-    )
-
     try {
       const fingerprint = calculateLegacyFingerprint()
-      logger.debug(
-        {
-          fingerprintType: 'legacy_fallback',
-          fingerprintId: fingerprint,
-        },
-        'Legacy fingerprint generated successfully as fallback',
-      )
       trackEvent(AnalyticsEvent.FINGERPRINT_GENERATED, {
         fingerprintType: 'legacy',
         success: true,
@@ -165,15 +142,7 @@ export async function calculateFingerprint(): Promise<string> {
           enhancedError instanceof Error ? enhancedError.message : 'unknown',
       })
       return fingerprint
-    } catch (legacyError) {
-      logger.error(
-        {
-          errorMessage:
-            legacyError instanceof Error ? legacyError.message : String(legacyError),
-          fingerprintType: 'failed',
-        },
-        'Both enhanced and legacy fingerprint generation failed',
-      )
+    } catch {
       throw new Error('Fingerprint generation failed')
     }
   }

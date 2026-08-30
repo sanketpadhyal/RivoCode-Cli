@@ -14,21 +14,7 @@ interface UseExitHandlerOptions {
 let exitHandlerRegistered = false
 
 function setupExitMessageHandler() {
-  if (exitHandlerRegistered) return
-  exitHandlerRegistered = true
-
-  process.on('exit', () => {
-    try {
-      const chatId = getCurrentChatId()
-      if (chatId) {
-        const cliName = IS_FREEBUFF ? 'freebuff' : 'codebuff'
-        process.stdout.write(
-          `\nTo continue this session later, run:\n${cliName} --continue ${chatId}\n`,
-        )
-      }
-    } catch {
-    }
-  })
+  // Exit message disabled — no session continuation prompt shown.
 }
 
 export const useExitHandler = ({

@@ -14,7 +14,6 @@ import { useShallow } from 'zustand/react/shallow'
 
 import { getAdsEnabled } from './commands/ads'
 import { routeUserPrompt, addBashMessageToHistory } from './commands/router'
-import { SingleAdBanner } from './components/ad-banner'
 import { ChatInputBar } from './components/chat-input-bar'
 import { ChatHeader } from './components/chat-header'
 import { LoadPreviousButton } from './components/load-previous-button'
@@ -191,7 +190,6 @@ export const Chat = ({
     inlinePlacementId: 'CLI-Chat-Inline',
     slotPlacementId: 'Single-Ad-Unit-1',
   })
-  const showInlineAds = IS_FREEBUFF || getAdsEnabled()
 
   const handleAdClick = useEvent(recordClick)
   const handleAdImpression = useEvent(recordImpression)
@@ -1261,7 +1259,7 @@ export const Chat = ({
       isWaitingForResponse,
       timerStartTime,
       availableWidth: messageAvailableWidth,
-      responseAds: showInlineAds ? responseAds : {},
+      responseAds: {},
     })
   }, [
     theme,
@@ -1271,7 +1269,6 @@ export const Chat = ({
     timerStartTime,
     messageAvailableWidth,
     responseAds,
-    showInlineAds,
     setMessageBlockContext,
   ])
 
@@ -1515,13 +1512,6 @@ export const Chat = ({
           />
         )}
 
-        {ads?.[0] && showInlineAds && (
-          <SingleAdBanner
-            ad={ads[0]}
-            onClick={recordClick}
-            onImpression={recordImpression}
-          />
-        )}
 
         {reviewMode ? (
           <ReviewScreen
