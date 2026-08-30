@@ -1,4 +1,4 @@
-# RivoCode
+# RivoCode.
 
 > **An Agentic Terminal AI Coding Assistant & Framework**  
 > *Created and Developed by **Sanket Padhyal***
