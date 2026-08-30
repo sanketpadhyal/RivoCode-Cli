@@ -20,6 +20,7 @@ interface ApiKeysConfig {
 
 const CONFIG_DIR = path.join(os.homedir(), '.rivocode')
 const DOT_APIKEYS_FILE = path.join(CONFIG_DIR, '.apikeys')
+const PLAIN_APIKEYS_FILE = path.join(CONFIG_DIR, 'apikeys')
 const KEYS_FILE = path.join(CONFIG_DIR, 'keys.json')
 
 export function ensureApiKeysFileExists() {
@@ -27,8 +28,7 @@ export function ensureApiKeysFileExists() {
     if (!fs.existsSync(CONFIG_DIR)) {
       fs.mkdirSync(CONFIG_DIR, { recursive: true })
     }
-    if (!fs.existsSync(DOT_APIKEYS_FILE)) {
-      const template = `# RivoCode API Keys Configuration
+    const template = `# RivoCode API Keys Configuration
 # Free keys available at:
 # Groq: https://console.groq.com/keys
 # OpenRouter: https://openrouter.ai/keys
@@ -37,6 +37,7 @@ GROQ_API_KEY=
 OPENROUTER_API_KEY=
 DEEPSEEK_API_KEY=
 `
+    if (!fs.existsSync(DOT_APIKEYS_FILE) && !fs.existsSync(PLAIN_APIKEYS_FILE)) {
       fs.writeFileSync(DOT_APIKEYS_FILE, template, 'utf-8')
     }
   } catch (_e) {}
@@ -47,25 +48,28 @@ ensureApiKeysFileExists()
 
 export function parseDotApiKeys(): ApiKeysConfig {
   const result: ApiKeysConfig = {}
-  try {
-    if (fs.existsSync(DOT_APIKEYS_FILE)) {
-      const raw = fs.readFileSync(DOT_APIKEYS_FILE, 'utf-8')
-      const lines = raw.split('\n')
-      for (const line of lines) {
-        const trimmed = line.trim()
-        if (!trimmed || trimmed.startsWith('#')) continue
-        const [k, ...v] = trimmed.split('=')
-        if (!k || v.length === 0) continue
-        const val = v.join('=').trim().replace(/^["']|["']$/g, '')
-        if (!val) continue
-        const keyUpper = k.trim().toUpperCase()
-        if (keyUpper.includes('GROQ')) result.groq = val
-        else if (keyUpper.includes('OPENROUTER')) result.openrouter = val
-        else if (keyUpper.includes('DEEPSEEK')) result.deepseek = val
-        else if (keyUpper.includes('OPENAI')) result.openai = val
+  const targetFiles = [DOT_APIKEYS_FILE, PLAIN_APIKEYS_FILE]
+  for (const filePath of targetFiles) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, 'utf-8')
+        const lines = raw.split('\n')
+        for (const line of lines) {
+          const trimmed = line.trim()
+          if (!trimmed || trimmed.startsWith('#')) continue
+          const [k, ...v] = trimmed.split('=')
+          if (!k || v.length === 0) continue
+          const val = v.join('=').trim().replace(/^["']|["']$/g, '')
+          if (!val) continue
+          const keyUpper = k.trim().toUpperCase()
+          if (keyUpper.includes('GROQ')) result.groq = val
+          else if (keyUpper.includes('OPENROUTER')) result.openrouter = val
+          else if (keyUpper.includes('DEEPSEEK')) result.deepseek = val
+          else if (keyUpper.includes('OPENAI')) result.openai = val
+        }
       }
-    }
-  } catch (_e) {}
+    } catch (_e) {}
+  }
   return result
 }
 
