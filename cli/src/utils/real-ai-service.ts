@@ -19,26 +19,82 @@ interface ApiKeysConfig {
 }
 
 const CONFIG_DIR = path.join(os.homedir(), '.rivocode')
+const DOT_APIKEYS_FILE = path.join(CONFIG_DIR, '.apikeys')
 const KEYS_FILE = path.join(CONFIG_DIR, 'keys.json')
 
-export function getStoredApiKeys(): ApiKeysConfig {
-  try {
-    if (fs.existsSync(KEYS_FILE)) {
-      const raw = fs.readFileSync(KEYS_FILE, 'utf-8')
-      return JSON.parse(raw)
-    }
-  } catch (_e) {}
-  return {}
-}
-
-export function saveStoredApiKey(provider: keyof ApiKeysConfig, key: string) {
+export function ensureApiKeysFileExists() {
   try {
     if (!fs.existsSync(CONFIG_DIR)) {
       fs.mkdirSync(CONFIG_DIR, { recursive: true })
     }
+    if (!fs.existsSync(DOT_APIKEYS_FILE)) {
+      const template = `# RivoCode API Keys Configuration
+# Free keys available at:
+# Groq: https://console.groq.com/keys
+# OpenRouter: https://openrouter.ai/keys
+
+GROQ_API_KEY=
+OPENROUTER_API_KEY=
+DEEPSEEK_API_KEY=
+`
+      fs.writeFileSync(DOT_APIKEYS_FILE, template, 'utf-8')
+    }
+  } catch (_e) {}
+}
+
+// Auto-run on module load
+ensureApiKeysFileExists()
+
+export function parseDotApiKeys(): ApiKeysConfig {
+  const result: ApiKeysConfig = {}
+  try {
+    if (fs.existsSync(DOT_APIKEYS_FILE)) {
+      const raw = fs.readFileSync(DOT_APIKEYS_FILE, 'utf-8')
+      const lines = raw.split('\n')
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (!trimmed || trimmed.startsWith('#')) continue
+        const [k, ...v] = trimmed.split('=')
+        if (!k || v.length === 0) continue
+        const val = v.join('=').trim().replace(/^["']|["']$/g, '')
+        if (!val) continue
+        const keyUpper = k.trim().toUpperCase()
+        if (keyUpper.includes('GROQ')) result.groq = val
+        else if (keyUpper.includes('OPENROUTER')) result.openrouter = val
+        else if (keyUpper.includes('DEEPSEEK')) result.deepseek = val
+        else if (keyUpper.includes('OPENAI')) result.openai = val
+      }
+    }
+  } catch (_e) {}
+  return result
+}
+
+export function getStoredApiKeys(): ApiKeysConfig {
+  const fromDotFile = parseDotApiKeys()
+  try {
+    if (fs.existsSync(KEYS_FILE)) {
+      const raw = fs.readFileSync(KEYS_FILE, 'utf-8')
+      const fromJson = JSON.parse(raw)
+      return { ...fromDotFile, ...fromJson }
+    }
+  } catch (_e) {}
+  return fromDotFile
+}
+
+export function saveStoredApiKey(provider: keyof ApiKeysConfig, key: string) {
+  try {
+    ensureApiKeysFileExists()
     const current = getStoredApiKeys()
     current[provider] = key.trim()
     fs.writeFileSync(KEYS_FILE, JSON.stringify(current, null, 2), 'utf-8')
+
+    // Also update .apikeys file
+    const dotContent = `# RivoCode API Keys Configuration
+GROQ_API_KEY=${current.groq || ''}
+OPENROUTER_API_KEY=${current.openrouter || ''}
+DEEPSEEK_API_KEY=${current.deepseek || ''}
+`
+    fs.writeFileSync(DOT_APIKEYS_FILE, dotContent, 'utf-8')
   } catch (_e) {}
 }
 
@@ -63,6 +119,14 @@ export function resolveApiKey(provider: 'groq' | 'openrouter'): string | null {
   }
 
   return null
+}
+
+export function isApiConnected(modelName?: string): boolean {
+  if (modelName) {
+    const route = resolveModelRoute(modelName)
+    return Boolean(resolveApiKey(route.provider))
+  }
+  return Boolean(resolveApiKey('groq') || resolveApiKey('openrouter'))
 }
 
 interface ModelRoute {

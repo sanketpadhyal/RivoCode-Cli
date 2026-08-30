@@ -1,3 +1,4 @@
+import { TextAttributes } from '@opentui/core'
 import { memo, useMemo, useState } from 'react'
 
 import { useLogo } from '../hooks/use-logo'
@@ -5,11 +6,8 @@ import { useSheenAnimation } from '../hooks/use-sheen-animation'
 import { useTerminalDimensions } from '../hooks/use-terminal-dimensions'
 import { useTheme } from '../hooks/use-theme'
 import { useChatStore } from '../state/chat-store'
-import { IS_FREEBUFF } from '../utils/constants'
-import { openFileAtPath } from '../utils/open-file'
-import { formatCwd } from '../utils/path-helpers'
+import { isApiConnected } from '../utils/real-ai-service'
 import { getLogoAccentColor, getLogoBlockColor } from '../utils/theme-system'
-import { TerminalLink } from './terminal-link'
 
 export const ChatHeader = memo(function ChatHeader({
   projectRoot,
@@ -41,6 +39,7 @@ export const ChatHeader = memo(function ChatHeader({
 
   const selectedModel = useChatStore((state) => state.selectedModel)
   const agentMode = useChatStore((state) => state.agentMode)
+  const apiConnected = isApiConnected(selectedModel)
 
   const modeLabel = useMemo(() => {
     switch (agentMode) {
@@ -65,7 +64,7 @@ export const ChatHeader = memo(function ChatHeader({
         paddingRight: 1,
         marginBottom: 1,
         marginTop: 0,
-        alignItems: 'center',
+        alignItems: 'flex-start',
       }}
     >
       <box style={{ flexShrink: 0 }}>
@@ -74,7 +73,7 @@ export const ChatHeader = memo(function ChatHeader({
       <box style={{ flexDirection: 'column', gap: 0 }}>
         <text style={{ wrapMode: 'none' }}>
           <b>
-            <span fg={theme.primary}>RivoCode CLI 1.0.0</span>
+            <span fg={theme.primary}>RivoCode CLI</span>
           </b>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
@@ -85,6 +84,15 @@ export const ChatHeader = memo(function ChatHeader({
         </text>
         <text style={{ wrapMode: 'none', fg: theme.secondary }}>
           <span>{projectRoot}</span>
+        </text>
+        <text style={{ wrapMode: 'none', marginTop: 1 }}>
+          <span
+            bg={apiConnected ? '#ca8a04' : '#a16207'}
+            fg="#ffffff"
+            attributes={TextAttributes.BOLD}
+          >
+            {apiConnected ? ' API Connected ' : ' API Not Connected '}
+          </span>
         </text>
       </box>
     </box>
