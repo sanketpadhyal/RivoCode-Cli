@@ -105,10 +105,15 @@ export const StatusBar = ({
         )
 
       case 'reconnected':
-        return <span fg={theme.success}>Reconnected</span>
+        return <span fg={theme.success}>✓ Reconnected & Ready</span>
 
       case 'retrying':
-        return <ShimmerText text="retrying..." primaryColor={theme.warning} />
+        return (
+          <ShimmerText
+            text="reconnecting — attempting server handshake..."
+            primaryColor={theme.warning}
+          />
+        )
 
       case 'capacityWait':
         return (
@@ -119,6 +124,13 @@ export const StatusBar = ({
         )
 
       case 'connecting':
+        return (
+          <ShimmerText
+            text="connecting — setting up workspace & tools..."
+            primaryColor={theme.primary}
+          />
+        )
+
       case 'idle':
       case 'paused':
         return null
