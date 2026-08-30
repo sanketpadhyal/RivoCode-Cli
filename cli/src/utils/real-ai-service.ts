@@ -177,12 +177,12 @@ export function resolveModelRoute(modelName: string): ModelRoute {
     }
   }
 
-  if (normalized.includes('qwen') || normalized.includes('coder')) {
+  if (normalized.includes('qwen') || normalized.includes('coder') || normalized.includes('27b')) {
     return {
       provider: 'groq',
       endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-      modelId: 'llama-3.1-8b-instant',
-      displayName: 'Llama 3.1 8B Instant (Groq)',
+      modelId: 'qwen/qwen3.8-27b',
+      displayName: 'Qwen 3.8 27B (Groq)',
       apiKeyUrl: 'https://console.groq.com/keys',
     }
   }
@@ -200,8 +200,8 @@ export function resolveModelRoute(modelName: string): ModelRoute {
   return {
     provider: 'groq',
     endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-    modelId: 'llama-3.1-8b-instant',
-    displayName: 'Llama 3.1 8B Instant (Groq)',
+    modelId: 'openai/gpt-oss-120b',
+    displayName: 'GPT-OSS 120B (Groq)',
     apiKeyUrl: 'https://console.groq.com/keys',
   }
 }

@@ -23,12 +23,21 @@ export interface ModelOption {
 export const AVAILABLE_MODELS: ModelOption[] = [
   {
     id: 'groq',
-    name: 'llama-3.3-70b',
-    badge: '(Groq · High Quota & 500 tok/s)',
+    name: 'gpt-oss-120b',
+    badge: '(Groq · Flagship 120B & Free)',
     icon: '⚡',
     iconPadding: ' ',
     iconColor: '#FF4800',
-    description: 'Llama 3.3 70B on Groq LPUs · High TPM/RPM rate limits (Free at console.groq.com)',
+    description: 'OpenAI GPT-OSS 120B on Groq LPUs · 500+ tok/s (Free at console.groq.com)',
+  },
+  {
+    id: 'qwen',
+    name: 'qwen-3.8-27b',
+    badge: '(Groq · Ultra Fast 27B)',
+    icon: '⚡',
+    iconPadding: ' ',
+    iconColor: '#38BDF8',
+    description: 'Qwen 3.8 27B on Groq LPUs · 131k context window (Free at console.groq.com)',
   },
   {
     id: 'gemini',
@@ -47,15 +56,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     iconPadding: ' ',
     iconColor: '#4D6BFE',
     description: 'DeepSeek V3 Flagship via platform.deepseek.com · Virtually unlimited session quota',
-  },
-  {
-    id: 'qwen',
-    name: 'qwen-coder-32b',
-    badge: '(Groq · Coding Specialist)',
-    icon: '⚡',
-    iconPadding: ' ',
-    iconColor: '#38BDF8',
-    description: 'Qwen 2.5 Coder 32B on Groq LPUs · Instant code generation',
   },
   {
     id: 'openrouter',
