@@ -729,23 +729,14 @@ STRICT BEHAVIOR RULES:
         break
       }
 
-      // Push assistant message with tool calls to chat history
-      chatHistory.push({
-        role: 'assistant',
-        content: turnContent || '',
-        tool_calls: pendingToolCalls.map((tc) => ({
-          id: tc.id,
-          type: 'function',
-          function: { name: tc.name, arguments: tc.args },
-        })),
-      })
-
-      // Execute each tool and append tool result
+      // Execute each tool and format output for user UI
+      const toolResultsForHistory: string[] = []
       for (const tc of pendingToolCalls) {
         if (!tc || !tc.name) continue
         try {
           const parsedArgs = JSON.parse(tc.args || '{}')
           const toolExec = executeLocalTool(projectRoot, tc.name, parsedArgs)
+          toolResultsForHistory.push(`[${tc.name}]\nResult: ${toolExec.result}`)
 
           let toolActionNotice = '\n\n'
           if (tc.name === 'write_file') {
@@ -789,17 +780,36 @@ STRICT BEHAVIOR RULES:
                 : b,
             ),
           )
+        } catch (_e) {}
+      }
 
+      // Feed tool results back into conversation history without triggering Gemini thought_signature errors
+      if (route.provider === 'gemini') {
+        chatHistory.push({
+          role: 'assistant',
+          content: turnContent || `Executed actions: ${pendingToolCalls.map((t) => t.name).join(', ')}`,
+        })
+        chatHistory.push({
+          role: 'user',
+          content: `Action execution output:\n${toolResultsForHistory.join('\n\n')}\nPlease proceed with the next step or summarize.`,
+        })
+      } else {
+        chatHistory.push({
+          role: 'assistant',
+          content: turnContent || '',
+          tool_calls: pendingToolCalls.map((tc) => ({
+            id: tc.id,
+            type: 'function',
+            function: { name: tc.name, arguments: tc.args },
+          })),
+        })
+        for (const tc of pendingToolCalls) {
+          const parsedArgs = JSON.parse(tc.args || '{}')
+          const toolExec = executeLocalTool(projectRoot, tc.name, parsedArgs)
           chatHistory.push({
             role: 'tool',
             tool_call_id: tc.id,
             content: toolExec.result,
-          })
-        } catch (execErr: any) {
-          chatHistory.push({
-            role: 'tool',
-            tool_call_id: tc.id,
-            content: `Error: ${execErr.message || String(execErr)}`,
           })
         }
       }
