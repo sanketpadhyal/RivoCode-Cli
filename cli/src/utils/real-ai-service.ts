@@ -3,6 +3,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
+import { AskUserBridge } from '@rivocode/common/utils/ask-user-bridge'
 import { getProjectRoot } from '../project-files'
 import { useChatStore } from '../state/chat-store'
 
@@ -354,11 +355,13 @@ const AGENT_TOOLS = [
   },
 ]
 
-export function executeLocalTool(
+const sessionAllowedCommands = new Set<string>()
+
+export async function executeLocalTool(
   projectRoot: string,
   name: string,
   args: Record<string, any>,
-): { success: boolean; result: string } {
+): Promise<{ success: boolean; result: string }> {
   try {
     if (name === 'write_file') {
       const filePath = path.isAbsolute(args.path)
@@ -373,10 +376,71 @@ export function executeLocalTool(
     }
 
     if (name === 'run_terminal_command') {
+      const rawCommand = (args.command || '').trim()
+      const cmdPrefix = rawCommand.split(' ')[0]
+
+      // Check if command is already permitted in this session
+      if (rawCommand && !sessionAllowedCommands.has(cmdPrefix) && !sessionAllowedCommands.has(rawCommand)) {
+        try {
+          const askRes: any = await AskUserBridge.request(`perm_${Date.now()}`, [
+            {
+              header: 'Command',
+              question: `Requesting permission for:\n  ${rawCommand}\n\nDo you want to proceed?`,
+              options: [
+                '1. Yes',
+                `2. Yes, and always allow in this conversation for commands that start with '${cmdPrefix}'`,
+                `3. Yes, and always allow for commands that start with '${cmdPrefix}' (Persist to settings.json)`,
+                '4. No',
+              ],
+              multiSelect: false,
+            },
+          ])
+
+          if (askRes?.skipped) {
+            return {
+              success: false,
+              result: `Command execution cancelled by user: ${rawCommand}`,
+            }
+          }
+
+          const answerText =
+            askRes?.answers?.[0]?.selectedOption ||
+            askRes?.answers?.[0]?.otherText ||
+            askRes?.answers?.[0]?.option ||
+            ''
+
+          const answerStr = String(answerText).toLowerCase()
+
+          if (
+            answerStr.includes('always allow in this conversation') ||
+            answerStr.includes('persist to settings.json') ||
+            answerStr.startsWith('2') ||
+            answerStr.startsWith('3')
+          ) {
+            sessionAllowedCommands.add(cmdPrefix)
+          }
+
+          if (
+            answerStr.startsWith('4') ||
+            answerStr.includes('no') ||
+            (!answerStr.includes('yes') &&
+              !answerStr.startsWith('1') &&
+              !answerStr.startsWith('2') &&
+              !answerStr.startsWith('3'))
+          ) {
+            return {
+              success: false,
+              result: `Command cancelled by user: ${rawCommand}`,
+            }
+          }
+        } catch (_askErr) {}
+      }
+
       const output = execSync(args.command, {
         cwd: projectRoot,
-        timeout: 30000,
+        timeout: 60000,
         encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
       })
       return {
         success: true,
@@ -794,7 +858,7 @@ STRICT BEHAVIOR RULES:
           const filePath = parsedArgs.path ? (path.isAbsolute(parsedArgs.path) ? parsedArgs.path : path.join(projectRoot, parsedArgs.path)) : ''
           const oldContent = (tc.name === 'write_file' && filePath && fs.existsSync(filePath)) ? fs.readFileSync(filePath, 'utf-8') : null
 
-          const toolExec = executeLocalTool(projectRoot, tc.name, parsedArgs)
+          const toolExec = await executeLocalTool(projectRoot, tc.name, parsedArgs)
           toolResultsForHistory.push(`[${tc.name}]\nResult: ${toolExec.result}`)
 
           let toolActionNotice = '\n\n'
@@ -871,7 +935,7 @@ STRICT BEHAVIOR RULES:
         })
         for (const tc of pendingToolCalls) {
           const parsedArgs = JSON.parse(tc.args || '{}')
-          const toolExec = executeLocalTool(projectRoot, tc.name, parsedArgs)
+          const toolExec = await executeLocalTool(projectRoot, tc.name, parsedArgs)
           chatHistory.push({
             role: 'tool',
             tool_call_id: tc.id,
