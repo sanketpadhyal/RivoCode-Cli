@@ -296,8 +296,7 @@ export const setupStreamingContext = (params: {
     }
 
     updater.updateAiMessageBlocks((blocks) => {
-      const cancelledBlocks = markRunningAgentsAsCancelled(blocks)
-      return appendInterruptionNotice(cancelledBlocks)
+      return markRunningAgentsAsCancelled(blocks)
     })
     updater.markComplete()
   })
