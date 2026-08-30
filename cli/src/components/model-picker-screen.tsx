@@ -24,8 +24,8 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     id: 'groq',
     name: 'groq',
     badge: '(Fast)',
-    icon: '⚡',
-    iconColor: '#F55036',
+    icon: 'g',
+    iconColor: '#FF4800',
     description: 'Ultra-fast low-latency inference on Groq LPUs',
   },
   {
@@ -210,7 +210,7 @@ export const ModelPickerScreen = ({
                   <span fg={isSelected ? theme.primary : theme.muted}>
                     {isSelected ? '▶ ' : '  '}
                   </span>
-                  <span fg={model.iconColor}>
+                  <span fg={model.iconColor} attributes={TextAttributes.BOLD}>
                     {model.icon}{' '}
                   </span>
                   <span
