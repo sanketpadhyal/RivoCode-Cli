@@ -7,6 +7,7 @@ import React from 'react'
 import { AgentModeToggle } from './agent-mode-toggle'
 import { Button } from './button'
 import { ClickableTitleBox } from './clickable-title-box'
+import { CommandPermissionPrompt } from './command-permission-prompt'
 import { MultipleChoiceForm } from './ask-user'
 import { FeedbackContainer } from './feedback-container'
 import { InputModeBanner } from './input-mode-banner'
@@ -258,39 +259,44 @@ export const ChatInputBar = ({
 
   if (askUserState) {
     const isCommand = askUserState.questions[0]?.header === 'Command'
-    const boxTitle = isCommand ? 'Command' : askUserTitle
+    if (isCommand) {
+      const q = askUserState.questions[0]
+      const rawOptions = q.options.map((opt) => (typeof opt === 'string' ? opt : opt.label))
+      return (
+        <CommandPermissionPrompt
+          question={q.question}
+          options={rawOptions}
+          modelName={useChatStore.getState().selectedModel || 'Gemini 3.6 Flash'}
+          agentMode={agentMode || 'high'}
+          onSubmit={(selectedAnswer) => {
+            submitAnswers([
+              {
+                questionIndex: 0,
+                selectedOption: selectedAnswer,
+              },
+            ])
+          }}
+          onCancel={handleFormSkip}
+        />
+      )
+    }
+
     return (
       <box
-        title={boxTitle}
-        titleAlignment="left"
+        title={askUserTitle}
+        titleAlignment="center"
         style={{
           width: '100%',
-          maxHeight: isCompactHeight ? 8 : 13,
-          flexDirection: 'column',
           borderStyle: 'single',
-          borderColor: isCommand ? theme.secondary : theme.primary,
+          borderColor: theme.primary,
           customBorderChars: BORDER_CHARS,
-          paddingLeft: 1,
-          paddingRight: 1,
-          backgroundColor: theme.surface,
         }}
       >
-        <scrollbox
-          style={{
-            flexGrow: 1,
-            rootOptions: { flexDirection: 'column', flexGrow: 1 },
-            wrapperOptions: { flexGrow: 1, flexDirection: 'column' },
-            contentOptions: { flexDirection: 'column', flexGrow: 1 },
-          }}
-          scrollbarOptions={{ visible: false }}
-          verticalScrollbarOptions={{ visible: true, trackOptions: { width: 1 } }}
-        >
-          <MultipleChoiceForm
-            questions={askUserState.questions}
-            onSubmit={handleFormSubmit}
-            onSkip={handleFormSkip}
-          />
-        </scrollbox>
+        <MultipleChoiceForm
+          questions={askUserState.questions}
+          onSubmit={handleFormSubmit}
+          onSkip={handleFormSkip}
+        />
       </box>
     )
   }
