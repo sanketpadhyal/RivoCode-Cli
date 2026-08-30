@@ -1153,6 +1153,7 @@ export const Chat = ({
       onBashHistoryDown: navigateDown,
       onPasteImage: () => {
         const placeholderPath = addClipboardPlaceholder()
+        const currentCount = useChatStore.getState().pendingAttachments.filter(a => a.kind === 'image').length + 1
 
         setTimeout(() => {
           const result = readClipboardImage()
@@ -1165,7 +1166,18 @@ export const Chat = ({
           }
 
           const cwd = getProjectRoot() ?? process.cwd()
-          addPendingImageFromFile(result.imagePath, cwd, placeholderPath).catch(
+          addPendingImageFromFile(result.imagePath, cwd, placeholderPath).then(() => {
+            setInputValue((prev) => {
+              const before = prev.text.slice(0, prev.cursorPosition)
+              const after = prev.text.slice(prev.cursorPosition)
+              const tag = `[Image ${currentCount}] `
+              return {
+                text: before + tag + after,
+                cursorPosition: before.length + tag.length,
+                lastEditDueToNav: false,
+              }
+            })
+          }).catch(
             (error) => {
               logger.error({ error }, 'Failed to add pending image from file')
               showClipboardMessage('Failed to add image', { durationMs: 3000 })
@@ -1175,7 +1187,19 @@ export const Chat = ({
       },
       onPasteImagePath: (imagePath: string) => {
         const cwd = getProjectRoot() ?? process.cwd()
-        validateAndAddImage(imagePath, cwd).catch((error) => {
+        const currentCount = useChatStore.getState().pendingAttachments.filter(a => a.kind === 'image').length + 1
+        validateAndAddImage(imagePath, cwd).then(() => {
+          setInputValue((prev) => {
+            const before = prev.text.slice(0, prev.cursorPosition)
+            const after = prev.text.slice(prev.cursorPosition)
+            const tag = `[Image ${currentCount}] `
+            return {
+              text: before + tag + after,
+              cursorPosition: before.length + tag.length,
+              lastEditDueToNav: false,
+            }
+          })
+        }).catch((error) => {
           logger.error({ error, imagePath }, 'Failed to validate and add image')
           showClipboardMessage('Failed to add image', { durationMs: 3000 })
         })
@@ -1184,6 +1208,36 @@ export const Chat = ({
         addPendingFileFromPath(filePath, isDirectory)
       },
       onPasteText: (text: string) => {
+        const cleanText = text.trim().replace(/^['"]|['"]$/g, '')
+        const isImg = isImageFile(cleanText) ||
+          cleanText.endsWith('.png') ||
+          cleanText.endsWith('.jpg') ||
+          cleanText.endsWith('.jpeg') ||
+          cleanText.endsWith('.webp') ||
+          cleanText.endsWith('.gif') ||
+          cleanText.includes('TemporaryItems/NSIRD_screencaptureui')
+
+        if (isImg && fs.existsSync(cleanText)) {
+          const cwd = getProjectRoot() ?? process.cwd()
+          const currentCount = useChatStore.getState().pendingAttachments.filter(a => a.kind === 'image').length + 1
+          validateAndAddImage(cleanText, cwd).then(() => {
+            setInputValue((prev) => {
+              const before = prev.text.slice(0, prev.cursorPosition)
+              const after = prev.text.slice(prev.cursorPosition)
+              const tag = `[Image ${currentCount}] `
+              return {
+                text: before + tag + after,
+                cursorPosition: before.length + tag.length,
+                lastEditDueToNav: false,
+              }
+            })
+          }).catch((error) => {
+            logger.error({ error, imagePath: cleanText }, 'Failed to validate and add image')
+            showClipboardMessage('Failed to add image', { durationMs: 3000 })
+          })
+          return
+        }
+
         setInputValue((prev) => {
           const before = prev.text.slice(0, prev.cursorPosition)
           const after = prev.text.slice(prev.cursorPosition)

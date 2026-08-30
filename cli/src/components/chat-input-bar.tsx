@@ -190,6 +190,16 @@ export const ChatInputBar = ({
       return
     }
 
+    const trimmed = value.text.trim()
+    const clean = trimmed.replace(/^['"]|['"]$/g, '')
+    if (
+      (clean.startsWith('/var/folders/') || clean.startsWith('/') || clean.startsWith('~')) &&
+      (clean.endsWith('.png') || clean.endsWith('.jpg') || clean.endsWith('.jpeg') || clean.endsWith('.webp') || clean.includes('NSIRD_screencaptureui'))
+    ) {
+      onPaste(clean)
+      return
+    }
+
     setInputValue(value)
   }
 
