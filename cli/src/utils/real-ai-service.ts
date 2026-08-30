@@ -780,7 +780,7 @@ export async function executeRealAiStream({
         : route.provider === 'gemini'
           ? 'Google AI Studio'
           : 'OpenRouter'
-    const missingMessage = `⚠️ **API Key Required for ${route.displayName}**\n\nTo start chatting and executing live coding tasks with RivoCode:\n\n1. **Get your free API key** (100% free tier, instant setup):\n   • **${providerName}**: [${route.apiKeyUrl}](${route.apiKeyUrl})\n\n2. **Set it in your terminal environment**:\n   \`\`\`bash\n   export ${envVarName}="your_api_key_here"\n   \`\`\`\n\n3. **Or save it to RivoCode configuration**:\n   \`\`\`bash\n   mkdir -p ~/.rivocode && echo '{"${route.provider}": "your_api_key_here"}' > ~/.rivocode/keys.json\n   \`\`\`\n\nOnce set, run \`rivo\` or send your message again!`
+    const missingMessage = `[!] **API Key Required for ${route.displayName}**\n\nTo start chatting and executing live coding tasks with RivoCode:\n\n1. **Get your free API key** (100% free tier, instant setup):\n   • **${providerName}**: [${route.apiKeyUrl}](${route.apiKeyUrl})\n\n2. **Set it in your terminal environment**:\n   \`\`\`bash\n   export ${envVarName}="your_api_key_here"\n   \`\`\`\n\n3. **Or save it to RivoCode configuration**:\n   \`\`\`bash\n   mkdir -p ~/.rivocode && echo '{"${route.provider}": "your_api_key_here"}' > ~/.rivocode/keys.json\n   \`\`\`\n\nOnce set, run \`rivo\` or send your message again!`
 
     updater.addBlock({
       type: 'text',
@@ -1097,7 +1097,7 @@ STRICT BEHAVIOR RULES:
       if (pendingToolCalls.length === 0) {
         const autoCreated = autoExtractAndWriteCodeBlocks(projectRoot, turnContent)
         if (autoCreated.length > 0) {
-          const autoNotice = `\n\n⚡ **Auto-created file(s) in workspace**: ${autoCreated.map((f) => `\`${f}\``).join(', ')}`
+          const autoNotice = `\n\n✦ **Auto-created file(s) in workspace**: ${autoCreated.map((f) => `\`${f}\``).join(', ')}`
           accumulatedContent += autoNotice
           updater.updateAiMessageBlocks((blocks) =>
             blocks.map((b) =>
@@ -1264,7 +1264,7 @@ STRICT BEHAVIOR RULES:
       {
         type: 'text',
         textType: 'text',
-        content: `\n\n❌ **Error during execution**: ${errorMessage}\n\nPlease check your API key and connection, or switch models in the menu.`,
+        content: `\n\n[x] **Error during execution**: ${errorMessage}\n\nPlease check your API key and connection, or switch models in the menu.`,
       } as ContentBlock,
     ])
     updater.markComplete()

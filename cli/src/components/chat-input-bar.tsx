@@ -571,7 +571,7 @@ export const ChatInputBar = ({
           {autoAcceptEdits ? (
             <text style={{ wrapMode: 'none' }}>
               <span fg="#f43f5e">
-                {'⚡ auto accept edits is on'}
+                {'◈ auto accept edits is on'}
               </span>
             </text>
           ) : null}

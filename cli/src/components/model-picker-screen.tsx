@@ -25,7 +25,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     id: 'gemini',
     name: 'gemini-3.6-flash',
     badge: '(Google AI · 1M Context & Free)',
-    icon: '✨',
+    icon: '✦',
     iconPadding: ' ',
     iconColor: '#38BDF8',
     description: 'Gemini 3.6 Flash via Google AI Studio · 1M token window (Free at aistudio.google.com)',
