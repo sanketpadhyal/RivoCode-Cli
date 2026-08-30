@@ -201,6 +201,12 @@ async function main() {
     chmodSync(outputFile, 0o755)
   }
 
+  if (targetInfo.platform === 'darwin') {
+    try {
+      spawnSync('codesign', ['-s', '-', '--force', outputFile], { stdio: 'ignore' })
+    } catch {}
+  }
+
   logAlways(`✅ Built ${outputFilename} (${getCliTargetLabel(targetInfo)})`)
 }
 
