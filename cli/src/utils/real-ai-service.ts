@@ -566,6 +566,28 @@ function generateCompactDiff(oldText: string | null, newText: string): string {
   return diffEntries.slice(0, 5).join('\n')
 }
 
+// Fallback: If model outputs markdown code blocks with a file header, auto-create them on disk
+function autoExtractAndWriteCodeBlocks(projectRoot: string, text: string): string[] {
+  const writtenFiles: string[] = []
+  // Matches patterns like: ```python calculator.py or // File: calculator.py or Save as `calculator.py`
+  const codeBlockRegex = /```(?:[a-zA-Z0-9_-]+)?\s*(?:(?:\/\/|#)\s*(?:file:)?\s*([a-zA-Z0-9_./-]+\.[a-zA-Z0-9]+))?\n([\s\S]*?)```/gi
+  let match: RegExpExecArray | null
+
+  while ((match = codeBlockRegex.exec(text)) !== null) {
+    const filename = match[1]?.trim()
+    const content = match[2]
+    if (filename && content && !filename.includes('bash') && !filename.includes('sh')) {
+      try {
+        const filePath = path.isAbsolute(filename) ? filename : path.join(projectRoot, filename)
+        fs.mkdirSync(path.dirname(filePath), { recursive: true })
+        fs.writeFileSync(filePath, content, 'utf-8')
+        writtenFiles.push(filename)
+      } catch (_e) {}
+    }
+  }
+  return writtenFiles
+}
+
 export async function executeRealAiStream({
   prompt,
   agentMode,
