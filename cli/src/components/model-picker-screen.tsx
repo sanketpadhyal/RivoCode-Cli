@@ -23,12 +23,12 @@ export interface ModelOption {
 export const AVAILABLE_MODELS: ModelOption[] = [
   {
     id: 'gemini',
-    name: 'gemini-2.0-flash',
+    name: 'gemini-2.5-flash',
     badge: '(Google AI · 1M Context & Free)',
     icon: '✨',
     iconPadding: ' ',
     iconColor: '#38BDF8',
-    description: 'Gemini 2.0 Flash via Google AI Studio · 1M token context window (Free key)',
+    description: 'Gemini 2.5 Flash via Google AI Studio · 1M token context window (Free key)',
   },
   {
     id: 'groq',
