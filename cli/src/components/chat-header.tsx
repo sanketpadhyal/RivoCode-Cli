@@ -1,4 +1,4 @@
-import { memo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 
 import { useLogo } from '../hooks/use-logo'
 import { useSheenAnimation } from '../hooks/use-sheen-animation'
@@ -40,6 +40,21 @@ export const ChatHeader = memo(function ChatHeader({
   })
 
   const selectedModel = useChatStore((state) => state.selectedModel)
+  const agentMode = useChatStore((state) => state.agentMode)
+
+  const modeLabel = useMemo(() => {
+    switch (agentMode) {
+      case 'LITE':
+        return 'Lite'
+      case 'MAX':
+        return 'Max'
+      case 'PLAN':
+        return 'Plan'
+      case 'DEFAULT':
+      default:
+        return 'High'
+    }
+  }, [agentMode])
 
   return (
     <box
@@ -66,7 +81,7 @@ export const ChatHeader = memo(function ChatHeader({
           <span>sanketpadhyal@gmail.com (Created by Sanket Padhyal)</span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
-          <span>{selectedModel ? `${selectedModel} (High)` : 'No model selected'}</span>
+          <span>{selectedModel ? `${selectedModel} (${modeLabel})` : 'No model selected'}</span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.secondary }}>
           <span>{formatCwd(projectRoot)}</span>
