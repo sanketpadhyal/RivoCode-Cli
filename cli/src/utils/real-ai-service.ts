@@ -892,15 +892,34 @@ STRICT BEHAVIOR RULES:
       content: '',
     })
 
+    let maxTokensSetting = route.provider === 'openrouter' ? 4096 : undefined
+
     while (turns < maxTurns && !signal.aborted) {
       turns++
       const pendingToolCalls: Array<{ id: string; name: string; args: string }> = []
+
+      // Auto-compact chatHistory if token estimate exceeds 12k
+      if (chatHistory.length > 8) {
+        const sysMsg = chatHistory[0]
+        const recentTurns = chatHistory.slice(-6)
+        chatHistory.length = 0
+        if (sysMsg) chatHistory.push(sysMsg)
+        chatHistory.push({
+          role: 'system',
+          content: '[Context compacted: Prior conversation turns summarized to maintain optimal response speed]',
+        })
+        chatHistory.push(...recentTurns)
+      }
 
       const requestBody: Record<string, any> = {
         model: route.modelId,
         messages: chatHistory,
         stream: true,
         temperature: 0.7,
+      }
+
+      if (maxTokensSetting !== undefined) {
+        requestBody.max_tokens = maxTokensSetting
       }
 
       // Pass native tools for Groq/OpenRouter (Gemini uses action tags to avoid thought_signature 400s)
@@ -914,6 +933,30 @@ STRICT BEHAVIOR RULES:
         body: JSON.stringify(requestBody),
         signal,
       })
+
+      // Auto-recover from 402 credit/max_tokens reservation error on OpenRouter
+      if (response.status === 402 && !signal.aborted) {
+        const errText = await response.text().catch(() => '')
+        if (errText.includes('max_tokens') || errText.includes('credits')) {
+          maxTokensSetting = 2048
+          requestBody.max_tokens = 2048
+          // Compact aggressively
+          if (chatHistory.length > 4) {
+            const sys = chatHistory[0]
+            const last = chatHistory.slice(-2)
+            chatHistory.length = 0
+            if (sys) chatHistory.push(sys)
+            chatHistory.push(...last)
+            requestBody.messages = chatHistory
+          }
+          response = await fetch(route.endpoint, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(requestBody),
+            signal,
+          })
+        }
+      }
 
       // Handle 429 Rate Limiting with Auto-Retry
       let retryAttempts = 0
@@ -1122,8 +1165,9 @@ STRICT BEHAVIOR RULES:
           const oldContent = (tc.name === 'write_file' && filePath && fs.existsSync(filePath)) ? fs.readFileSync(filePath, 'utf-8') : null
 
           const toolExec = await executeLocalTool(projectRoot, tc.name, parsedArgs)
-          toolResultById.set(tc.id, toolExec.result)
-          toolResultsForHistory.push(`[${tc.name}]\nResult: ${toolExec.result}`)
+          const truncatedResult = toolExec.result.length > 3000 ? toolExec.result.slice(0, 3000) + '\n...[output truncated for token efficiency]' : toolExec.result
+          toolResultById.set(tc.id, truncatedResult)
+          toolResultsForHistory.push(`[${tc.name}]\nResult: ${truncatedResult}`)
 
           let toolActionNotice = '\n\n'
           if (tc.name === 'write_file') {
