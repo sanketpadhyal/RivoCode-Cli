@@ -200,7 +200,7 @@ export const App = ({
   }
 
   const [signingInComplete, setSigningInComplete] = useState(false)
-  const [isWorkspaceTrusted, setIsWorkspaceTrusted] = useState(() => checkWorkspaceTrusted(projectRoot))
+  const [isWorkspaceTrusted, setIsWorkspaceTrusted] = useState(false)
 
   if (!signingInComplete) {
     return (
