@@ -270,10 +270,7 @@ export const App = ({
           useChatStore.getState().setSelectedModel(model.name)
           updateProjectContext(projectRoot, { lastModel: model.name })
           setIsModelSelected(true)
-          const route = resolveModelRoute(model.name)
-          if (resolveApiKey(route.provider)) {
-            setIsApiKeyConfigured(true)
-          }
+          setIsApiKeyConfigured(false)
         }}
         onBack={() => {
           setIsWorkspaceTrusted(false)
