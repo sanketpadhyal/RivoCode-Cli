@@ -201,8 +201,8 @@ export function resolveModelRoute(modelName: string): ModelRoute {
     return {
       provider: 'openrouter',
       endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-      modelId: 'meta-llama/llama-3.3-70b-instruct:free',
-      displayName: 'OpenRouter Free',
+      modelId: 'openrouter/auto',
+      displayName: 'OpenRouter Auto',
       apiKeyUrl: 'https://openrouter.ai/keys',
     }
   }
@@ -281,22 +281,33 @@ export async function testApiKeyConnection(
       }
     }
 
-    const endpoint =
-      provider === 'gemini'
-        ? 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
-        : 'https://openrouter.ai/api/v1/chat/completions'
-    const model =
-      provider === 'gemini'
-        ? 'gemini-3.6-flash'
-        : 'meta-llama/llama-3.3-70b-instruct:free'
+    if (provider === 'openrouter') {
+      const authRes = await fetch('https://openrouter.ai/api/v1/auth/key', {
+        headers: {
+          Authorization: `Bearer ${apiKey.trim()}`,
+          'HTTP-Referer': 'https://github.com/sanketpadhyal/RivoCode-Cli',
+          'X-Title': 'RivoCode CLI',
+        },
+      })
+      if (!authRes.ok) {
+        const err = await authRes.json().catch(() => ({}))
+        return { success: false, error: err?.error?.message || 'Invalid OpenRouter API key' }
+      }
+      const data = await authRes.json().catch(() => ({}))
+      const label = data?.data?.label ? ` (${data.data.label})` : ''
+      return {
+        success: true,
+        message: `Connected to OpenRouter successfully!${label}`,
+      }
+    }
+
+    const endpoint = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
+    const model = 'gemini-3.6-flash'
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey.trim()}`,
-    }
-
-    if (provider === 'gemini') {
-      headers['x-goog-api-key'] = apiKey.trim()
+      'x-goog-api-key': apiKey.trim(),
     }
 
     if (provider === 'openrouter') {
