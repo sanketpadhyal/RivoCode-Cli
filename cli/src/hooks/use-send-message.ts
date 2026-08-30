@@ -42,7 +42,7 @@ import {
   resetEarlyReturnState,
   setupStreamingContext,
 } from './helpers/send-message'
-import { simulateFakeAiResponse } from '../utils/fake-response'
+import { executeRealAiStream } from '../utils/real-ai-service'
 import { NETWORK_ERROR_ID } from '../utils/validation-error-helpers'
 import { yieldToEventLoop } from '../utils/yield-to-event-loop'
 
@@ -391,7 +391,7 @@ export const useSendMessage = ({
       ])
 
       try {
-        await simulateFakeAiResponse({
+        await executeRealAiStream({
           prompt: finalContent,
           agentMode,
           aiMessageId,
@@ -425,7 +425,7 @@ export const useSendMessage = ({
         })
         return
       } catch (err) {
-        logger.error({ err }, '[send-message] Fake response simulation error')
+        logger.error({ err }, '[send-message] Real AI stream execution error')
       }
 
       try {

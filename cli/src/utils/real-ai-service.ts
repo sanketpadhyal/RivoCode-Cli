@@ -115,7 +115,7 @@ function resolveModelRoute(modelName: string): ModelRoute {
   }
 }
 
-export async function simulateFakeAiResponse({
+export async function executeRealAiStream({
   prompt,
   agentMode,
   aiMessageId,
