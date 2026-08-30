@@ -140,16 +140,16 @@ export const StatusBar = ({
       case 'waiting':
         return (
           <>
-            <span fg="#f97316">✱ </span>
+            <span fg="#f97316">✦ </span>
             <ShimmerText
-              text="Contemplating..."
+              text="Reasoning..."
               interval={SHIMMER_INTERVAL_MS}
               primaryColor="#f97316"
             />
             <span fg="#f97316">
               {liveTokens > 0
-                ? ` (${elapsedSeconds}s · ↓ ${liveTokens.toLocaleString()} tokens)`
-                : ` (${elapsedSeconds}s)`}
+                ? ` [${elapsedSeconds}s · ${liveTokens.toLocaleString()} tokens]`
+                : ` [${elapsedSeconds}s]`}
             </span>
           </>
         )
@@ -157,14 +157,14 @@ export const StatusBar = ({
       case 'streaming':
         return (
           <>
-            <span fg="#f97316">✱ </span>
+            <span fg="#f97316">✦ </span>
             <ShimmerText
-              text="Generating..."
+              text="Responding..."
               interval={SHIMMER_INTERVAL_MS}
               primaryColor="#f97316"
             />
             <span fg="#f97316">
-              {` (${elapsedSeconds}s · ↓ ${liveTokens.toLocaleString()} tokens)`}
+              {` [${elapsedSeconds}s · ${liveTokens.toLocaleString()} tokens]`}
             </span>
           </>
         )
