@@ -46,7 +46,7 @@ export const SettingUpSession = ({ onComplete }: SettingUpSessionProps) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onComplete()
-    }, 4500)
+    }, 1200)
     return () => clearInterval(timer)
   }, [onComplete])
 

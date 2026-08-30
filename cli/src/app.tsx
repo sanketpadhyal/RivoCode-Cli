@@ -15,6 +15,7 @@ import { ModelPickerScreen } from './components/model-picker-screen'
 import { ApiKeySetupScreen } from './components/api-key-setup-screen'
 import { WorkspaceTrustScreen } from './components/workspace-trust-screen'
 import { DEFAULT_BYPASS_USER, saveUserCredentials } from './utils/auth'
+import { resolveApiKey, resolveModelRoute } from './utils/real-ai-service'
 import {
   isWorkspaceTrusted as checkWorkspaceTrusted,
   trustWorkspace,
@@ -267,6 +268,10 @@ export const App = ({
           useChatStore.getState().setSelectedModel(model.name)
           updateProjectContext(projectRoot, { lastModel: model.name })
           setIsModelSelected(true)
+          const route = resolveModelRoute(model.name)
+          if (resolveApiKey(route.provider)) {
+            setIsApiKeyConfigured(true)
+          }
         }}
         onBack={() => {
           setIsWorkspaceTrusted(false)
