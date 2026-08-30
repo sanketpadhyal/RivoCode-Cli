@@ -177,7 +177,7 @@ export const ModelPickerScreen = ({
               Select model for{' '}
             </span>
             <span fg={theme.primary} attributes={TextAttributes.BOLD}>
-              Rivo
+              RivoCode
             </span>
             <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
               :{' '}

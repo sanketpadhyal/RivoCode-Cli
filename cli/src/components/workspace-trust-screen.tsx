@@ -96,7 +96,7 @@ export const WorkspaceTrustScreen = ({
             <b>Do you trust the contents of this project?</b>
           </text>
           <text style={{ wrapMode: 'word' }}>
-            <span fg="#55ff55">Rivo</span>
+            <span fg="#55ff55">RivoCode</span>
             <span fg={theme.secondary}> requires permission to read, edit, and execute files here.</span>
           </text>
         </box>

@@ -59,7 +59,7 @@ export const ChatHeader = memo(function ChatHeader({
       <box style={{ flexDirection: 'column', gap: 0 }}>
         <text style={{ wrapMode: 'none' }}>
           <b>
-            <span fg={theme.primary}>Rivo 1.0.0</span>
+            <span fg={theme.primary}>RivoCode CLI 1.0.0</span>
           </b>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
