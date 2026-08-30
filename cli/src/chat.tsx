@@ -1218,12 +1218,13 @@ export const Chat = ({
         const currentCount = useChatStore.getState().pendingAttachments.filter(a => a.kind === 'image').length + 1
         validateAndAddImage(imagePath, cwd).then(() => {
           setInputValue((prev) => {
-            const before = prev.text.slice(0, prev.cursorPosition)
-            const after = prev.text.slice(prev.cursorPosition)
+            const imagePathRegex = /(?:'|")?(\/(?:[^\n'"\0]+\/)*(?:Screenshot|clipboard|[^\n'"\0]+)\.(?:png|jpe?g|webp|gif|bmp|tiff))(?:'|")?/gi
+            const cleaned = prev.text.replace(imagePathRegex, '').trim()
             const tag = `[Image ${currentCount}] `
+            const newText = cleaned ? (cleaned.includes(tag) ? cleaned : `${cleaned} ${tag}`) : tag
             return {
-              text: before + tag + after,
-              cursorPosition: before.length + tag.length,
+              text: newText,
+              cursorPosition: newText.length,
               lastEditDueToNav: false,
             }
           })
@@ -1236,7 +1237,7 @@ export const Chat = ({
         addPendingFileFromPath(filePath, isDirectory)
       },
       onPasteText: (text: string) => {
-        const cleanText = text.trim().replace(/^['"]|['"]$/g, '')
+        const cleanText = text.trim().replace(/^['"]|['"]$/g, '').replace(/\\ /g, ' ')
         const isImg = isImageFile(cleanText) ||
           cleanText.endsWith('.png') ||
           cleanText.endsWith('.jpg') ||
@@ -1245,17 +1246,18 @@ export const Chat = ({
           cleanText.endsWith('.gif') ||
           cleanText.includes('TemporaryItems/NSIRD_screencaptureui')
 
-        if (isImg && fs.existsSync(cleanText)) {
+        if (isImg) {
           const cwd = getProjectRoot() ?? process.cwd()
           const currentCount = useChatStore.getState().pendingAttachments.filter(a => a.kind === 'image').length + 1
           validateAndAddImage(cleanText, cwd).then(() => {
             setInputValue((prev) => {
-              const before = prev.text.slice(0, prev.cursorPosition)
-              const after = prev.text.slice(prev.cursorPosition)
+              const imagePathRegex = /(?:'|")?(\/(?:[^\n'"\0]+\/)*(?:Screenshot|clipboard|[^\n'"\0]+)\.(?:png|jpe?g|webp|gif|bmp|tiff))(?:'|")?/gi
+              const cleaned = prev.text.replace(imagePathRegex, '').trim()
               const tag = `[Image ${currentCount}] `
+              const newText = cleaned ? (cleaned.includes(tag) ? cleaned : `${cleaned} ${tag}`) : tag
               return {
-                text: before + tag + after,
-                cursorPosition: before.length + tag.length,
+                text: newText,
+                cursorPosition: newText.length,
                 lastEditDueToNav: false,
               }
             })

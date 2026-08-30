@@ -194,13 +194,24 @@ export const ChatInputBar = ({
       return
     }
 
-    const trimmed = value.text.trim()
-    const clean = trimmed.replace(/^['"]|['"]$/g, '')
-    if (
-      (clean.startsWith('/var/folders/') || clean.startsWith('/') || clean.startsWith('~')) &&
-      (clean.endsWith('.png') || clean.endsWith('.jpg') || clean.endsWith('.jpeg') || clean.endsWith('.webp') || clean.includes('NSIRD_screencaptureui'))
-    ) {
-      onPaste(clean)
+    // Check if input contains an image file path (from terminal paste or drag)
+    const imagePathRegex = /(?:'|")?(\/(?:[^\n'"\0]+\/)*(?:Screenshot|clipboard|[^\n'"\0]+)\.(?:png|jpe?g|webp|gif|bmp|tiff))(?:'|")?/i
+    const match = value.text.match(imagePathRegex)
+    if (match && match[1]) {
+      const extractedPath = match[1].replace(/\\ /g, ' ').trim()
+      const textWithoutPath = value.text.replace(match[0], '').trim()
+      
+      const count = useChatStore.getState().pendingAttachments.filter(a => a.kind === 'image').length + 1
+      const tag = `[Image ${count}] `
+      const newText = textWithoutPath ? `${textWithoutPath} ${tag}` : tag
+
+      setInputValue({
+        text: newText,
+        cursorPosition: newText.length,
+        lastEditDueToNav: false,
+      })
+
+      onPaste(extractedPath)
       return
     }
 

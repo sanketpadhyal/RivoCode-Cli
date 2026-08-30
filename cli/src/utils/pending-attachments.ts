@@ -141,7 +141,11 @@ export async function validateAndAddImage(
   imagePath: string,
   cwd: string,
 ): Promise<{ success: true } | { success: false; error: string }> {
-  const resolvedPath = resolveFilePath(imagePath, cwd)
+  const cleaned = imagePath
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
+    .replace(/\\ /g, ' ')
+  const resolvedPath = resolveFilePath(cleaned, cwd)
 
   if (!existsSync(resolvedPath)) {
     const error = 'file not found'
@@ -150,7 +154,7 @@ export async function validateAndAddImage(
   }
 
   if (!isImageFile(resolvedPath)) {
-    const ext = path.extname(imagePath).toLowerCase()
+    const ext = path.extname(cleaned).toLowerCase()
     const error = ext ? `unsupported format ${ext}` : 'unsupported format'
     addPendingImageWithError(resolvedPath, `❌ ${error}`)
     return { success: false, error }
