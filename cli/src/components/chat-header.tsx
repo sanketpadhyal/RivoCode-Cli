@@ -72,9 +72,9 @@ export const ChatHeader = memo(function ChatHeader({
       </box>
       <box style={{ flexDirection: 'column', gap: 0 }}>
         <text style={{ wrapMode: 'none' }}>
-          <b>
-            <span fg={theme.primary}>RivoCode CLI</span>
-          </b>
+          <span fg={theme.primary} attributes={TextAttributes.BOLD}>
+            RivoCode CLI
+          </span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
           <span>sanketpadhyal@gmail.com (Created by Sanket Padhyal)</span>

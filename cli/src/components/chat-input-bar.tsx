@@ -467,8 +467,10 @@ export const ChatInputBar = ({
           )}
           {!modeConfig.label && !modeConfig.icon && (
             <box style={{ flexShrink: 0, paddingRight: 1 }}>
-              <text style={{ fg: theme.secondary, attributes: TextAttributes.BOLD }}>
-                {'>'}
+              <text style={{ wrapMode: 'none' }}>
+                <span fg={theme.secondary} attributes={TextAttributes.BOLD}>
+                  {'>'}
+                </span>
               </text>
             </box>
           )}
