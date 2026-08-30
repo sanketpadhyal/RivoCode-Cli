@@ -398,11 +398,15 @@ export const ChatInputBar = ({
 
   return (
     <>
-      <box
+      <ClickableTitleBox
+        title={inputBoxTitle}
+        titleAlignment="center"
+        onTitleClick={onQueuePreviewClick}
         style={{
           width: '100%',
           borderStyle: 'single',
-          borderColor: '#2d3748',
+          borderColor: inputFocused ? theme.primary : '#2d3748',
+          customBorderChars: BORDER_CHARS,
           paddingLeft: 1,
           paddingRight: 1,
           paddingTop: 0,
@@ -410,7 +414,6 @@ export const ChatInputBar = ({
           flexDirection: 'column',
           gap: hasAnyPreview ? 1 : 0,
         }}
-        border={['top', 'bottom']}
       >
         {hasSlashSuggestions ? (
           <SuggestionMenu
@@ -484,7 +487,7 @@ export const ChatInputBar = ({
             />
           </box>
         </box>
-      </box>
+      </ClickableTitleBox>
       <box
         style={{
           flexDirection: 'row',
