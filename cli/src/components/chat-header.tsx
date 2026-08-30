@@ -85,15 +85,17 @@ export const ChatHeader = memo(function ChatHeader({
         <text style={{ wrapMode: 'none', fg: theme.secondary }}>
           <span>{projectRoot}</span>
         </text>
-        <text style={{ wrapMode: 'none', marginTop: 1 }}>
-          <span
-            bg={apiConnected ? '#ca8a04' : '#a16207'}
-            fg="#ffffff"
-            attributes={TextAttributes.BOLD}
-          >
-            {apiConnected ? ' API Connected ' : ' API Not Connected '}
-          </span>
-        </text>
+        <box style={{ marginTop: 1 }}>
+          <text style={{ wrapMode: 'none' }}>
+            <span
+              bg={apiConnected ? '#ca8a04' : '#a16207'}
+              fg="#ffffff"
+              attributes={TextAttributes.BOLD}
+            >
+              {apiConnected ? ' API Connected ' : ' API Not Connected '}
+            </span>
+          </text>
+        </box>
       </box>
     </box>
   )
