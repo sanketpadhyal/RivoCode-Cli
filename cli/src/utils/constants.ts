@@ -2,7 +2,7 @@ import type { ToolName } from '@rivocode/sdk'
 
 import { getCliEnv } from './env'
 
-export const IS_FREEBUFF = getCliEnv().FREEBUFF_MODE === 'true'
+export const IS_FREEBUFF = false
 
 export const END_SESSION_MESSAGE =
   'Ending session and returning to the model picker…'
@@ -96,7 +96,7 @@ const HARNESS_MODE_IDS = {
 
 export const AGENT_MODE_TO_ID = {
   DEFAULT: HARNESS_MODE_IDS[CLI_HARNESS].DEFAULT,
-  LITE: IS_FREEBUFF ? 'base2-free' : HARNESS_MODE_IDS[CLI_HARNESS].LITE,
+  LITE: HARNESS_MODE_IDS[CLI_HARNESS].LITE,
   MAX: 'base2-max',
   PLAN: 'base2-plan',
 } as const
@@ -106,7 +106,7 @@ export const AGENT_MODES = Object.keys(AGENT_MODE_TO_ID) as AgentMode[]
 
 export const AGENT_MODE_TO_COST_MODE = {
   DEFAULT: 'normal',
-  LITE: IS_FREEBUFF ? 'free' : 'lite',
+  LITE: 'lite',
   MAX: 'max',
   PLAN: 'normal',
 } as const satisfies Record<
