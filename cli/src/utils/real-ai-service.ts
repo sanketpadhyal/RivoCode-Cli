@@ -519,6 +519,7 @@ STRICT BEHAVIOR RULES:
 - Take immediate autonomous action. Do not ask for confirmation for basic file creation or inspection.`
 
   const existingMessages = useChatStore.getState().messages
+  const recentMessages = existingMessages.slice(-8)
   const chatHistory: Array<{
     role: 'user' | 'assistant' | 'system' | 'tool'
     content?: string
@@ -526,7 +527,7 @@ STRICT BEHAVIOR RULES:
     tool_calls?: any[]
   }> = [{ role: 'system', content: systemPrompt }]
 
-  for (const msg of existingMessages) {
+  for (const msg of recentMessages) {
     if (msg.id === aiMessageId) continue
     const role = msg.type === 'user' ? 'user' : 'assistant'
     const textContent =
@@ -589,17 +590,70 @@ STRICT BEHAVIOR RULES:
         requestBody.tools = AGENT_TOOLS
       }
 
-      const response = await fetch(route.endpoint, {
+      let response = await fetch(route.endpoint, {
         method: 'POST',
         headers,
         body: JSON.stringify(requestBody),
         signal,
       })
 
+      // Handle 429 Rate Limiting with Auto-Retry
+      if (response.status === 429 || response.status === 503) {
+        const errBody = await response.text().catch(() => '')
+        let waitSeconds = 4
+        try {
+          const parsed = JSON.parse(errBody)
+          const details = Array.isArray(parsed) ? parsed[0]?.error?.details : parsed?.error?.details
+          const retryInfo = details?.find((d: any) => d['@type']?.includes('RetryInfo'))
+          if (retryInfo?.retryDelay) {
+            waitSeconds = Math.min(8, parseInt(retryInfo.retryDelay, 10) || 4)
+          }
+        } catch {}
+
+        updater.updateAiMessageBlocks((blocks) =>
+          blocks.map((b) =>
+            b.type === 'text' && (b as TextContentBlock).textType === 'text'
+              ? {
+                  ...b,
+                  content:
+                    accumulatedContent +
+                    `\n\n⏳ *API rate limit reached. Waiting ${waitSeconds}s before retrying automatically...*`,
+                }
+              : b,
+          ),
+        )
+
+        await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000))
+
+        if (signal.aborted) break
+
+        response = await fetch(route.endpoint, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(requestBody),
+          signal,
+        })
+      }
+
       if (!response.ok) {
         const errBody = await response.text().catch(() => '')
+        let cleanMsg = ''
+        try {
+          const parsed = JSON.parse(errBody)
+          const errObj = Array.isArray(parsed) ? parsed[0]?.error : parsed?.error
+          cleanMsg = errObj?.message || ''
+        } catch {
+          cleanMsg = errBody.slice(0, 120)
+        }
+
+        if (response.status === 429) {
+          throw new Error(
+            `Rate limit reached on Gemini Free Tier. Please wait a moment or switch to Groq (gpt-oss-120b) for higher rate limits.`,
+          )
+        }
+
         throw new Error(
-          `API returned status ${response.status} (${response.statusText}): ${errBody || 'Unknown error'}`,
+          `API error (${response.status}): ${cleanMsg || response.statusText}`,
         )
       }
 
