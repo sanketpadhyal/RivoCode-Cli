@@ -57,24 +57,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     iconColor: '#8B5CF6',
     description: 'DeepSeek R1 via OpenRouter · Deep reasoning model for complex bugs and architecture',
   },
-  {
-    id: 'openrouter-qwen',
-    name: 'qwen-2.5-coder',
-    badge: '(OpenRouter · 32B Coder)',
-    icon: '⚡',
-    iconPadding: ' ',
-    iconColor: '#06B6D4',
-    description: 'Qwen 2.5 Coder 32B via OpenRouter · 128k context coding specialist',
-  },
-  {
-    id: 'openrouter-free',
-    name: 'openrouter-free',
-    badge: '(OpenRouter · Free Tier)',
-    icon: '❃',
-    iconPadding: '  ',
-    iconColor: '#10A37F',
-    description: 'Free Llama 3.3 70B on OpenRouter (Free at openrouter.ai/keys)',
-  },
 ]
 
 interface ModelPickerScreenProps {
