@@ -78,7 +78,7 @@ export const ChatHeader = memo(function ChatHeader({
           </span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
-          <span>sanketpadhyal@gmail.com (Created by Sanket Padhyal)</span>
+          <span>Made by Sanket Padhyal</span>
         </text>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
           <span>{selectedModel ? `${selectedModel} (${modeLabel})` : 'Gemini 3.6 Flash (High)'}</span>
