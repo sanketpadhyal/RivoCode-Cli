@@ -246,119 +246,74 @@ export const ModelPickerScreen = ({
         paddingBottom: 1,
       }}
     >
-      <box style={{ flexDirection: 'column', gap: 1 }}>
+      <box style={{ flexDirection: 'column' }}>
         {!isCompactHeight && (
           <box style={{ marginBottom: 1 }}>
             {logoComponent}
           </box>
         )}
 
-        <box style={{ flexDirection: 'column' }}>
-          <box style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <text style={{ wrapMode: 'none' }}>
-              <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
-                Select model for{' '}
-              </span>
-              <span fg={theme.primary} attributes={TextAttributes.BOLD}>
-                RivoCode
-              </span>
-              <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
-                :{' '}
-              </span>
-              {filterText.length > 0 ? (
-                <span fg={theme.primary}>{filterText}</span>
-              ) : (
-                <span fg={theme.muted}>Type to filter...</span>
-              )}
-            </text>
-          </box>
-          <text style={{ wrapMode: 'none', marginTop: 1 }}>
-            <span fg="#ffb703">ℹ </span>
-            <span fg={theme.muted}>
-              Select a model below. You will enter your free API key after selection.
-            </span>
-          </text>
-        </box>
-
-        <box style={{ flexDirection: 'column', marginTop: 1, gap: 1 }}>
-          <box style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <text style={{ wrapMode: 'none', fg: theme.muted }}>
-              <span attributes={TextAttributes.BOLD}>Recommended</span>
-            </text>
-            {filteredModels.length > MAX_VISIBLE_ITEMS && (
-              <text style={{ wrapMode: 'none', fg: theme.muted }}>
-                <span>
-                  {selectedIndex + 1}/{filteredModels.length}
-                </span>
-              </text>
-            )}
-          </box>
-
-          {scrollOffset > 0 && (
-            <text style={{ wrapMode: 'none', fg: theme.muted }}>
-              <span>  ▲ more models above</span>
-            </text>
+        <text style={{ wrapMode: 'none' }}>
+          <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+            Select model for{' '}
+          </span>
+          <span fg={theme.primary} attributes={TextAttributes.BOLD}>
+            RivoCode
+          </span>
+          <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+            :{' '}
+          </span>
+          {filterText.length > 0 ? (
+            <span fg={theme.primary}>{filterText}</span>
+          ) : (
+            <span fg={theme.muted}>Type to filter...</span>
           )}
-
-          {visibleModels.map((model, vIdx) => {
-            const actualIdx = scrollOffset + vIdx
-            const isSelected = actualIdx === selectedIndex
+          {'\n'}
+          <span fg="#ffb703">ℹ </span>
+          <span fg={theme.muted}>
+            Select a model below. You will enter your free API key after selection.
+          </span>
+          {'\n\n'}
+          <span fg={theme.muted} attributes={TextAttributes.BOLD}>
+            Recommended
+          </span>
+          {'\n'}
+          {filteredModels.map((model, idx) => {
+            const isSelected = idx === selectedIndex
 
             return (
-              <box
-                key={model.id}
-                style={{
-                  flexDirection: 'column',
-                  marginBottom: isCompactHeight ? 0 : 1,
-                }}
-              >
-                <text style={{ wrapMode: 'none' }}>
-                  <span fg={isSelected ? theme.primary : theme.muted}>
-                    {isSelected ? '▶ ' : '  '}
-                  </span>
-                  <span fg={model.iconColor} attributes={TextAttributes.BOLD}>
-                    {model.icon}
-                  </span>
-                  <span>{model.iconPadding}</span>
-                  <span
-                    fg={theme.foreground}
-                    attributes={isSelected ? TextAttributes.BOLD : undefined}
-                  >
-                    {model.name}
-                  </span>
-                  {model.badge ? (
-                    <span fg={theme.muted}> {model.badge}</span>
-                  ) : null}
-                  {'\n'}
-                  <span fg={theme.muted}>       {model.description}</span>
-                </text>
-              </box>
+              <React.Fragment key={model.id}>
+                <span fg={isSelected ? theme.primary : theme.muted}>
+                  {isSelected ? '▶ ' : '  '}
+                </span>
+                <span fg={model.iconColor} attributes={TextAttributes.BOLD}>
+                  {model.icon}
+                </span>
+                <span>{model.iconPadding}</span>
+                <span
+                  fg={theme.foreground}
+                  attributes={isSelected ? TextAttributes.BOLD : undefined}
+                >
+                  {model.name}
+                </span>
+                {model.badge ? (
+                  <span fg={theme.muted}> {model.badge}</span>
+                ) : null}
+                {'\n'}
+                <span fg={theme.muted}>       {model.description}</span>
+                {idx < filteredModels.length - 1 ? '\n' : ''}
+              </React.Fragment>
             )
           })}
-
-          {scrollOffset + MAX_VISIBLE_ITEMS < filteredModels.length && (
-            <text style={{ wrapMode: 'none', fg: theme.muted }}>
-              <span>  ▼ more models below</span>
-            </text>
-          )}
-
           {filteredModels.length === 0 && (
-            <text style={{ wrapMode: 'none', fg: theme.muted }}>
-              <span>  No matching models found</span>
-            </text>
+            <span fg={theme.muted}>  No matching models found</span>
           )}
-        </box>
-      </box>
-
-      <box style={{ marginTop: 1 }}>
-        <text style={{ wrapMode: 'none', fg: theme.muted }}>
-          <span>↑/↓ navigate · </span>
-          <span fg={theme.foreground}>pgup/pgdn</span>
-          <span> scroll · </span>
+          {'\n\n'}
+          <span fg={theme.muted}>↑/↓ navigate · </span>
           <span fg={theme.foreground}>enter</span>
-          <span> select · </span>
+          <span fg={theme.muted}> select · </span>
           <span fg={theme.foreground}>←</span>
-          <span> back</span>
+          <span fg={theme.muted}> back</span>
         </text>
       </box>
     </box>
