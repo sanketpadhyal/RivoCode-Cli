@@ -82,27 +82,34 @@ export const WorkspaceTrustScreen = ({
     >
       <box style={{ flexDirection: 'column' }}>
         <text style={{ wrapMode: 'none' }}>
-          <span fg="#EAB308">  ▄▄▄▄▄▄▄▄▄▄▄▄▄</span>
+          <span fg="#D97706">  ▄▄▄▄▄▄▄▄</span>
           {'\n'}
-          <span fg="#EAB308">  █            █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▄</span>
-          {'\n'}
-          <span fg="#EAB308">  █</span>
-          <span fg="#FFFFFF">  ┌──────────────────────────────────────────┐</span>
-          <span fg="#EAB308">  █</span>
+          <span fg="#D97706">  █        █</span>
+          <span fg="#EAB308">▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▄</span>
           {'\n'}
           <span fg="#EAB308">  █</span>
-          <span fg="#FFFFFF">  │                                          │</span>
+          <span fg="#FFFFFF">  ┌────────────────────────┐</span>
           <span fg="#EAB308">  █</span>
           {'\n'}
-          <span fg="#FBBF24">  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▄</span>
-          <span fg="#FFFFFF">                  │</span>
+          <span fg="#EAB308">  █</span>
+          <span fg="#FFFFFF">  │                        │</span>
           <span fg="#EAB308">  █</span>
           {'\n'}
-          <span fg="#FBBF24">  █                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█</span>
+          <span fg="#EAB308">  █</span>
+          <span fg="#FFFFFF">  │                        │</span>
+          <span fg="#EAB308">  █</span>
           {'\n'}
-          <span fg="#FBBF24">  █                                                  █</span>
+          <span fg="#FBBF24">  █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▄</span>
+          <span fg="#FFFFFF">       │</span>
+          <span fg="#EAB308">  █</span>
           {'\n'}
-          <span fg="#FBBF24">  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀</span>
+          <span fg="#FBBF24">  █                 ▀▀▀▀▀▀▀▀▀▀▀█</span>
+          {'\n'}
+          <span fg="#FBBF24">  █                            █</span>
+          {'\n'}
+          <span fg="#FBBF24">  █                            █</span>
+          {'\n'}
+          <span fg="#FBBF24">  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀</span>
           {'\n\n'}
           <span fg="#ffb703" attributes={TextAttributes.BOLD}>
             Accessing workspace:
