@@ -467,20 +467,6 @@ export const ChatInputBar = ({
                 cursorPosition={cursorPosition}
               />
             </box>
-            {modeConfig.showAgentModeToggle && !isNarrowWidth && (
-              <box
-                style={{
-                  flexShrink: 0,
-                  paddingLeft: 2,
-                }}
-              >
-                <AgentModeToggle
-                  mode={agentMode}
-                  onToggle={toggleAgentMode}
-                  onSelectMode={setAgentMode}
-                />
-              </box>
-            )}
           </box>
         </box>
       </ClickableTitleBox>
