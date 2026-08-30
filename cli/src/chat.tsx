@@ -67,6 +67,7 @@ import { showClipboardMessage } from './utils/clipboard'
 import { readClipboardImage } from './utils/clipboard-image'
 import { returnToFreebuffLanding } from './hooks/use-freebuff-session'
 import { END_SESSION_MESSAGE, IS_FREEBUFF } from './utils/constants'
+import { isApiConnected } from './utils/real-ai-service'
 import { getSystemMessage } from './utils/message-history'
 import { getInputModeConfig } from './utils/input-modes'
 import {
@@ -1396,13 +1397,13 @@ export const Chat = ({
 
   const hasActiveFreebuffSession =
     IS_FREEBUFF && freebuffSession?.status === 'active'
-  const isFreebuffSessionOver =
-    IS_FREEBUFF && freebuffSession?.status === 'ended'
+  const isKeyBound = isApiConnected(useChatStore.getState().selectedModel)
   const shouldShowStatusLine =
     !feedbackMode &&
     (hasStatusIndicatorContent ||
       shouldShowQueuePreview ||
       !isAtBottom ||
+      !isKeyBound ||
       hasActiveFreebuffSession)
 
   const lastMouseActivityRef = useRef<number>(0)

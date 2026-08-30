@@ -8,7 +8,9 @@ import { ShimmerText } from './shimmer-text'
 
 import { useFreebuffSessionProgress } from '../hooks/use-freebuff-session-progress'
 import { useTheme } from '../hooks/use-theme'
+import { useChatStore } from '../state/chat-store'
 import { formatElapsedTime } from '../utils/format-elapsed-time'
+import { isApiConnected } from '../utils/real-ai-service'
 import {
   FREEBUFF_COUNTDOWN_VISIBLE_MS,
   formatFreebuffSessionCountdown,
@@ -105,6 +107,9 @@ export const StatusBar = ({
   const isUnlimited =
     freebuffSession?.status === 'active' && !freebuffSession.rateLimit
 
+  const selectedModel = useChatStore((state) => state.selectedModel)
+  const isKeyBound = isApiConnected(selectedModel)
+
   const renderStatusIndicator = () => {
     switch (statusIndicatorState.kind) {
       case 'ctrlC':
@@ -134,30 +139,15 @@ export const StatusBar = ({
         )
 
       case 'connecting':
-        return null
-
-      case 'waiting':
-        return (
-          <ShimmerText
-            text="thinking..."
-            interval={SHIMMER_INTERVAL_MS}
-            primaryColor={theme.secondary}
-          />
-        )
-
-      case 'streaming':
-        return (
-          <ShimmerText
-            text="working..."
-            interval={SHIMMER_INTERVAL_MS}
-            primaryColor={theme.secondary}
-          />
-        )
-
-      case 'paused':
-        return null
-
       case 'idle':
+        if (!isKeyBound) {
+          return (
+            <ShimmerText
+              text="⚡ API key not set — add key to ~/.rivocode/.apikeys"
+              primaryColor={theme.warning}
+            />
+          )
+        }
         if (sessionProgress !== null) {
           const isUrgent =
             sessionProgress.remainingMs < FREEBUFF_COUNTDOWN_VISIBLE_MS
@@ -182,6 +172,27 @@ export const StatusBar = ({
             </span>
           )
         }
+        return null
+
+      case 'waiting':
+        return (
+          <ShimmerText
+            text="thinking..."
+            interval={SHIMMER_INTERVAL_MS}
+            primaryColor={theme.secondary}
+          />
+        )
+
+      case 'streaming':
+        return (
+          <ShimmerText
+            text="working..."
+            interval={SHIMMER_INTERVAL_MS}
+            primaryColor={theme.secondary}
+          />
+        )
+
+      case 'paused':
         return null
     }
   }
