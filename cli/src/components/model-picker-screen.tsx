@@ -52,9 +52,9 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     id: 'openrouter-free',
     name: 'openrouter-free',
     badge: '(Auto Free Router)',
-    icon: '⚡',
+    icon: '⎇',
     iconPadding: '  ',
-    iconColor: '#3B82F6',
+    iconColor: '#8B5CF6',
     description: 'Auto-routes across top free open-weights coding LLMs',
   },
   {
