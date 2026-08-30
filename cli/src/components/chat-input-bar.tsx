@@ -453,114 +453,117 @@ export const ChatInputBar = ({
     )
   }
 
+  const widthToUse = separatorWidth || 80
+  const dividerLine = '─'.repeat(Math.max(10, widthToUse))
+
   return (
     <>
-      <ClickableTitleBox
-        title={inputBoxTitle}
-        titleAlignment="center"
-        onTitleClick={onQueuePreviewClick}
+      {hasSlashSuggestions ? (
+        <SuggestionMenu
+          items={slashSuggestionItems}
+          selectedIndex={slashSelectedIndex}
+          maxVisible={5}
+          prefix="/"
+          onItemClick={onSlashItemClick}
+        />
+      ) : null}
+      {hasMentionSuggestions ? (
+        <SuggestionMenu
+          items={[...agentSuggestionItems, ...fileSuggestionItems]}
+          selectedIndex={agentSelectedIndex}
+          maxVisible={5}
+          prefix="@"
+          onItemClick={onMentionItemClick}
+          footer={mentionMenuFooter}
+        />
+      ) : null}
+
+      <box
         style={{
           width: '100%',
-          borderStyle: 'single',
-          borderColor,
-          customBorderChars: BORDER_CHARS,
-          paddingLeft: 1,
-          paddingRight: 1,
-          paddingTop: 0,
-          paddingBottom: 0,
           flexDirection: 'column',
-          gap: hasAnyPreview ? 1 : 0,
-          backgroundColor: theme.surface,
+          gap: 0,
+          marginTop: 0,
+          marginBottom: 0,
         }}
       >
-        {hasSlashSuggestions ? (
-          <SuggestionMenu
-            items={slashSuggestionItems}
-            selectedIndex={slashSelectedIndex}
-            maxVisible={5}
-            prefix="/"
-            onItemClick={onSlashItemClick}
-          />
-        ) : null}
-        {hasMentionSuggestions ? (
-          <SuggestionMenu
-            items={[...agentSuggestionItems, ...fileSuggestionItems]}
-            selectedIndex={agentSelectedIndex}
-            maxVisible={5}
-            prefix="@"
-            onItemClick={onMentionItemClick}
-            footer={mentionMenuFooter}
-          />
-        ) : null}
+        {/* Top Claude-style divider line */}
+        <text style={{ wrapMode: 'none' }}>
+          <span fg={theme.border}>
+            {dividerLine}
+          </span>
+        </text>
+
+        {/* Input prompt row */}
         <box
           style={{
-            flexDirection: 'column',
-            justifyContent: shouldCenterInputVertically
-              ? 'center'
-              : 'flex-start',
-            minHeight: shouldCenterInputVertically ? 3 : undefined,
-            gap: 0,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            width: '100%',
+            paddingTop: 0,
+            paddingBottom: 0,
           }}
         >
-          <box
-            style={{
-              flexDirection: 'row',
-              alignItems: shouldCenterInputVertically ? 'center' : 'flex-start',
-              width: '100%',
-            }}
-          >
-            {modeConfig.label && (
-              <box style={{ flexShrink: 0, paddingRight: 1 }}>
-                <text>
-                  <span
-                    bg={theme.info}
-                    fg={theme.background}
-                  >{` ${modeConfig.label} `}</span>
-                </text>
-              </box>
-            )}
-            {modeConfig.icon && (
-              <box
-                style={{
-                  flexShrink: 0,
-                  paddingRight: 1,
-                }}
-              >
-                <text style={{ fg: theme[modeConfig.color] }}>
-                  {modeConfig.icon}
-                </text>
-              </box>
-            )}
-            {!modeConfig.label && !modeConfig.icon && (
-              <box style={{ flexShrink: 0, paddingRight: 1 }}>
-                <text style={{ fg: '#facc15' }}>❯</text>
-              </box>
-            )}
-            <box style={{ flexGrow: 1, minWidth: 0 }}>
-              <MultilineInput
-                value={inputValue}
-                onChange={handleInputChange}
-                onSubmit={handleSubmit}
-                onPaste={onPaste}
-                onKeyIntercept={handleKeyIntercept}
-                placeholder={effectivePlaceholder}
-                focused={inputFocused && !feedbackMode}
-                maxHeight={Math.floor(terminalHeight / 2)}
-                ref={inputRef}
-                cursorPosition={cursorPosition}
-              />
+          {modeConfig.label && (
+            <box style={{ flexShrink: 0, paddingRight: 1 }}>
+              <text>
+                <span
+                  bg={theme.info}
+                  fg={theme.background}
+                >{` ${modeConfig.label} `}</span>
+              </text>
             </box>
+          )}
+          {modeConfig.icon && (
+            <box
+              style={{
+                flexShrink: 0,
+                paddingRight: 1,
+              }}
+            >
+              <text style={{ fg: theme[modeConfig.color] }}>
+                {modeConfig.icon}
+              </text>
+            </box>
+          )}
+          {!modeConfig.label && !modeConfig.icon && (
+            <box style={{ flexShrink: 0, paddingRight: 1 }}>
+              <text style={{ fg: '#facc15' }}>❯</text>
+            </box>
+          )}
+          <box style={{ flexGrow: 1, minWidth: 0 }}>
+            <MultilineInput
+              value={inputValue}
+              onChange={handleInputChange}
+              onSubmit={handleSubmit}
+              onPaste={onPaste}
+              onKeyIntercept={handleKeyIntercept}
+              placeholder={effectivePlaceholder || 'Try "fix typecheck errors"'}
+              focused={inputFocused && !feedbackMode}
+              maxHeight={Math.floor(terminalHeight / 2)}
+              ref={inputRef}
+              cursorPosition={cursorPosition}
+            />
           </box>
         </box>
-      </ClickableTitleBox>
+
+        {/* Bottom Claude-style divider line */}
+        <text style={{ wrapMode: 'none' }}>
+          <span fg={theme.border}>
+            {dividerLine}
+          </span>
+        </text>
+      </box>
+
+      {/* Status footer below bottom divider */}
       <box
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
           width: '100%',
-          paddingLeft: 1,
-          paddingRight: 1,
+          paddingLeft: 0,
+          paddingRight: 0,
           marginTop: 0,
         }}
       >
