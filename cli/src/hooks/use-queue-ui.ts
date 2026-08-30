@@ -49,8 +49,8 @@ export const useQueueUi = ({
   const inputPlaceholder = useMemo(() => {
     const base =
       terminalWidth < 65
-        ? 'Enter a coding task'
-        : 'Enter a coding task or / for commands'
+        ? 'Ask RivoCode...'
+        : 'Ask RivoCode or type / for commands...'
 
     if (queuePaused && queuedCount > 0) {
       return 'Ctrl-C to cancel queued messages'

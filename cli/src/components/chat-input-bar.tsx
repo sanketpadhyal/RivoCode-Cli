@@ -25,7 +25,7 @@ import { BORDER_CHARS } from '../utils/ui-constants'
 import type { useTheme } from '../hooks/use-theme'
 import type { InputValue } from '../types/store'
 import type { AgentMode } from '../utils/constants'
-import type { MouseEvent } from '@opentui/core'
+import { TextAttributes, type MouseEvent } from '@opentui/core'
 
 type Theme = ReturnType<typeof useTheme>
 
@@ -252,9 +252,15 @@ export const ChatInputBar = ({
     onInterruptStream()
   }
 
+  const selectedModel = useChatStore((state) => state.selectedModel)
   const effectivePlaceholder =
     inputMode === 'default' ? inputPlaceholder : modeConfig.placeholder
-  const borderColor = theme[modeConfig.color]
+  const borderColor =
+    inputMode !== 'default'
+      ? theme[modeConfig.color]
+      : inputFocused
+        ? theme.primary
+        : '#334155'
 
   if (askUserState) {
     return (
@@ -354,8 +360,8 @@ export const ChatInputBar = ({
             </box>
           )}
           {!modeConfig.label && !modeConfig.icon && (
-            <box style={{ flexShrink: 0 }}>
-              <text style={{ fg: theme.primary }}>❯</text>
+            <box style={{ flexShrink: 0, paddingRight: 1 }}>
+              <text style={{ fg: theme.primary, attributes: TextAttributes.BOLD }}>❯</text>
             </box>
           )}
           <MultilineInput
@@ -453,6 +459,13 @@ export const ChatInputBar = ({
                 </text>
               </box>
             )}
+            {!modeConfig.label && !modeConfig.icon && (
+              <box style={{ flexShrink: 0, paddingRight: 1 }}>
+                <text style={{ fg: theme.primary, attributes: TextAttributes.BOLD }}>
+                  ❯
+                </text>
+              </box>
+            )}
             <box style={{ flexGrow: 1, minWidth: 0 }}>
               <MultilineInput
                 value={inputValue}
@@ -470,6 +483,33 @@ export const ChatInputBar = ({
           </box>
         </box>
       </ClickableTitleBox>
+      <box
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+          paddingLeft: 1,
+          paddingRight: 1,
+          paddingTop: 0,
+          marginTop: 0,
+        }}
+      >
+        <text style={{ wrapMode: 'none', fg: theme.muted }}>
+          <span fg={theme.foreground}>enter</span>
+          <span> send · </span>
+          <span fg={theme.foreground}>shift+enter</span>
+          <span> newline · </span>
+          <span fg={theme.foreground}>/</span>
+          <span> commands</span>
+        </text>
+
+        <text style={{ wrapMode: 'none' }}>
+          <span fg={theme.secondary}>
+            {`[ ${selectedModel ?? 'deepseek'} ]`}
+          </span>
+        </text>
+      </box>
       <InputModeBanner />
     </>
   )

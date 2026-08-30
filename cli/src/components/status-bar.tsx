@@ -134,7 +134,7 @@ export const StatusBar = ({
         )
 
       case 'connecting':
-        return <ShimmerText text="connecting..." />
+        return null
 
       case 'waiting':
         return (
