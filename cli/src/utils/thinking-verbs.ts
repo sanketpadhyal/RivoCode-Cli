@@ -101,7 +101,7 @@ const VERB_CATEGORIES = {
       'Calculating', 'Reflecting', 'Extrapolating', 'Brainstorming', 'Distilling',
       'Meditating on plan', 'Connecting concepts', 'Weighing trade-offs', 'Harmonizing logic',
       'Modeling scenario', 'Synthesizing insights', 'Deriving conclusion', 'Navigating trade-space',
-      'Contemplating vectors', 'Formulating hypotheses', 'Deciphering intent', 'Aligning heuristics',
+      'Exploring vectors', 'Formulating hypotheses', 'Deciphering intent', 'Aligning heuristics',
       'Synthesizing thought stream', 'Evaluating implications', 'Deriving optimal path',
     ],
   },

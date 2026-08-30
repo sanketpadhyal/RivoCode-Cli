@@ -77,18 +77,10 @@ export const StatusBar = ({
   const [thinkingState, setThinkingState] = useState(() => getContextualThinkingState(lastUserPrompt))
 
   useEffect(() => {
-    if (statusIndicatorState?.kind !== 'waiting' && statusIndicatorState?.kind !== 'streaming') {
-      return
-    }
-
-    setThinkingState(getContextualThinkingState(lastUserPrompt))
-
-    const interval = setInterval(() => {
+    if (statusIndicatorState?.kind === 'waiting' || statusIndicatorState?.kind === 'streaming') {
       setThinkingState(getContextualThinkingState(lastUserPrompt))
-    }, 2200)
-
-    return () => clearInterval(interval)
-  }, [lastUserPrompt, statusIndicatorState?.kind, timerStartTime])
+    }
+  }, [timerStartTime, lastUserPrompt])
 
   const shouldShowTimer =
     statusIndicatorState?.kind === 'waiting' ||
