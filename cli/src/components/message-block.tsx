@@ -207,8 +207,8 @@ export const MessageBlock = memo(({
         >
           <box style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 1 }}>
             <text style={{ wrapMode: 'none' }}>
-              <span fg="#facc15" attributes={TextAttributes.BOLD}>
-                {'> '}
+              <span bg="#facc15" fg="#000000" attributes={TextAttributes.BOLD}>
+                {' > '}
               </span>
             </text>
 

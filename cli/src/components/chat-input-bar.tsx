@@ -355,7 +355,11 @@ export const ChatInputBar = ({
           )}
           {!modeConfig.label && !modeConfig.icon && (
             <box style={{ flexShrink: 0, paddingRight: 1 }}>
-              <text style={{ fg: '#facc15' }}>❯</text>
+              <text>
+                <span bg="#facc15" fg="#000000" attributes={TextAttributes.BOLD}>
+                  {' ❯ '}
+                </span>
+              </text>
             </box>
           )}
           <MultilineInput
@@ -456,7 +460,11 @@ export const ChatInputBar = ({
             )}
             {!modeConfig.label && !modeConfig.icon && (
               <box style={{ flexShrink: 0, paddingRight: 1 }}>
-                <text style={{ fg: '#facc15' }}>❯</text>
+                <text>
+                  <span bg="#facc15" fg="#000000" attributes={TextAttributes.BOLD}>
+                    {' ❯ '}
+                  </span>
+                </text>
               </box>
             )}
             <box style={{ flexGrow: 1, minWidth: 0 }}>
