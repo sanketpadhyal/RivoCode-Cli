@@ -763,47 +763,88 @@ export async function executeLocalTool(
   }
 }
 
-// Generate compact snippet diff (up to 5 lines with + in green and - in red)
-function generateCompactDiff(oldText: string | null, newText: string): string {
+// Generate accurate snippet diff with line numbers and +/- markings
+function computeDetailedDiff(
+  oldText: string | null,
+  newText: string,
+  maxHunkLines = 14,
+): { diffText: string; added: number; removed: number } {
   if (oldText === null) {
-    const newLines = newText.split('\n').filter((l) => l.trim().length > 0)
-    const sample = newLines.slice(0, 3).map((l) => `+ ${l}`).join('\n')
-    return sample + (newLines.length > 3 ? `\n+ ... (+${newLines.length - 3} more lines)` : '')
+    const newLines = newText.split('\n')
+    const added = newLines.length
+    const sample = newLines.slice(0, 6).map((l, i) => `${String(i + 1).padStart(4, ' ')} +  ${l}`).join('\n')
+    const diffText = sample + (newLines.length > 6 ? `\n       +  ... and ${newLines.length - 6} more lines` : '')
+    return { diffText, added, removed: 0 }
   }
 
   const oldLines = oldText.split('\n')
   const newLines = newText.split('\n')
-  const diffEntries: string[] = []
 
-  let oldIdx = 0
-  let newIdx = 0
-  while ((oldIdx < oldLines.length || newIdx < newLines.length) && diffEntries.length < 5) {
-    const oLine = oldLines[oldIdx]
-    const nLine = newLines[newIdx]
+  const maxRows = Math.min(oldLines.length + 1, 600)
+  const maxCols = Math.min(newLines.length + 1, 600)
+  const dp = Array.from({ length: maxRows }, () => new Int32Array(maxCols))
+  const limM = maxRows - 1
+  const limN = maxCols - 1
 
-    if (oLine === nLine) {
-      oldIdx++
-      newIdx++
-      continue
+  for (let i = 0; i < limM; i++) {
+    for (let j = 0; j < limN; j++) {
+      if (oldLines[i] === newLines[j]) {
+        dp[i + 1][j + 1] = dp[i][j] + 1
+      } else {
+        dp[i + 1][j + 1] = Math.max(dp[i + 1][j], dp[i][j + 1])
+      }
     }
+  }
 
-    if (oLine !== undefined && (nLine === undefined || !newLines.slice(newIdx, newIdx + 5).includes(oLine))) {
-      diffEntries.push(`- ${oLine.trim() || ' '}`)
-      oldIdx++
-    } else if (nLine !== undefined) {
-      diffEntries.push(`+ ${nLine.trim() || ' '}`)
-      newIdx++
+  let i = limM
+  let j = limN
+  const ops: Array<{ type: 'same' | 'add' | 'del'; oldLine?: number; newLine?: number; text: string }> = []
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
+      ops.unshift({ type: 'same', oldLine: i, newLine: j, text: oldLines[i - 1] })
+      i--
+      j--
+    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+      ops.unshift({ type: 'add', newLine: j, text: newLines[j - 1] })
+      j--
+    } else if (i > 0) {
+      ops.unshift({ type: 'del', oldLine: i, text: oldLines[i - 1] })
+      i--
+    }
+  }
+
+  let added = 0
+  let removed = 0
+  for (const op of ops) {
+    if (op.type === 'add') added++
+    if (op.type === 'del') removed++
+  }
+
+  const firstChangeIdx = ops.findIndex((op) => op.type !== 'same')
+  if (firstChangeIdx === -1) {
+    return { added: 0, removed: 0, diffText: '' }
+  }
+
+  const start = Math.max(0, firstChangeIdx - 2)
+  const end = Math.min(ops.length, start + maxHunkLines)
+  const slice = ops.slice(start, end)
+
+  const formattedLines = slice.map((op) => {
+    if (op.type === 'add') {
+      return `${String(op.newLine).padStart(4, ' ')} +  ${op.text}`
+    } else if (op.type === 'del') {
+      return `${String(op.oldLine).padStart(4, ' ')} -  ${op.text}`
     } else {
-      oldIdx++
-      newIdx++
+      return `${String(op.newLine || op.oldLine).padStart(4, ' ')}    ${op.text}`
     }
+  })
+
+  if (end < ops.length && ops.slice(end).some((op) => op.type !== 'same')) {
+    const remainingChanges = ops.slice(end).filter((op) => op.type !== 'same').length
+    formattedLines.push(`     ... and ${remainingChanges} more changes`)
   }
 
-  if (diffEntries.length === 0) {
-    return '+ // Updated content'
-  }
-
-  return diffEntries.slice(0, 5).join('\n')
+  return { added, removed, diffText: formattedLines.join('\n') }
 }
 
 function cleanStreamedContent(text: string): string {
@@ -1481,23 +1522,25 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
           let toolActionNotice = '\n\n'
           if (tc.name === 'write_file') {
             const newContentStr = parsedArgs.content || ''
-            const lineCount = newContentStr.split('\n').length
-            toolActionNotice += `● **WriteFile**(\`${parsedArgs.path}\`)\n`
+            const rawPath = parsedArgs.path || 'file'
+            const fullTarget = path.isAbsolute(rawPath) ? rawPath : path.join(projectRoot, rawPath)
+            const displayPath = fullTarget.startsWith(os.homedir())
+              ? '~' + fullTarget.slice(os.homedir().length)
+              : fullTarget
+
+            const diffResult = computeDetailedDiff(oldContent, newContentStr)
+
+            toolActionNotice += `● **Edit**(\`${displayPath}\`)\n`
             if (!toolExec.success) {
-              toolActionNotice += `  ⎿  Failed: ${truncatedResult.slice(0, 80)}\n`
+              toolActionNotice += `  └ Failed: ${truncatedResult.slice(0, 80)}\n`
             } else if (oldContent !== null) {
-              const oldLines = oldContent.split('\n').length
-              const diff = lineCount - oldLines
-              const diffTag = diff >= 0 ? `+${diff}` : `${diff}`
-              toolActionNotice += `  ⎿  Modified: \`${diffTag} lines\` (${oldLines} → ${lineCount} lines)\n`
+              toolActionNotice += `  └ +${diffResult.added} / -${diffResult.removed} lines\n`
             } else {
-              toolActionNotice += `  ⎿  Created file (\`+${lineCount} lines\`)\n`
+              toolActionNotice += `  └ +${diffResult.added} lines\n`
             }
 
-            // Generate compact colored diff snippet (up to 5 changed lines)
-            const diffSnippet = generateCompactDiff(oldContent, newContentStr)
-            if (diffSnippet) {
-              toolActionNotice += `\`\`\`diff\n${diffSnippet}\n\`\`\`\n`
+            if (diffResult.diffText) {
+              toolActionNotice += `\`\`\`diff\n${diffResult.diffText}\n\`\`\`\n`
             }
           } else if (tc.name === 'run_terminal_command') {
             const cleanOutput = toolExec.result.trim()

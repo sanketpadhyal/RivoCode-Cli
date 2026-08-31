@@ -18,9 +18,9 @@ A modern, AI-powered CLI tool for developers that brings intelligent code assist
 
 ### AI Model Integration
 - Multiple AI provider support:
-  - MiniMax
-  - Llama 3.3
-  - Gemini
+  - **MiniMax** (MiniMax-M3) - Fast, cost-effective LLM
+  - **Llama 3.3** - Open source model
+  - **Gemini** - Google's AI model
 - Easy model switching via model picker
 - Streaming responses for real-time output
 
@@ -45,6 +45,56 @@ A modern, AI-powered CLI tool for developers that brings intelligent code assist
 - **TanStack Query** for data fetching
 - **OpenAI SDK** for AI integrations
 
+## MiniMax Integration
+
+### API Setup
+
+1. Sign up at [MiniMax Platform](https://platform.minimax.io)
+2. Get your API key from the dashboard
+3. Configure in your environment:
+
+```bash
+# Add to .env file
+MINIMAX_API_KEY=your_api_key_here
+```
+
+### Usage with MiniMax
+
+```bash
+# Direct API call example
+curl https://api.minimax.io/v1/chat/completions \
+  -H "Authorization: Bearer $MINIMAX_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "MiniMax-M3",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+### Available MiniMax Features
+
+| Feature | Description |
+|---------|-------------|
+| **MiniMax-M3** | Latest LLM model |
+| **Image Generation** | AI image creation |
+| **Video Generation V2** | Text-to-video |
+| **Text-to-Speech** | Voice synthesis |
+| **Voice Design** | Custom voice creation |
+| **Music Generation** | AI music creation |
+
+### SDK Integration
+
+```bash
+npm install @ai-sdk/minimax
+```
+
+```javascript
+import { createMiniMax } from '@ai-sdk/minimax';
+
+const minimax = createMiniMax({ apiKey: process.env.MINIMAX_API_KEY });
+const response = await minimax('Your question here');
+```
+
 ## Project Structure
 
 ```
@@ -68,6 +118,7 @@ cli/
 - Node.js 18+
 - npm or yarn
 - Expo CLI
+- MiniMax API key (for MiniMax integration)
 
 ### Installation
 
@@ -105,9 +156,17 @@ npx expo start
 ### Chat Commands
 
 - `/help` - Show available commands
-- `/model [name]` - Switch AI model
+- `/model [name]` - Switch AI model (mini, llama, gemini)
 - `/clear` - Clear conversation history
 - `/attach [file]` - Attach file to message
+
+### Switching Models
+
+```
+/model mini     # Use MiniMax
+/model llama    # Use Llama 3.3
+/model gemini   # Use Gemini
+```
 
 ## License
 
