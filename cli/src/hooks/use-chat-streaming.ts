@@ -3,7 +3,6 @@ import { RECONNECTION_MESSAGE_DURATION_MS } from '@rivocode/sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState, useTransition } from 'react'
 
-import { authQueryKeys } from './use-auth-query'
 import { useConnectionStatus } from './use-connection-status'
 import { useExitHandler } from './use-exit-handler'
 import { useQueueControls } from './use-queue-controls'
@@ -68,8 +67,6 @@ export function useChatStreaming({
 
   const handleReconnection = useCallback(
     (isInitialConnection: boolean) => {
-      queryClient.invalidateQueries({ queryKey: authQueryKeys.all })
-
       startUiTransition(() => {
         if (!isInitialConnection) {
           setShowReconnectionMessage(true)

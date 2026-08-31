@@ -6,8 +6,9 @@ import path from 'path'
 const RIVO_BIN_DIR = path.join(os.homedir(), '.rivocode', 'bin')
 const OCR_BINARY_PATH = path.join(RIVO_BIN_DIR, 'rivo-ocr')
 const OCR_SWIFT_PATH = path.join(RIVO_BIN_DIR, 'ocr.swift')
+const OCR_PS1_PATH = path.join(RIVO_BIN_DIR, 'ocr.ps1')
 
-const SWIFT_SOURCE = `import Foundation
+export const SWIFT_SOURCE = `import Foundation
 import Vision
 import AppKit
 
@@ -49,24 +50,72 @@ do {
 }
 `
 
-export function ensureOcrBinaryExists(): string {
-  try {
-    // Also write to current workspace .rivocode folder so user can inspect it
-    try {
-      const workspaceRivoDir = path.join(process.cwd(), '.rivocode')
-      if (fs.existsSync(workspaceRivoDir)) {
-        fs.writeFileSync(path.join(workspaceRivoDir, 'ocr.swift'), SWIFT_SOURCE, 'utf-8')
-      }
-    } catch (_wsErr) {}
+export const POWERSHELL_SOURCE = `param([string]$ImagePath)
 
-    if (fs.existsSync(OCR_BINARY_PATH)) {
-      return OCR_BINARY_PATH
+if (-not $ImagePath -or -not (Test-Path $ImagePath)) {
+    Write-Output "(Image file not found: $ImagePath)"
+    exit 0
+}
+
+try {
+    $resolvedPath = (Resolve-Path $ImagePath).Path
+    [Windows.Media.Ocr.OcrEngine, Windows.Foundation.UniversalApiContract, ContentType = WindowsRuntime] | Out-Null
+    [Windows.Graphics.Imaging.BitmapDecoder, Windows.Foundation.UniversalApiContract, ContentType = WindowsRuntime] | Out-Null
+    [Windows.Storage.StorageFile, Windows.Storage, ContentType = WindowsRuntime] | Out-Null
+
+    $storageFile = [Windows.Storage.StorageFile]::GetFileFromPathAsync($resolvedPath).GetAwaiter().GetResult()
+    $stream = $storageFile.OpenAsync([Windows.Storage.FileAccessMode]::Read).GetAwaiter().GetResult()
+    $decoder = [Windows.Graphics.Imaging.BitmapDecoder]::CreateAsync($stream).GetAwaiter().GetResult()
+    $bitmap = $decoder.GetSoftwareBitmapAsync().GetAwaiter().GetResult()
+
+    $engine = [Windows.Media.Ocr.OcrEngine]::TryCreateFromUserProfileLanguages()
+    if (-not $engine) {
+        $engine = [Windows.Media.Ocr.OcrEngine]::TryCreateFromLanguage([Windows.Globalization.Language]::new("en-US"))
     }
 
-    fs.mkdirSync(RIVO_BIN_DIR, { recursive: true })
-    fs.writeFileSync(OCR_SWIFT_PATH, SWIFT_SOURCE, 'utf-8')
+    $result = $engine.RecognizeAsync($bitmap).GetAwaiter().GetResult()
+    if ($result -and $result.Text) {
+        Write-Output $result.Text
+    } else {
+        Write-Output "(No text detected in image)"
+    }
+} catch {
+    Write-Output "(OCR Error: $($_.Exception.Message))"
+}
+`
 
-    if (process.platform === 'darwin') {
+export function ensureOcrBinaryExists(): string {
+  try {
+    const isWindows = process.platform === 'win32'
+    const isMac = process.platform === 'darwin'
+    const workspaceRivoDir = path.join(process.cwd(), '.rivocode')
+
+    if (isWindows) {
+      // Write to workspace .rivocode
+      if (fs.existsSync(workspaceRivoDir)) {
+        try {
+          fs.writeFileSync(path.join(workspaceRivoDir, 'ocr.ps1'), POWERSHELL_SOURCE, 'utf-8')
+        } catch (_wsErr) {}
+      }
+      fs.mkdirSync(RIVO_BIN_DIR, { recursive: true })
+      fs.writeFileSync(OCR_PS1_PATH, POWERSHELL_SOURCE, 'utf-8')
+      return `powershell -ExecutionPolicy Bypass -NoProfile -File "${OCR_PS1_PATH}"`
+    }
+
+    if (isMac) {
+      if (fs.existsSync(workspaceRivoDir)) {
+        try {
+          fs.writeFileSync(path.join(workspaceRivoDir, 'ocr.swift'), SWIFT_SOURCE, 'utf-8')
+        } catch (_wsErr) {}
+      }
+
+      if (fs.existsSync(OCR_BINARY_PATH)) {
+        return OCR_BINARY_PATH
+      }
+
+      fs.mkdirSync(RIVO_BIN_DIR, { recursive: true })
+      fs.writeFileSync(OCR_SWIFT_PATH, SWIFT_SOURCE, 'utf-8')
+
       try {
         execSync(`swiftc "${OCR_SWIFT_PATH}" -o "${OCR_BINARY_PATH}" -O`, {
           timeout: 20000,
@@ -75,7 +124,6 @@ export function ensureOcrBinaryExists(): string {
         fs.chmodSync(OCR_BINARY_PATH, 0o755)
         return OCR_BINARY_PATH
       } catch (_compErr) {
-        // Fall back to running swift directly
         return `swift "${OCR_SWIFT_PATH}"`
       }
     }
@@ -92,13 +140,12 @@ export function performNativeOcr(imagePath: string): string {
     const ocrCmd = ensureOcrBinaryExists()
     const output = execSync(`${ocrCmd} "${imagePath}"`, {
       encoding: 'utf-8',
-      timeout: 10000,
+      timeout: 15000,
       stdio: ['pipe', 'pipe', 'pipe'],
     })
 
     return output.trim() || '(No text detected in image)'
   } catch (err: any) {
-    // If swift binary failed, try running swift directly
     if (process.platform === 'darwin' && fs.existsSync(OCR_SWIFT_PATH)) {
       try {
         const directOutput = execSync(`swift "${OCR_SWIFT_PATH}" "${imagePath}"`, {

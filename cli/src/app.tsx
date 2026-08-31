@@ -1,4 +1,3 @@
-import { isRetryableStatusCode, getErrorStatusCode } from '@rivocode/sdk'
 import fs from 'fs'
 import path from 'path'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -18,14 +17,11 @@ import {
 import { ModelPickerScreen } from './components/model-picker-screen'
 import { ApiKeySetupScreen } from './components/api-key-setup-screen'
 import { WorkspaceTrustScreen } from './components/workspace-trust-screen'
-import { DEFAULT_BYPASS_USER, saveUserCredentials } from './utils/auth'
 import { resolveApiKey, resolveModelRoute } from './utils/real-ai-service'
 import {
   isWorkspaceTrusted as checkWorkspaceTrusted,
   trustWorkspace,
 } from './utils/trusted-workspaces'
-import { useAuthQuery } from './hooks/use-auth-query'
-import { useAuthState } from './hooks/use-auth-state'
 import { useTerminalFocus } from './hooks/use-terminal-focus'
 import { getProjectRoot, startNewChat } from './project-files'
 import { useChatHistoryStore } from './state/chat-history-store'
@@ -36,14 +32,11 @@ import { findGitRoot } from './utils/git'
 
 import type { MultilineInputHandle } from './components/multiline-input'
 import type { AgentMode } from './utils/constants'
-import type { AuthStatus } from './utils/status-indicator-state'
 import type { FileTreeNode } from '@rivocode/common/util/file'
 
 interface AppProps {
   initialPrompt: string | null
   agentId?: string
-  requireAuth: boolean | null
-  hasInvalidCredentials: boolean
   fileTree: FileTreeNode[]
   continueChat: boolean
   continueChatId?: string
@@ -55,8 +48,6 @@ interface AppProps {
 export const App = ({
   initialPrompt,
   agentId,
-  requireAuth,
-  hasInvalidCredentials,
   fileTree,
   continueChat,
   continueChatId,
@@ -102,21 +93,6 @@ export const App = ({
   useTerminalFocus({
     onFocusChange: setInputFocused,
     onSupportDetected: handleSupportDetected,
-  })
-
-  const authQuery = useAuthQuery()
-
-  const {
-    isAuthenticated,
-    setIsAuthenticated,
-    setUser,
-    handleLoginSuccess,
-    logoutMutation,
-  } = useAuthState({
-    requireAuth,
-    inputRef,
-    setInputFocused,
-    resetChatStore,
   })
 
   const projectRoot = getProjectRoot()
@@ -192,25 +168,6 @@ export const App = ({
 
   const effectiveContinueChat = continueChat || resumeChatId !== null
   const effectiveContinueChatId = resumeChatId ?? continueChatId
-
-  const authError = authQuery.error
-  const authErrorStatusCode = authError
-    ? getErrorStatusCode(authError)
-    : undefined
-
-  let authStatus: AuthStatus = 'ok'
-  if (authQuery.isError && authErrorStatusCode !== undefined) {
-    if (isRetryableStatusCode(authErrorStatusCode)) {
-      authStatus = 'retrying'
-    } else if (authErrorStatusCode >= 500) {
-      authStatus = 'unreachable'
-    }
-  }
-
-  useEffect(() => {
-    saveUserCredentials(DEFAULT_BYPASS_USER)
-    handleLoginSuccess(DEFAULT_BYPASS_USER)
-  }, [handleLoginSuccess])
 
   const hadExistingWorkspace = useMemo(
     () => fs.existsSync(path.join(projectRoot, '.rivocode', 'context.json')),
@@ -313,18 +270,14 @@ export const App = ({
   }
 
   return (
-    <AuthedSurface
+    <ChatSurface
       runtimeKey={chatSessionId}
       consumeInitialPrompt={consumeInitialPrompt}
       agentId={agentId}
       fileTree={fileTree}
       inputRef={inputRef}
-      setIsAuthenticated={setIsAuthenticated}
-      setUser={setUser}
-      logoutMutation={logoutMutation}
       continueChat={effectiveContinueChat}
       continueChatId={effectiveContinueChatId}
-      authStatus={authStatus}
       initialMode={initialMode}
       gitRoot={gitRoot}
       onSwitchToGitRoot={handleSwitchToGitRoot}
@@ -336,20 +289,14 @@ export const App = ({
   )
 }
 
-interface AuthedSurfaceProps {
+interface ChatSurfaceProps {
   runtimeKey: string
   consumeInitialPrompt: () => string | null
   agentId?: string
   fileTree: FileTreeNode[]
   inputRef: React.MutableRefObject<MultilineInputHandle | null>
-  setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean | null>>
-  setUser: React.Dispatch<
-    React.SetStateAction<import('./utils/auth').User | null>
-  >
-  logoutMutation: ReturnType<typeof useAuthState>['logoutMutation']
   continueChat: boolean
   continueChatId: string | undefined
-  authStatus: AuthStatus
   initialMode: AgentMode | undefined
   gitRoot: string | null | undefined
   onSwitchToGitRoot: () => void
@@ -359,7 +306,7 @@ interface AuthedSurfaceProps {
   onNewChat: () => void
 }
 
-const AuthedSurface = (props: AuthedSurfaceProps) => {
+const ChatSurface = (props: ChatSurfaceProps) => {
   return (
     <ChatRuntimeProvider
       key={props.runtimeKey}
@@ -368,19 +315,15 @@ const AuthedSurface = (props: AuthedSurfaceProps) => {
       continueChat={props.continueChat}
       continueChatId={props.continueChatId}
     >
-      <AuthedSurfaceRoutes {...props} />
+      <ChatSurfaceRoutes {...props} />
     </ChatRuntimeProvider>
   )
 }
 
-const AuthedSurfaceRoutes = ({
+const ChatSurfaceRoutes = ({
   consumeInitialPrompt,
   fileTree,
   inputRef,
-  setIsAuthenticated,
-  setUser,
-  logoutMutation,
-  authStatus,
   initialMode,
   gitRoot,
   onSwitchToGitRoot,
@@ -388,7 +331,7 @@ const AuthedSurfaceRoutes = ({
   onSelectChat,
   onCancelChatHistory,
   onNewChat,
-}: AuthedSurfaceProps) => {
+}: ChatSurfaceProps) => {
   if (showChatHistory) {
     return (
       <ChatHistoryScreen
@@ -404,10 +347,6 @@ const AuthedSurfaceRoutes = ({
       consumeInitialPrompt={consumeInitialPrompt}
       fileTree={fileTree}
       inputRef={inputRef}
-      setIsAuthenticated={setIsAuthenticated}
-      setUser={setUser}
-      logoutMutation={logoutMutation}
-      authStatus={authStatus}
       initialMode={initialMode}
       gitRoot={gitRoot}
       onSwitchToGitRoot={onSwitchToGitRoot}

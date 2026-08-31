@@ -81,12 +81,16 @@ export const SettingUpSession = ({ onComplete, isReturning = false }: SettingUpS
   const stepText = useMemo(() => {
     if (isReturning) {
       if (setupStep === 1) return 'Reconnecting workspace session...'
-      if (setupStep === 2) return 'Checking native Vision OCR tools...'
+      if (setupStep === 2) return 'Checking native OCR tools...'
       if (setupStep === 3) return 'Verifying web reader & internet tools...'
       return 'Connected & Ready!'
     } else {
       if (setupStep === 1) return 'Initializing .rivocode workspace configuration...'
-      if (setupStep === 2) return 'Installing native Vision OCR in .rivocode/ocr.swift...'
+      if (setupStep === 2) {
+        return process.platform === 'win32'
+          ? 'Installing native WinRT OCR in .rivocode/ocr.ps1...'
+          : 'Installing native Vision OCR in .rivocode/ocr.swift...'
+      }
       if (setupStep === 3) return 'Installing web access & markdown reader in .rivocode/web.js...'
       return 'Workspace ready!'
     }

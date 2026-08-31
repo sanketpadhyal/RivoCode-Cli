@@ -25,11 +25,6 @@ const ALL_SLASH_COMMANDS: SlashCommand[] = [
     description: 'Copy the full conversation (messages + tool results) to the clipboard',
     aliases: ['copy-chat', 'export'],
   },
-  {
-    id: 'feedback',
-    label: 'feedback',
-    description: 'Share general feedback about RivoCode',
-  },
   ...MODE_COMMANDS,
   {
     id: 'exit',

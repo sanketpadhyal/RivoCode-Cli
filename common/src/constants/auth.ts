@@ -1,1 +1,0 @@
-export const CLI_AUTH_CODE_LIFETIME_MS = 60 * 60 * 1000

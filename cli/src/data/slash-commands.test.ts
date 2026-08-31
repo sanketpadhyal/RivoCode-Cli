@@ -6,7 +6,6 @@ describe('slash commands', () => {
   test('returns standard slash commands', () => {
     const commands = getSlashCommandsWithSkills()
     expect(commands.find((c) => c.id === 'copy')).toBeDefined()
-    expect(commands.find((c) => c.id === 'feedback')).toBeDefined()
     expect(commands.find((c) => c.id === 'mode:default')).toBeDefined()
     expect(commands.find((c) => c.id === 'exit')).toBeDefined()
   })
@@ -14,6 +13,7 @@ describe('slash commands', () => {
   test('does not contain removed commands', () => {
     const ids = SLASH_COMMANDS.map((c) => c.id)
     expect(ids).not.toContain('help')
+    expect(ids).not.toContain('feedback')
     expect(ids).not.toContain('interview')
     expect(ids).not.toContain('plan')
     expect(ids).not.toContain('review')

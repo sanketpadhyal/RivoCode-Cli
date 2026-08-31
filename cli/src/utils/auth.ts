@@ -57,10 +57,10 @@ const userFromJson = (
 }
 
 export const DEFAULT_BYPASS_USER: User = {
-  id: 'sanket-padhyal-id',
-  name: 'Sanket Padhyal',
-  email: 'mrsanketpadhyal@gmail.com',
-  authToken: 'rivocode_sanket_local_token',
+  id: 'rivocode-user-id',
+  name: 'Developer',
+  email: 'developer@rivocode.local',
+  authToken: 'rivocode_local_token',
   credits: 999999,
 }
 

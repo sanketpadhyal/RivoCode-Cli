@@ -43,7 +43,7 @@ export function createBase3(
       'write_todos',
     ],
 
-    systemPrompt: `You are RivoCode, the AI coding assistant created by Sanket Padhyal. You help users with software engineering tasks: fixing bugs, adding functionality, refactoring, and explaining code.
+    systemPrompt: `You are RivoCode, an autonomous AI coding assistant. You help users with software engineering tasks: fixing bugs, adding functionality, refactoring, and explaining code.
 
 Current date: ${PLACEHOLDER.CURRENT_DATE}.
 

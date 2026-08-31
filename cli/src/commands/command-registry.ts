@@ -1,6 +1,5 @@
 import { handleCopyConversationCommand } from './copy-conversation'
 import { useChatStore } from '../state/chat-store'
-import { useFeedbackStore } from '../state/feedback-store'
 import { AGENT_MODES } from '../utils/constants'
 import { exitCliCleanly } from '../utils/exit-cleanly'
 import { getSystemMessage, getUserMessage } from '../utils/message-history'
@@ -9,9 +8,7 @@ import type { MultilineInputHandle } from '../components/multiline-input'
 import type { InputValue, PendingAttachment } from '../types/store'
 import type { ChatMessage } from '../types/chat'
 import type { SendMessageFn } from '../types/contracts/send-message'
-import type { User } from '../utils/auth'
 import type { AgentMode } from '../utils/constants'
-import type { UseMutationResult } from '@tanstack/react-query'
 
 export type RouterParams = {
   agentMode: AgentMode
@@ -19,7 +16,6 @@ export type RouterParams = {
   inputValue: string
   isChainInProgressRef: React.MutableRefObject<boolean>
   isStreaming: boolean
-  logoutMutation: UseMutationResult<boolean, Error, void, unknown>
   streamMessageIdRef: React.MutableRefObject<string | null>
   addToQueue: (message: string, attachments?: PendingAttachment[]) => void
   clearMessages: () => void
@@ -31,11 +27,9 @@ export type RouterParams = {
   setInputValue: (
     value: InputValue | ((prev: InputValue) => InputValue),
   ) => void
-  setIsAuthenticated: (value: React.SetStateAction<boolean | null>) => void
   setMessages: (
     value: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[]),
   ) => void
-  setUser: (value: React.SetStateAction<User | null>) => void
 }
 
 export interface CommandDefinition {
@@ -101,22 +95,6 @@ const ALL_COMMANDS: CommandDefinition[] = [
     aliases: ['copy-chat', 'export'],
     handler: async (params) => {
       await handleCopyConversationCommand(params)
-    },
-  }),
-  defineCommandWithArgs({
-    name: 'feedback',
-    aliases: ['bug', 'report'],
-    handler: (params, args) => {
-      const trimmedArgs = args.trim()
-
-      if (trimmedArgs) {
-        useFeedbackStore.getState().setFeedbackText(trimmedArgs)
-        useFeedbackStore.getState().setFeedbackCursor(trimmedArgs.length)
-      }
-
-      params.saveToHistory(params.inputValue.trim())
-      clearInput(params)
-      return { openFeedbackMode: true }
     },
   }),
   defineCommand({

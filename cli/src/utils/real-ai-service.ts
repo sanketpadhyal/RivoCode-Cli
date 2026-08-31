@@ -454,7 +454,7 @@ const AGENT_TOOLS = [
     type: 'function',
     function: {
       name: 'ocr_image',
-      description: 'Extract text from an image or screenshot using high-speed native Apple Vision OCR',
+      description: 'Extract text from an image or screenshot using high-speed native OS OCR (Apple Vision / WinRT OCR)',
       parameters: {
         type: 'object',
         properties: {
@@ -1003,18 +1003,19 @@ export async function executeRealAiStream({
     return
   }
 
-  // 2. Build system prompt and conversation messages
-  const systemPrompt = `You are RivoCode, an autonomous AI coding assistant created by Sanket Padhyal, operating like Claude Code / Cursor.
+  const systemPrompt = `You are RivoCode, an autonomous AI coding assistant operating like Claude Code / Cursor.
 You are running in mode: ${agentMode}.
 Current workspace directory: ${projectRoot}.
 Host Platform: ${os.platform()} (${os.arch()}).
+
+Never assume the user's name or personal background unless they explicitly introduce themselves.
 
 AUTONOMOUS CAPABILITIES (YOU HAVE FULL LOCAL SYSTEM & LIVE INTERNET ACCESS):
 - write_file(path, content): Create or overwrite files directly in the workspace.
 - run_terminal_command(command): Execute shell/terminal commands directly.
 - read_files(paths): Read workspace files into context.
 - list_directory(path): List folder contents.
-- ocr_image(path): Extract text from images, screenshots, or UI mockups using native Apple Vision OCR.
+- ocr_image(path): Extract text from images, screenshots, or UI mockups using native OS OCR (Apple Vision on macOS / WinRT OCR on Windows).
 - search_web(query): Search the live internet for any person, library, API, documentation, or fact.
 - fetch_web_content(url): Fetch real-time web documentation, online articles, APIs, GitHub repositories, and packages.
 

@@ -96,21 +96,15 @@ import { compactChatHistory } from './utils/context-compactor'
 import type { CommandResult } from './commands/command-registry'
 import type { MultilineInputHandle } from './components/multiline-input'
 import type { MatchedSlashCommand } from './hooks/use-suggestion-engine'
-import type { User } from './utils/auth'
 import type { AgentMode } from './utils/constants'
 import type { FileTreeNode } from '@rivocode/common/util/file'
 import type { BoxRenderable, ScrollBoxRenderable } from '@opentui/core'
-import type { UseMutationResult } from '@tanstack/react-query'
-import type { Dispatch, SetStateAction } from 'react'
 
 export const Chat = ({
   consumeInitialPrompt,
   fileTree,
   inputRef,
-  setIsAuthenticated,
-  setUser,
-  logoutMutation,
-  authStatus,
+  authStatus = 'ok',
   initialMode,
   gitRoot,
   onSwitchToGitRoot,
@@ -118,10 +112,7 @@ export const Chat = ({
   consumeInitialPrompt: () => string | null
   fileTree: FileTreeNode[]
   inputRef: React.MutableRefObject<MultilineInputHandle | null>
-  setIsAuthenticated: Dispatch<SetStateAction<boolean | null>>
-  setUser: Dispatch<SetStateAction<User | null>>
-  logoutMutation: UseMutationResult<boolean, Error, void, unknown>
-  authStatus: AuthStatus
+  authStatus?: AuthStatus
   initialMode?: AgentMode
   gitRoot?: string | null
   onSwitchToGitRoot?: () => void
@@ -519,7 +510,6 @@ export const Chat = ({
           inputValue: content,
           isChainInProgressRef,
           isStreaming,
-          logoutMutation,
           streamMessageIdRef,
           addToQueue,
           clearMessages,
@@ -529,9 +519,7 @@ export const Chat = ({
           setCanProcessQueue,
           setInputFocused,
           setInputValue,
-          setIsAuthenticated,
           setMessages,
-          setUser,
         })
 
         return result

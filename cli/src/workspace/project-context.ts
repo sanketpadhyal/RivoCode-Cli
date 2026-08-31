@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { SWIFT_SOURCE, POWERSHELL_SOURCE } from '../utils/ocr-helper'
 
 export interface ProjectSettingsData {
   model?: string
@@ -62,7 +63,7 @@ export function initProjectWorkspace(projectRoot: string): WorkspaceInitResult {
         createdAt: parsed.createdAt || new Date().toISOString(),
         lastActive: parsed.lastActive || new Date().toISOString(),
         sessionCount: (parsed.sessionCount || 1) + 1,
-        lastModel: parsed.lastModel || 'deepseek',
+        lastModel: parsed.lastModel || 'openrouter-free',
         lastAgentMode: parsed.lastAgentMode || 'DEFAULT',
       }
     } catch {
@@ -72,7 +73,7 @@ export function initProjectWorkspace(projectRoot: string): WorkspaceInitResult {
         createdAt: new Date().toISOString(),
         lastActive: new Date().toISOString(),
         sessionCount: 1,
-        lastModel: 'deepseek',
+        lastModel: 'openrouter-free',
         lastAgentMode: 'DEFAULT',
       }
     }
@@ -118,53 +119,21 @@ export function initProjectWorkspace(projectRoot: string): WorkspaceInitResult {
     fs.writeFileSync(keysFile, JSON.stringify(keysTemplate, null, 2), 'utf8')
   }
 
-  // 4. Native Vision OCR Script
-  const ocrSwiftFile = path.join(rivoDir, 'ocr.swift')
-  if (!fs.existsSync(ocrSwiftFile)) {
-    const swiftSource = `import Foundation
-import Vision
-import AppKit
-
-guard CommandLine.arguments.count > 1 else {
-    fputs("Usage: rivo-ocr <image_path>\\n", stderr)
-    exit(1)
-}
-
-let imagePath = CommandLine.arguments[1]
-let imageURL = URL(fileURLWithPath: imagePath)
-
-guard let image = NSImage(contentsOf: imageURL),
-      let tiffData = image.tiffRepresentation,
-      let bitmapImage = NSBitmapImageRep(data: tiffData),
-      let cgImage = bitmapImage.cgImage else {
-    fputs("Error: Unable to load image at \\(imagePath)\\n", stderr)
-    exit(1)
-}
-
-let request = VNRecognizeTextRequest { (request, error) in
-    guard let observations = request.results as? [VNRecognizedTextObservation] else {
-        return
+  // 4. Native OCR Script (Windows PowerShell / macOS Swift)
+  if (process.platform === 'win32') {
+    const ocrPs1File = path.join(rivoDir, 'ocr.ps1')
+    if (!fs.existsSync(ocrPs1File)) {
+      try {
+        fs.writeFileSync(ocrPs1File, POWERSHELL_SOURCE, 'utf8')
+      } catch {}
     }
-    let recognizedStrings = observations.compactMap { observation in
-        observation.topCandidates(1).first?.string
+  } else if (process.platform === 'darwin') {
+    const ocrSwiftFile = path.join(rivoDir, 'ocr.swift')
+    if (!fs.existsSync(ocrSwiftFile)) {
+      try {
+        fs.writeFileSync(ocrSwiftFile, SWIFT_SOURCE, 'utf8')
+      } catch {}
     }
-    print(recognizedStrings.joined(separator: "\\n"))
-}
-
-request.recognitionLevel = .accurate
-request.usesLanguageCorrection = true
-
-let requestHandler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-do {
-    try requestHandler.perform([request])
-} catch {
-    fputs("OCR Error: \\(error.localizedDescription)\\n", stderr)
-    exit(1)
-}
-`
-    try {
-      fs.writeFileSync(ocrSwiftFile, swiftSource, 'utf8')
-    } catch {}
   }
 
   // 5. Native Web Reader & Token-Optimized Markdown Extractor
