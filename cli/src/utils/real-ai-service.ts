@@ -205,21 +205,6 @@ export interface ModelRoute {
 export function resolveModelRoute(modelName: string): ModelRoute {
   const normalized = (modelName || 'gemini').toLowerCase()
 
-  if (
-    normalized.includes('ollama') ||
-    normalized.includes('local') ||
-    normalized.includes('qwen2.5-coder') ||
-    normalized.includes(':7b')
-  ) {
-    return {
-      provider: 'ollama',
-      endpoint: process.env.OLLAMA_ENDPOINT || 'http://localhost:11434/v1/chat/completions',
-      modelId: 'qwen2.5-coder:7b',
-      displayName: 'Qwen 2.5 Coder 7B (Local Ollama)',
-      apiKeyUrl: 'http://localhost:11434',
-    }
-  }
-
   if (normalized.includes('openrouter')) {
     return {
       provider: 'openrouter',
@@ -268,7 +253,7 @@ export async function testApiKeyConnection(
       try {
         const res = await fetch('http://localhost:11434/api/tags')
         if (res.ok) {
-          return { success: true, message: 'Connected to local Ollama (qwen2.5-coder:7b)!' }
+          return { success: true, message: 'Connected to local Ollama!' }
         }
       } catch {
         return { success: false, error: 'Ollama is not running. Please start Ollama ("ollama serve")' }

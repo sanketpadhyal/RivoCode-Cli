@@ -276,7 +276,15 @@ export function loadChatTexts(projectRoot: string): any[] | null {
 export function clearChatTexts(projectRoot: string): void {
   try {
     const rivoDir = getProjectRivocodeDir(projectRoot)
+    if (!fs.existsSync(rivoDir)) {
+      fs.mkdirSync(rivoDir, { recursive: true })
+    }
     const textsFile = path.join(rivoDir, 'texts.json')
+    if (fs.existsSync(textsFile)) {
+      try {
+        fs.unlinkSync(textsFile)
+      } catch {}
+    }
     fs.writeFileSync(textsFile, JSON.stringify([], null, 2), 'utf8')
   } catch (_e) {}
 }

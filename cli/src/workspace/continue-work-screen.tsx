@@ -1,11 +1,13 @@
-import { useKeyboard } from '@opentui/react'
 import { TextAttributes, type KeyEvent } from '@opentui/core'
-import React, { useCallback, useState } from 'react'
+import { useKeyboard } from '@opentui/react'
+import React, { useCallback, useMemo, useState } from 'react'
 
-import { useTheme } from '../hooks/use-theme'
+import { useLogo } from '../hooks/use-logo'
 import { useTerminalDimensions } from '../hooks/use-terminal-dimensions'
+import { useTheme } from '../hooks/use-theme'
 import { exitCliCleanly } from '../utils/exit-cleanly'
 import { isPlainEnterKey } from '../utils/terminal-enter-detection'
+
 import type { ProjectContextData } from './project-context'
 
 interface ContinueWorkScreenProps {
@@ -20,24 +22,32 @@ export const ContinueWorkScreen = ({
   onStartFresh,
 }: ContinueWorkScreenProps) => {
   const theme = useTheme()
-  const { terminalHeight } = useTerminalDimensions()
+  const { contentMaxWidth, terminalHeight } = useTerminalDimensions()
+  const isCompact = terminalHeight < 24
   const [selectedIndex, setSelectedIndex] = useState(0)
 
-  // compact mode when terminal is too short to show everything
-  const isCompact = terminalHeight < 18
+  const { component: logoComponent } = useLogo({
+    availableWidth: contentMaxWidth,
+  })
 
-  const options = [
-    {
-      title: 'Continue previous work',
-      desc: `Resume with previous context (${context.lastModel || 'gemini-3.6-flash'})`,
-      action: onContinue,
-    },
-    {
-      title: 'Start fresh in this workspace',
-      desc: 'Pick a new model and start a new clean session',
-      action: onStartFresh,
-    },
-  ]
+  const lastModelName = context.lastModel || 'gemini-3.6-flash'
+
+  const options = useMemo(
+    () => [
+      {
+        title: 'Resume Previous Session',
+        badge: 'Recommended',
+        desc: `Continue with saved chat history and model (${lastModelName})`,
+        action: onContinue,
+      },
+      {
+        title: 'Start Fresh Session',
+        desc: 'Start clean in this folder with a new model and fresh context',
+        action: onStartFresh,
+      },
+    ],
+    [lastModelName, onContinue, onStartFresh],
+  )
 
   useKeyboard(
     useCallback(
@@ -66,6 +76,22 @@ export const ContinueWorkScreen = ({
           return
         }
 
+        if (key.name === '1') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
+            key.preventDefault()
+          }
+          options[0].action()
+          return
+        }
+
+        if (key.name === '2') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
+            key.preventDefault()
+          }
+          options[1].action()
+          return
+        }
+
         if (isPlainEnterKey(key)) {
           if ('preventDefault' in key && typeof key.preventDefault === 'function') {
             key.preventDefault()
@@ -91,127 +117,156 @@ export const ContinueWorkScreen = ({
     }
   }
 
-  const renderOptions = () => {
-    if (selectedIndex === 0) {
-      return (
-        <>
-          <span fg="#55ff55" attributes={TextAttributes.BOLD}>
-            {'> Continue previous work'}
-          </span>
-          {'\n'}
-          <span fg={theme.muted}>
-            {'  Resume with previous context (' + (context.lastModel || 'deepseek') + ')'}
-          </span>
-          {'\n\n'}
-          <span fg={theme.muted}>{'  Start fresh in this workspace'}</span>
-          {'\n'}
-          <span fg={theme.muted}>{'  Pick a new model and start a new clean session'}</span>
-        </>
-      )
-    }
-    return (
-      <>
-        <span fg={theme.muted}>{'  Continue previous work'}</span>
-        {'\n'}
-        <span fg={theme.muted}>
-          {'  Resume with previous context (' + (context.lastModel || 'deepseek') + ')'}
-        </span>
-        {'\n\n'}
-        <span fg="#55ff55" attributes={TextAttributes.BOLD}>
-          {'> Start fresh in this workspace'}
-        </span>
-        {'\n'}
-        <span fg={theme.muted}>{'  Pick a new model and start a new clean session'}</span>
-      </>
-    )
-  }
-
   return (
     <box
       style={{
         flexDirection: 'column',
         justifyContent: 'space-between',
-        height: '100%',
+        flexGrow: 1,
         width: '100%',
         paddingLeft: 2,
+        paddingRight: 2,
         paddingTop: 1,
         paddingBottom: 1,
       }}
     >
       <box style={{ flexDirection: 'column' }}>
-        <text style={{ wrapMode: 'none' }}>
-          {/* Header — always shown */}
-          <span fg="#ffb703" attributes={TextAttributes.BOLD}>RivoCode</span>
-          <span fg={theme.secondary}> · Saved Workspace Found</span>
-          {'\n\n'}
+        {/* Logo (hidden if short terminal) */}
+        {!isCompact && (
+          <box style={{ marginBottom: 1 }}>
+            {logoComponent}
+          </box>
+        )}
 
-          {/* Subtitle — hidden in compact mode when second option is selected */}
-          {(!isCompact || selectedIndex === 0) && (
-            <>
-              <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
-                Do you want to continue with your old work?
-              </span>
-              {'\n'}
-              <span fg={theme.secondary}>
-                Previous workspace state was detected in this folder:
-              </span>
-              {'\n\n'}
-            </>
-          )}
-
-          {/* Metadata — abbreviated in compact mode */}
-          {isCompact ? (
-            <>
-              <span fg={theme.muted}>  Work: </span>
-              <span fg="#55ff55" attributes={TextAttributes.BOLD}>{context.workName}</span>
-              {selectedIndex === 0 && (
-                <>
-                  {'\n'}
-                  <span fg={theme.muted}>  Last Active: </span>
-                  <span fg={theme.secondary}>{formatLastActive(context.lastActive)}</span>
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              <span fg={theme.muted}>  Work: </span>
-              <span fg="#55ff55" attributes={TextAttributes.BOLD}>{context.workName}</span>
-              {'\n'}
-              <span fg={theme.muted}>  Path: </span>
-              <span fg={theme.secondary}>{context.projectPath}</span>
-              {'\n'}
-              <span fg={theme.muted}>  Last Active: </span>
-              <span fg={theme.secondary}>{formatLastActive(context.lastActive)}</span>
-              {'\n'}
-              <span fg={theme.muted}>  Sessions: </span>
-              <span fg={theme.secondary}>{context.sessionCount}</span>
-            </>
-          )}
-
-          {'\n\n'}
-
-          {/* Options — always shown */}
-          {renderOptions()}
-
-          {'\n\n'}
-
-          {/* Nav hint */}
-          <span fg={theme.muted}>{'↑/↓ Navigate · '}</span>
-          <span fg={theme.foreground}>enter</span>
-          <span fg={theme.muted}>{' Confirm'}</span>
+        {/* Title Header */}
+        <text style={{ wrapMode: 'none', marginBottom: 1 }}>
+          <span fg="#ffb703" attributes={TextAttributes.BOLD}>
+            RivoCode
+          </span>
+          <span fg={theme.muted}> · Saved Workspace Found</span>
+          {'\n'}
+          <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+            Previous workspace state was detected in this folder.
+          </span>
+          {'\n'}
+          <span fg={theme.secondary}>
+            How would you like to proceed?
+          </span>
         </text>
+
+        {/* Workspace Summary Box */}
+        <box
+          style={{
+            borderStyle: 'single',
+            borderColor: theme.surface,
+            paddingLeft: 2,
+            paddingRight: 2,
+            paddingTop: 0,
+            paddingBottom: 0,
+            flexDirection: 'column',
+            marginBottom: 1,
+            width: '100%',
+          }}
+        >
+          <text style={{ wrapMode: 'none' }}>
+            <span fg={theme.muted}>Project : </span>
+            <span fg="#55ff55" attributes={TextAttributes.BOLD}>
+              {context.workName}
+            </span>
+            {'\n'}
+            <span fg={theme.muted}>Path    : </span>
+            <span fg={theme.secondary}>
+              {context.projectPath}
+            </span>
+            {'\n'}
+            <span fg={theme.muted}>Active  : </span>
+            <span fg={theme.foreground}>
+              {formatLastActive(context.lastActive)}
+            </span>
+            <span fg={theme.muted}> · Sessions: </span>
+            <span fg={theme.foreground}>
+              {context.sessionCount}
+            </span>
+            <span fg={theme.muted}> · Last Model: </span>
+            <span fg="#38bdf8" attributes={TextAttributes.BOLD}>
+              {lastModelName}
+            </span>
+          </text>
+        </box>
+
+        {/* Options List */}
+        <box style={{ flexDirection: 'column', marginTop: 1 }}>
+          {options.map((opt, idx) => {
+            const isSelected = idx === selectedIndex
+
+            return (
+              <box
+                key={opt.title}
+                style={{
+                  flexDirection: 'column',
+                  marginBottom: 1,
+                }}
+              >
+                <text style={{ wrapMode: 'none' }}>
+                  <span
+                    fg={isSelected ? '#55ff55' : theme.muted}
+                    attributes={TextAttributes.BOLD}
+                  >
+                    {isSelected ? '▶ ' : '  '}
+                    {idx + 1}. {opt.title}
+                  </span>
+                  {opt.badge && (
+                    <span fg="#ffb703" attributes={TextAttributes.BOLD}>
+                      {' '}[{opt.badge}]
+                    </span>
+                  )}
+                  {'\n'}
+                  <span fg={isSelected ? theme.foreground : theme.muted}>
+                    {'     '}{opt.desc}
+                  </span>
+                </text>
+              </box>
+            )
+          })}
+        </box>
       </box>
 
+      {/* Footer Navigation Bar */}
       <box
         style={{
           flexDirection: 'row',
-          justifyContent: 'flex-end',
+          justifyContent: 'space-between',
           width: '100%',
-          paddingRight: 2,
+          marginTop: 1,
         }}
       >
-        <text style={{ wrapMode: 'none', fg: theme.muted }}>
-          <span>{context.lastModel ? `${context.lastModel} (Saved)` : 'RivoCode'}</span>
+        <text style={{ wrapMode: 'none' }}>
+          <span fg={theme.muted}>Press </span>
+          <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+            1
+          </span>
+          <span fg={theme.muted}> or </span>
+          <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+            2
+          </span>
+          <span fg={theme.muted}> / </span>
+          <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
+            ↑/↓
+          </span>
+          <span fg={theme.muted}> Navigate · </span>
+          <span fg="#55ff55" attributes={TextAttributes.BOLD}>
+            Enter
+          </span>
+          <span fg={theme.muted}> Confirm · </span>
+          <span fg={theme.secondary}>
+            Ctrl+C
+          </span>
+          <span fg={theme.muted}> Exit</span>
+        </text>
+
+        <text style={{ wrapMode: 'none' }}>
+          <span fg={theme.muted}>Model: </span>
+          <span fg="#38bdf8">{lastModelName}</span>
         </text>
       </box>
     </box>

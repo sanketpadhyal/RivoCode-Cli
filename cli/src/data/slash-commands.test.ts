@@ -1,24 +1,27 @@
 import { describe, expect, test } from 'bun:test'
 
-import { getSlashCommandsWithSkills } from './slash-commands'
+import { SLASH_COMMANDS, getSlashCommandsWithSkills } from './slash-commands'
 
-describe('getSlashCommandsWithSkills', () => {
-  test('keeps user-only skills in the composer for additional context', () => {
-    const commands = getSlashCommandsWithSkills({
-      interview: {
-        name: 'interview',
-        description: 'Ask questions before implementing',
-        content: 'Interview instructions',
-        disableModelInvocation: true,
-        filePath: '/skills/interview/SKILL.md',
-      },
-    })
+describe('slash commands', () => {
+  test('returns standard slash commands', () => {
+    const commands = getSlashCommandsWithSkills()
+    expect(commands.find((c) => c.id === 'copy')).toBeDefined()
+    expect(commands.find((c) => c.id === 'feedback')).toBeDefined()
+    expect(commands.find((c) => c.id === 'mode:default')).toBeDefined()
+    expect(commands.find((c) => c.id === 'exit')).toBeDefined()
+  })
 
-    expect(
-      commands.find((command) => command.id === 'skill:interview'),
-    ).toMatchObject({
-      label: 'skill:interview',
-      insertText: '/skill:interview ',
-    })
+  test('does not contain removed commands', () => {
+    const ids = SLASH_COMMANDS.map((c) => c.id)
+    expect(ids).not.toContain('help')
+    expect(ids).not.toContain('interview')
+    expect(ids).not.toContain('plan')
+    expect(ids).not.toContain('review')
+    expect(ids).not.toContain('queue')
+    expect(ids).not.toContain('new')
+    expect(ids).not.toContain('history')
+    expect(ids).not.toContain('agent:gpt-5')
+    expect(ids).not.toContain('theme:toggle')
   })
 })
+

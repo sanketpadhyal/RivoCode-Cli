@@ -22,31 +22,22 @@ export interface ModelOption {
 
 export const AVAILABLE_MODELS: ModelOption[] = [
   {
-    id: 'ollama-qwen',
-    name: 'qwen2.5-coder:7b',
-    badge: '(Local Ollama · 100% Free & Offline)',
-    icon: '🦙',
-    iconPadding: ' ',
-    iconColor: '#A855F7',
-    description: 'Qwen 2.5 Coder 7B running locally on Ollama (localhost:11434 · Zero Rate Limits)',
+    id: 'openrouter-free',
+    name: 'openrouter-free',
+    badge: '(OpenRouter · 100% Free Tier · Easy API)',
+    icon: '❃',
+    iconPadding: '  ',
+    iconColor: '#10A37F',
+    description: 'Free Llama 3.3 70B on OpenRouter (openrouter.ai/keys) · Easy setup & long sessions · Good for basic coding, Git & React · Not suitable for large refactors',
   },
   {
     id: 'gemini',
     name: 'gemini-3.6-flash',
-    badge: '(Google AI · 1M Context & Free)',
+    badge: '(Google Gemini · 1M Context & Fast)',
     icon: '✦',
     iconPadding: ' ',
     iconColor: '#38BDF8',
-    description: 'Gemini 3.6 Flash via Google AI Studio · 1M token window (Free at aistudio.google.com)',
-  },
-  {
-    id: 'openrouter-free',
-    name: 'openrouter-free',
-    badge: '(OpenRouter · Free Tier)',
-    icon: '❃',
-    iconPadding: '  ',
-    iconColor: '#10A37F',
-    description: 'Free Llama 3.3 70B on OpenRouter (Free at openrouter.ai/keys)',
+    description: 'Google Gemini via Google AI Studio (aistudio.google.com) · 1M token window · Recommended for big tasks, deep reasoning & large codebases',
   },
 ]
 

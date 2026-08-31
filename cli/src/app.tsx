@@ -10,6 +10,7 @@ import { ChatRuntimeProvider } from './contexts/chat-runtime-context'
 import { SettingUpSession } from './settingup/settingupsession'
 import { ContinueWorkScreen } from './workspace/continue-work-screen'
 import {
+  clearChatTexts,
   initProjectWorkspace,
   updateProjectContext,
   updateProjectSettings,
@@ -253,6 +254,13 @@ export const App = ({
           setContinueWorkDismissed(true)
         }}
         onStartFresh={() => {
+          clearChatTexts(projectRoot)
+          useChatStore.getState().setMessages([])
+          startNewChat()
+          trustWorkspace(projectRoot)
+          setIsWorkspaceTrusted(true)
+          setIsModelSelected(false)
+          setIsApiKeyConfigured(false)
           setContinueWorkDismissed(true)
         }}
       />
@@ -279,15 +287,7 @@ export const App = ({
           updateProjectContext(projectRoot, { lastModel: model.name })
           updateProjectSettings(projectRoot, { model: model.name })
           setIsModelSelected(true)
-          if (
-            model.id.includes('ollama') ||
-            model.name.includes('qwen2.5-coder') ||
-            model.name.includes('ollama')
-          ) {
-            setIsApiKeyConfigured(true)
-          } else {
-            setIsApiKeyConfigured(false)
-          }
+          setIsApiKeyConfigured(false)
         }}
         onBack={() => {
           setIsWorkspaceTrusted(false)
