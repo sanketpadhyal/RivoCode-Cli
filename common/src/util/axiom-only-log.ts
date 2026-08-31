@@ -1,5 +1,5 @@
 import { AnalyticsEvent } from '../constants/analytics-events'
-import { PLACEMENT_SLOTS } from '../constants/freebuff-placements'
+import { PLACEMENT_SLOTS } from '../constants/ad-placements'
 import {
   FIRST_PARTY_VIEW_ACK_CLIENT_FAMILIES,
   FIRST_PARTY_VIEW_ACK_MAX_DURATION_MS,
@@ -152,7 +152,7 @@ const ADS_IMPREZIA_EXPERIMENT_ARMS = [
   'control',
 ] as const
 const ADS_IMPREZIA_BROWSER_SURFACES = [
-  'freebuff_web_chat',
+  'rivocode_web_chat',
   'chat_assistant',
 ] as const
 const ADS_IMPREZIA_FAILURE_CLASSES = [

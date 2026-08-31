@@ -50,5 +50,3 @@ if (process.env.CI !== 'true' && process.env.CI !== '1') {
 
 process.env.NODE_ENV ||= 'test'
 process.env.BUN_ENV ||= 'test'
-
-process.env.FREEBUFF_SHIP_LOGS ??= 'false'

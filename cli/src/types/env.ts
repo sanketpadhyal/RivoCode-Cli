@@ -56,7 +56,6 @@ export type CliEnv = BaseEnv & {
   CODEBUFF_LAUNCHER_PID?: string
   CODEBUFF_SHIP_LOGS?: string
   CODEBUFF_NO_TERMINAL_WATCHDOG?: string
-  FREEBUFF_MODE?: string
 }
 
 export type CliEnvDeps = {

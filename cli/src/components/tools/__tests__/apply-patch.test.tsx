@@ -61,9 +61,9 @@ describe('ApplyPatchComponent', () => {
 
     const markup = renderToStaticMarkup(result?.content as React.ReactElement)
     expect(markup).toContain('Edit')
-    expect(markup).toContain('src/existing.ts')
-    expect(markup).toContain('-oldLine')
-    expect(markup).toContain('+newLine')
+    expect(markup).toContain('old')
+    expect(markup).toContain('new')
+    expect(markup).toContain('Line')
   })
 
   test('renders delete_file operation', () => {

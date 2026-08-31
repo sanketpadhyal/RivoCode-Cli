@@ -21,8 +21,8 @@ const TERMINAL_COMMAND_BROKER_PROTOCOL_ENV =
 
 const MAX_REQUEST_BYTES = 4 * 1024 * 1024
 const MAX_PROTOCOL_BYTES = 64 * 1024
-const PROTOCOL_FILE_PREFIX = 'freebuff-terminal-command-broker-'
-const TERMINAL_COMMAND_BROKER_RECOVERY = 'Restart Freebuff and try again.'
+const PROTOCOL_FILE_PREFIX = 'rivocode-terminal-command-broker-'
+const TERMINAL_COMMAND_BROKER_RECOVERY = 'Restart RivoCode and try again.'
 
 export type TerminalBrokerFailureStage = 'spawn' | 'stdio' | 'completion'
 export type TerminalBrokerFailureCode =

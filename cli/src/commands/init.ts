@@ -1,20 +1,17 @@
-import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 import { AnalyticsEvent } from '@rivocode/common/constants/analytics-events'
 import { KNOWLEDGE_FILE_NAMES } from '@rivocode/common/constants/knowledge'
 
-import agentDefinitionSource from '../../../common/src/templates/initial-agents-dir/types/agent-definition' with { type: 'text' }
-import toolsSource from '../../../common/src/templates/initial-agents-dir/types/tools' with { type: 'text' }
-import utilTypesSource from '../../../common/src/templates/initial-agents-dir/types/util-types' with { type: 'text' }
 import { getProjectRoot } from '../project-files'
 import { trackEvent } from '../utils/analytics'
-import { IS_FREEBUFF } from '../utils/constants'
 import { getSystemMessage } from '../utils/message-history'
 
 import type { PostUserMessageFn } from '../types/contracts/send-message'
 
-const brandName = IS_FREEBUFF ? 'Freebuff' : 'Codebuff'
+const brandName = 'RivoCode'
 
 const INITIAL_KNOWLEDGE_FILE = `# Project knowledge
 
@@ -35,18 +32,36 @@ This file gives ${brandName} context about your project: goals, commands, conven
 - Things to avoid:
 `
 
+function loadTemplateSource(fileName: string): string {
+  try {
+    const templatePath = fileURLToPath(
+      new URL(`../../../common/src/templates/initial-agents-dir/types/${fileName}`, import.meta.url),
+    )
+    if (existsSync(templatePath)) {
+      return readFileSync(templatePath, 'utf8')
+    }
+  } catch {}
+  return ''
+}
+
 const COMMON_TYPE_FILES = [
   {
     fileName: 'agent-definition.ts',
-    source: agentDefinitionSource,
+    get source() {
+      return loadTemplateSource('agent-definition.ts')
+    },
   },
   {
     fileName: 'tools.ts',
-    source: toolsSource,
+    get source() {
+      return loadTemplateSource('tools.ts')
+    },
   },
   {
     fileName: 'util-types.ts',
-    source: utilTypesSource,
+    get source() {
+      return loadTemplateSource('util-types.ts')
+    },
   },
 ]
 

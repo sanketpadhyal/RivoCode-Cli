@@ -21,6 +21,7 @@ interface ApiKeysConfig {
   deepseek?: string
   openai?: string
   gemini?: string
+  ollama?: string
 }
 
 const CONFIG_DIR = path.join(os.homedir(), '.rivocode')
@@ -109,7 +110,50 @@ DEEPSEEK_API_KEY=${current.deepseek || ''}
   } catch (_e) {}
 }
 
-export function resolveApiKey(provider: 'groq' | 'openrouter' | 'gemini' | 'deepseek'): string | null {
+export function saveFallbackKeys(provider: keyof ApiKeysConfig, fallbacks: string[]) {
+  try {
+    ensureApiKeysFileExists()
+    const raw = fs.existsSync(KEYS_FILE) ? fs.readFileSync(KEYS_FILE, 'utf-8') : '{}'
+    const current = JSON.parse(raw)
+    current[`${provider}_fallbacks`] = fallbacks.filter(Boolean).map((k) => k.trim())
+    fs.writeFileSync(KEYS_FILE, JSON.stringify(current, null, 2), 'utf-8')
+  } catch (_e) {}
+}
+
+export function getFallbackKeys(provider: keyof ApiKeysConfig): string[] {
+  try {
+    if (fs.existsSync(KEYS_FILE)) {
+      const raw = fs.readFileSync(KEYS_FILE, 'utf-8')
+      const parsed = JSON.parse(raw)
+      return (parsed[`${provider}_fallbacks`] || []).filter(Boolean)
+    }
+  } catch (_e) {}
+  return []
+}
+
+let _currentFallbackIndex: Record<string, number> = {}
+
+export function resolveApiKeyWithRotation(provider: 'groq' | 'openrouter' | 'gemini' | 'deepseek' | 'ollama'): string | null {
+  if (provider === 'ollama') return 'ollama-local'
+  const primary = resolveApiKey(provider)
+  const fallbacks = getFallbackKeys(provider)
+  const allKeys = [primary, ...fallbacks].filter(Boolean) as string[]
+  if (allKeys.length === 0) return null
+  const idx = _currentFallbackIndex[provider] || 0
+  return allKeys[idx % allKeys.length] || allKeys[0]
+}
+
+export function rotateToNextKey(provider: 'groq' | 'openrouter' | 'gemini' | 'deepseek' | 'ollama') {
+  if (provider === 'ollama') return
+  const fallbacks = getFallbackKeys(provider)
+  const total = 1 + fallbacks.length
+  _currentFallbackIndex[provider] = ((_currentFallbackIndex[provider] || 0) + 1) % total
+}
+
+export function resolveApiKey(provider: 'groq' | 'openrouter' | 'gemini' | 'deepseek' | 'ollama'): string | null {
+  if (provider === 'ollama') {
+    return 'ollama-local'
+  }
   const envKey =
     provider === 'groq'
       ? process.env.GROQ_API_KEY
@@ -139,6 +183,7 @@ export function resolveApiKey(provider: 'groq' | 'openrouter' | 'gemini' | 'deep
 export function isApiConnected(modelName?: string): boolean {
   if (modelName) {
     const route = resolveModelRoute(modelName)
+    if (route.provider === 'ollama') return true
     return Boolean(resolveApiKey(route.provider))
   }
   return Boolean(
@@ -150,7 +195,7 @@ export function isApiConnected(modelName?: string): boolean {
 }
 
 export interface ModelRoute {
-  provider: 'groq' | 'openrouter' | 'gemini' | 'deepseek'
+  provider: 'groq' | 'openrouter' | 'gemini' | 'deepseek' | 'ollama'
   endpoint: string
   modelId: string
   displayName: string
@@ -158,7 +203,32 @@ export interface ModelRoute {
 }
 
 export function resolveModelRoute(modelName: string): ModelRoute {
-  const normalized = (modelName || 'groq').toLowerCase()
+  const normalized = (modelName || 'gemini').toLowerCase()
+
+  if (
+    normalized.includes('ollama') ||
+    normalized.includes('local') ||
+    normalized.includes('qwen2.5-coder') ||
+    normalized.includes(':7b')
+  ) {
+    return {
+      provider: 'ollama',
+      endpoint: process.env.OLLAMA_ENDPOINT || 'http://localhost:11434/v1/chat/completions',
+      modelId: 'qwen2.5-coder:7b',
+      displayName: 'Qwen 2.5 Coder 7B (Local Ollama)',
+      apiKeyUrl: 'http://localhost:11434',
+    }
+  }
+
+  if (normalized.includes('openrouter')) {
+    return {
+      provider: 'openrouter',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      modelId: 'openrouter/auto',
+      displayName: 'OpenRouter Free (Llama 3.3 70B)',
+      apiKeyUrl: 'https://openrouter.ai/keys',
+    }
+  }
 
   if (normalized.includes('claude')) {
     return {
@@ -170,7 +240,7 @@ export function resolveModelRoute(modelName: string): ModelRoute {
     }
   }
 
-  if (normalized.includes('deepseek-v3') || (normalized.includes('openrouter') && normalized.includes('deepseek'))) {
+  if (normalized.includes('deepseek')) {
     return {
       provider: 'openrouter',
       endpoint: 'https://openrouter.ai/api/v1/chat/completions',
@@ -180,80 +250,30 @@ export function resolveModelRoute(modelName: string): ModelRoute {
     }
   }
 
-  if (normalized.includes('r1') || normalized.includes('reasoning')) {
-    return {
-      provider: 'openrouter',
-      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-      modelId: 'deepseek/deepseek-r1',
-      displayName: 'DeepSeek R1 (OpenRouter)',
-      apiKeyUrl: 'https://openrouter.ai/keys',
-    }
-  }
-
-  if (normalized.includes('coder') || (normalized.includes('openrouter') && normalized.includes('qwen'))) {
-    return {
-      provider: 'openrouter',
-      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-      modelId: 'qwen/qwen-2.5-coder-32b-instruct',
-      displayName: 'Qwen 2.5 Coder 32B (OpenRouter)',
-      apiKeyUrl: 'https://openrouter.ai/keys',
-    }
-  }
-
-  if (normalized.includes('openrouter')) {
-    return {
-      provider: 'openrouter',
-      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-      modelId: 'openrouter/auto',
-      displayName: 'OpenRouter Auto',
-      apiKeyUrl: 'https://openrouter.ai/keys',
-    }
-  }
-
-  if (normalized.includes('gemini')) {
-    return {
-      provider: 'gemini',
-      endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-      modelId: 'gemini-3.6-flash',
-      displayName: 'Gemini 3.6 Flash (Google AI Studio)',
-      apiKeyUrl: 'https://aistudio.google.com/app/apikey',
-    }
-  }
-
-  if (normalized.includes('deepseek')) {
-    return {
-      provider: 'deepseek',
-      endpoint: 'https://api.deepseek.com/chat/completions',
-      modelId: 'deepseek-chat',
-      displayName: 'DeepSeek V3 (platform.deepseek.com)',
-      apiKeyUrl: 'https://platform.deepseek.com/api_keys',
-    }
-  }
-
-  if (normalized.includes('qwen') || normalized.includes('27b')) {
-    return {
-      provider: 'groq',
-      endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-      modelId: 'qwen/qwen3.8-27b',
-      displayName: 'Qwen 3.8 27B (Groq)',
-      apiKeyUrl: 'https://console.groq.com/keys',
-    }
-  }
-
   return {
-    provider: 'groq',
-    endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-    modelId: 'openai/gpt-oss-120b',
-    displayName: 'GPT-OSS 120B (Groq)',
-    apiKeyUrl: 'https://console.groq.com/keys',
+    provider: 'gemini',
+    endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+    modelId: 'gemini-3.6-flash',
+    displayName: 'Gemini 3.6 Flash (Google AI Studio)',
+    apiKeyUrl: 'https://aistudio.google.com/app/apikey',
   }
 }
 
 export async function testApiKeyConnection(
-  provider: 'groq' | 'openrouter' | 'gemini' | 'deepseek',
+  provider: 'groq' | 'openrouter' | 'gemini' | 'deepseek' | 'ollama',
   apiKey: string,
 ): Promise<{ success: boolean; error?: string; message?: string }> {
   try {
+    if (provider === 'ollama') {
+      try {
+        const res = await fetch('http://localhost:11434/api/tags')
+        if (res.ok) {
+          return { success: true, message: 'Connected to local Ollama (qwen2.5-coder:7b)!' }
+        }
+      } catch {
+        return { success: false, error: 'Ollama is not running. Please start Ollama ("ollama serve")' }
+      }
+    }
     if (provider === 'groq') {
       const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
         headers: { Authorization: `Bearer ${apiKey.trim()}` },
@@ -288,8 +308,8 @@ export async function testApiKeyConnection(
       const authRes = await fetch('https://openrouter.ai/api/v1/auth/key', {
         headers: {
           Authorization: `Bearer ${apiKey.trim()}`,
-          'HTTP-Referer': 'https://github.com/sanketpadhyal/RivoCode-Cli',
-          'X-Title': 'RivoCode CLI',
+          'HTTP-Referer': process.env.APP_URL || 'https://rivocode.app',
+          'X-Title': 'RivoCode',
         },
       })
       if (!authRes.ok) {
@@ -311,11 +331,6 @@ export async function testApiKeyConnection(
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey.trim()}`,
       'x-goog-api-key': apiKey.trim(),
-    }
-
-    if (provider === 'openrouter') {
-      headers['HTTP-Referer'] = 'https://github.com/sanketpadhyal/RivoCode-Cli'
-      headers['X-Title'] = 'RivoCode CLI'
     }
 
     const controller = new AbortController()
@@ -533,9 +548,9 @@ export async function executeLocalTool(
               header: 'Command',
               question: `Requesting permission to ${verb} file:\n  ${relPath}\n\nDo you want to proceed?`,
               options: [
-                '1. Yes',
-                `2. Yes, and always allow in this conversation for '${relPath}'`,
-                '3. No',
+                { label: '1. Yes' },
+                { label: `2. Yes, and always allow in this conversation for '${relPath}'` },
+                { label: '3. No' },
               ],
               multiSelect: false,
             },
@@ -590,10 +605,10 @@ export async function executeLocalTool(
               header: 'Command',
               question: `Requesting permission for:\n  ${rawCommand}\n\nDo you want to proceed?`,
               options: [
-                '1. Yes',
-                `2. Yes, and always allow in this conversation for commands that start with '${cmdPrefix}'`,
-                `3. Yes, and always allow for commands that start with '${cmdPrefix}' (Persist to settings.json)`,
-                '4. No',
+                { label: '1. Yes' },
+                { label: `2. Yes, and always allow in this conversation for commands that start with '${cmdPrefix}'` },
+                { label: `3. Yes, and always allow for commands that start with '${cmdPrefix}' (Persist to settings.json)` },
+                { label: '4. No' },
               ],
               multiSelect: false,
             },
@@ -776,25 +791,174 @@ function generateCompactDiff(oldText: string | null, newText: string): string {
   return diffEntries.slice(0, 5).join('\n')
 }
 
-// Fallback: If model outputs markdown code blocks with a file header, auto-create them on disk
+function cleanStreamedContent(text: string): string {
+  let cleaned = text
+  cleaned = cleaned.replace(/```(?:json)?\s*\n?\{[\s\S]*?\}\s*\n?```/gi, '')
+  cleaned = cleaned.replace(/<action\s+name=["'][^"']+["']>[\s\S]*?<\/action>/gi, '')
+  cleaned = cleaned.replace(/\{\s*"(?:name|tool|tool_name)"\s*:\s*"[a-zA-Z0-9_-]+"[\s\S]*?\}\s*\}/gi, '')
+  cleaned = cleaned.replace(/\{\s*"(?:name|tool|tool_name)"\s*:\s*"[a-zA-Z0-9_-]+"[\s\S]*$/gi, '')
+  cleaned = cleaned.replace(/<action\s+name=["'][^"']+["']>[\s\S]*$/gi, '')
+  cleaned = cleaned.replace(/```(?:json)?\s*\n?\{\s*"(?:name|tool)"[\s\S]*$/gi, '')
+  return cleaned
+}
+
+function parseJsonLenient(raw: string): any {
+  try {
+    return JSON.parse(raw)
+  } catch (_e) {
+    try {
+      let inStr = false
+      let esc = false
+      let fixed = ''
+      for (let i = 0; i < raw.length; i++) {
+        const c = raw[i]
+        if (esc) {
+          esc = false
+          fixed += c
+          continue
+        }
+        if (c === '\\') {
+          esc = true
+          fixed += c
+          continue
+        }
+        if (c === '"') {
+          inStr = !inStr
+          fixed += c
+          continue
+        }
+        if (inStr && c === '\n') {
+          fixed += '\\n'
+          continue
+        }
+        if (inStr && c === '\r') {
+          fixed += '\\r'
+          continue
+        }
+        if (inStr && c === '\t') {
+          fixed += '\\t'
+          continue
+        }
+        fixed += c
+      }
+      return JSON.parse(fixed)
+    } catch (_e2) {
+      return null
+    }
+  }
+}
+
+function findJsonToolCalls(text: string): Array<{ name: string; args: string; rawMatch: string }> {
+  const toolCalls: Array<{ name: string; args: string; rawMatch: string }> = []
+  const KNOWN_TOOLS = new Set([
+    'write_file',
+    'run_terminal_command',
+    'read_files',
+    'list_directory',
+    'ocr_image',
+    'fetch_web_content',
+    'search_web',
+  ])
+
+  let searchFrom = 0
+  while (searchFrom < text.length) {
+    const startIdx = text.indexOf('{', searchFrom)
+    if (startIdx === -1) break
+
+    let depth = 0
+    let inString = false
+    let isEscaped = false
+    let endIdx = -1
+
+    for (let i = startIdx; i < text.length; i++) {
+      const char = text[i]
+      if (isEscaped) {
+        isEscaped = false
+        continue
+      }
+      if (char === '\\') {
+        isEscaped = true
+        continue
+      }
+      if (char === '"' && !isEscaped) {
+        inString = !inString
+        continue
+      }
+      if (!inString) {
+        if (char === '{') depth++
+        else if (char === '}') {
+          depth--
+          if (depth === 0) {
+            endIdx = i
+            break
+          }
+        }
+      }
+    }
+
+    if (endIdx !== -1) {
+      const candidate = text.slice(startIdx, endIdx + 1)
+      const parsed = parseJsonLenient(candidate)
+      if (parsed && typeof parsed === 'object') {
+        const name = parsed.name || parsed.tool || parsed.tool_name || parsed.function?.name
+        const args = parsed.arguments || parsed.parameters || parsed.args || parsed.function?.arguments
+        if (name && KNOWN_TOOLS.has(name) && args) {
+          toolCalls.push({
+            name,
+            args: typeof args === 'string' ? args : JSON.stringify(args),
+            rawMatch: candidate,
+          })
+          searchFrom = endIdx + 1
+          continue
+        }
+      }
+    }
+    searchFrom = startIdx + 1
+  }
+  return toolCalls
+}
+
+// Fallback: If model outputs markdown code blocks with a file header, auto-create/update them on disk
 function autoExtractAndWriteCodeBlocks(projectRoot: string, text: string): string[] {
   const writtenFiles: string[] = []
-  // Matches patterns like: ```python calculator.py or // File: calculator.py or Save as `calculator.py`
-  const codeBlockRegex = /```(?:[a-zA-Z0-9_-]+)?\s*(?:(?:\/\/|#)\s*(?:file:)?\s*([a-zA-Z0-9_./-]+\.[a-zA-Z0-9]+))?\n([\s\S]*?)```/gi
-  let match: RegExpExecArray | null
+  const VALID_EXTS = new Set(['.js','.ts','.tsx','.jsx','.py','.html','.css','.json','.md','.txt','.sh','.bash','.yaml','.yml','.toml','.env','.go','.rs','.java','.cpp','.c','.h','.rb','.php','.swift','.kt','.sql','.graphql','.proto'])
 
-  while ((match = codeBlockRegex.exec(text)) !== null) {
-    const filename = match[1]?.trim()
-    const content = match[2]
-    if (filename && content && !filename.includes('bash') && !filename.includes('sh')) {
+  function isValidFile(filename: string, content: string): boolean {
+    if (!filename || content.length < 10) return false
+    const ext = path.extname(filename).toLowerCase()
+    return VALID_EXTS.has(ext) && !filename.includes('bash') && !filename.includes('output') && !filename.includes('terminal')
+  }
+
+  const blockRegex = /([a-zA-Z0-9_./-]+\.[a-zA-Z0-9]+)[:\s\n]*\n*```(?:[a-zA-Z0-9_-]+)?\n([\s\S]*?)```/gi
+  let match: RegExpExecArray | null
+  while ((match = blockRegex.exec(text)) !== null) {
+    const rawFilename = match[1]?.trim()
+    const content = match[2] || ''
+    if (isValidFile(rawFilename, content)) {
       try {
-        const filePath = path.isAbsolute(filename) ? filename : path.join(projectRoot, filename)
+        const cleanFilename = rawFilename.replace(/^[`'"]+|[`'":]+$/g, '')
+        const filePath = path.isAbsolute(cleanFilename) ? cleanFilename : path.join(projectRoot, cleanFilename)
         fs.mkdirSync(path.dirname(filePath), { recursive: true })
         fs.writeFileSync(filePath, content, 'utf-8')
-        writtenFiles.push(filename)
+        writtenFiles.push(cleanFilename)
       } catch (_e) {}
     }
   }
+
+  const headerRegex = new RegExp('```(?:[a-zA-Z0-9_-]+)?\\s*\\n(?:\\/\\*+|\\/\\/|#)\\s*(?:file:|\\.\\/)?\\ s*([a-zA-Z0-9_./-]+\\.[a-zA-Z0-9]+)[^\\n]*\\n([\\s\\S]*?)```', 'gi')
+  while ((match = headerRegex.exec(text)) !== null) {
+    const rawFilename = match[1]?.trim()
+    const content = match[2] || ''
+    if (isValidFile(rawFilename, content) && !writtenFiles.includes(rawFilename)) {
+      try {
+        const filePath = path.isAbsolute(rawFilename) ? rawFilename : path.join(projectRoot, rawFilename)
+        fs.mkdirSync(path.dirname(filePath), { recursive: true })
+        fs.writeFileSync(filePath, content, 'utf-8')
+        writtenFiles.push(rawFilename)
+      } catch (_e) {}
+    }
+  }
+
   return writtenFiles
 }
 
@@ -817,7 +981,7 @@ export async function executeRealAiStream({
   const projectRoot = getProjectRoot()
   const selectedModel = useChatStore.getState().selectedModel ?? 'groq'
   const route = resolveModelRoute(selectedModel)
-  const apiKey = resolveApiKey(route.provider)
+  const apiKey = resolveApiKeyWithRotation(route.provider)
 
   // 1. If API key is missing, provide a clear, actionable guide
   if (!apiKey) {
@@ -846,9 +1010,9 @@ export async function executeRealAiStream({
     const runState: RunState = {
       traceSessionId: aiMessageId,
       output: {
-        type: 'text',
-        message: missingMessage,
-      },
+        type: 'lastMessage',
+        value: [{ type: 'text', content: missingMessage }],
+      } as any,
     }
     onComplete(runState)
     return
@@ -871,17 +1035,20 @@ AUTONOMOUS CAPABILITIES (YOU HAVE FULL LOCAL SYSTEM & LIVE INTERNET ACCESS):
 
 PROACTIVE WEB SEARCH & REAL-TIME ACCURACY RULES:
 - You have LIVE, REAL-TIME INTERNET ACCESS!
-- If the user asks about ANY person (e.g. "Who is Rakesh Pandey?"), developer, company, framework, API, documentation, or topic that is not already in your context, NEVER say "I don't know" or ask "Should I search the web?".
+- If the user asks about ANY person, public figure, company, framework, package, API, documentation, or topic that is not already in your context, NEVER say "I don't know" or ask "Should I search the web?".
 - You MUST IMMEDIATELY and AUTONOMOUSLY call search_web(query) or fetch_web_content(url) on your very first turn, retrieve the real live web results, and answer accurately!
 
-AUTONOMOUS TASK COMPLETION RULES:
-- NEVER STOP after just reading files or searching! You must IMMEDIATELY proceed to write the necessary code using write_file, execute tests/commands, and finish the entire user request.
-- Do NOT say "I have read the files, should I proceed?" or "Here is what I plan to do" without actually writing the code! Take immediate action and write the files.
+AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
+- Once you have read the files you need, IMMEDIATELY write the code using write_file. Do NOT read more files unless absolutely necessary.
+- NEVER say "Let me read the remaining files", "Let me first understand", "I'll now look at", or any other stalling phrase — just write the code directly!
+- Do NOT say "I have read the files, should I proceed?" or "Here is what I plan to do" without actually writing the code! Take immediate action.
+- NEVER read the same file twice. NEVER re-read files you already have in context.
 - NEVER tell the user to manually create files, copy-paste code, or run bash commands when you can do it yourself!
-- Complete the entire end-to-end task in one go so the user doesn't need to ask you to continue.`
+- Complete the entire end-to-end task in one go so the user doesn't need to ask you to continue.
+- After writing all code files, verify the implementation is complete and done.`
 
   const existingMessages = useChatStore.getState().messages
-  const recentMessages = existingMessages.slice(-8)
+  const recentMessages = existingMessages.slice(-24)
   const chatHistory: Array<{
     role: 'user' | 'assistant' | 'system' | 'tool'
     content?: string
@@ -891,7 +1058,7 @@ AUTONOMOUS TASK COMPLETION RULES:
 
   for (const msg of recentMessages) {
     if (msg.id === aiMessageId) continue
-    const role = msg.type === 'user' ? 'user' : 'assistant'
+    const role = msg.variant === 'user' ? 'user' : 'assistant'
     const textContent =
       msg.blocks
         ?.filter(
@@ -912,7 +1079,7 @@ AUTONOMOUS TASK COMPLETION RULES:
   let accumulatedThinking = ''
   let accumulatedContent = ''
   let turns = 0
-  const maxTurns = 4
+  const maxTurns = 16
 
   try {
     const headers: Record<string, string> = {
@@ -925,9 +1092,8 @@ AUTONOMOUS TASK COMPLETION RULES:
     }
 
     if (route.provider === 'openrouter') {
-      headers['HTTP-Referer'] =
-        'https://github.com/sanketpadhyal/RivoCode-Cli'
-      headers['X-Title'] = 'RivoCode CLI'
+      headers['HTTP-Referer'] = process.env.APP_URL || 'https://rivocode.app'
+      headers['X-Title'] = 'RivoCode'
     }
 
     updater.addBlock({
@@ -936,23 +1102,26 @@ AUTONOMOUS TASK COMPLETION RULES:
       content: '',
     })
 
-    let maxTokensSetting = route.provider === 'openrouter' ? 4096 : undefined
+    const isConversational = /^(hi|hey|hello|thanks|thank you|sup|yo|good|nice|cool|ok|okay|what is|who is|what can|what should|what do|what are|what would|tell me|explain|describe|how does|how do|what does|why is|when did|can you tell|is this|is there|are there|do you|does this|should i|can i|could you|would you)\b/i.test(prompt.trim())
+    const isActionRequired = !isConversational && /\b(fix|add|create|build|update|make|implement|refactor|change|modify|write|delete|remove|put|apply|generate|install|run|start|serve|setup|port|replace|edit|patch|convert|migrate|optimize|debug|test|deploy|init|scaffold|extend|improve|enhance|support|enable|disable|integrate|connect|link|merge|split|extract|export|import|parse|format|style|animate|render|display|show|hide|toggle|handle|validate|sanitize)\b/i.test(prompt)
+    const isClaude = route.modelId.includes('claude')
+    let maxTokensSetting = isClaude ? undefined : route.provider === 'groq' ? 3500 : route.provider === 'openrouter' ? 4096 : 8192
     let hasExecutedInspection = false
     let hasExecutedModification = false
+    const readFilesTracked = new Set<string>()
 
     while (turns < maxTurns && !signal.aborted) {
       turns++
       const pendingToolCalls: Array<{ id: string; name: string; args: string }> = []
 
-      // Auto-compact chatHistory if token estimate exceeds 12k
-      if (chatHistory.length > 8) {
+      if (chatHistory.length > 20) {
         const sysMsg = chatHistory[0]
-        const recentTurns = chatHistory.slice(-6)
+        const recentTurns = chatHistory.slice(-10)
         chatHistory.length = 0
         if (sysMsg) chatHistory.push(sysMsg)
         chatHistory.push({
           role: 'system',
-          content: '[Context compacted: Prior conversation turns summarized to maintain optimal response speed]',
+          content: '[Context compacted: earlier turns summarized]',
         })
         chatHistory.push(...recentTurns)
       }
@@ -980,13 +1149,12 @@ AUTONOMOUS TASK COMPLETION RULES:
         signal,
       })
 
-      // Auto-recover from 402 credit/max_tokens reservation error on OpenRouter
-      if (response.status === 402 && !signal.aborted) {
+      // Auto-recover from 402 (credit reservation) or 413 (TPM limit) on Groq/OpenRouter
+      if ((response.status === 402 || response.status === 413) && !signal.aborted) {
         const errText = await response.text().catch(() => '')
-        if (errText.includes('max_tokens') || errText.includes('credits')) {
+        if (errText.includes('max_tokens') || errText.includes('credits') || errText.includes('TPM') || errText.includes('too large') || response.status === 413) {
           maxTokensSetting = 2048
           requestBody.max_tokens = 2048
-          // Compact aggressively
           if (chatHistory.length > 4) {
             const sys = chatHistory[0]
             const last = chatHistory.slice(-2)
@@ -1038,6 +1206,13 @@ AUTONOMOUS TASK COMPLETION RULES:
 
         if (signal.aborted) break
 
+        rotateToNextKey(route.provider)
+        const rotatedKey = resolveApiKeyWithRotation(route.provider)
+        if (rotatedKey) {
+          headers['Authorization'] = `Bearer ${rotatedKey}`
+          if (route.provider === 'gemini') headers['x-goog-api-key'] = rotatedKey
+        }
+
         response = await fetch(route.endpoint, {
           method: 'POST',
           headers,
@@ -1078,7 +1253,15 @@ AUTONOMOUS TASK COMPLETION RULES:
       let turnContent = ''
 
       while (!signal.aborted) {
-        const { done, value } = await reader.read()
+        let done: boolean
+        let value: Uint8Array | undefined
+        try {
+          const chunk = await reader.read()
+          done = chunk.done
+          value = chunk.value
+        } catch (_readErr) {
+          break
+        }
         if (done) break
 
         buffer += decoder.decode(value, { stream: true })
@@ -1127,14 +1310,14 @@ AUTONOMOUS TASK COMPLETION RULES:
             if (contentChunk) {
               turnContent += contentChunk
               accumulatedContent += contentChunk
-              const currentContent = accumulatedContent
+              const displayContent = cleanStreamedContent(accumulatedContent)
               const liveTokens = Math.max(1, Math.ceil((accumulatedContent.length + accumulatedThinking.length) / 4))
               useChatStore.getState().setLiveTokenCount(liveTokens)
               updater.updateAiMessageBlocks((blocks) =>
                 blocks.map((b) =>
                   b.type === 'text' &&
                   (b as TextContentBlock).textType === 'text'
-                    ? { ...b, content: currentContent }
+                    ? { ...b, content: displayContent }
                     : b,
                 ),
               )
@@ -1164,7 +1347,7 @@ AUTONOMOUS TASK COMPLETION RULES:
         }
       }
 
-      // If no function tool calls were made, check action tags
+      // If no function tool calls were made, check action tags and robust JSON tool calls from local/Ollama models
       if (pendingToolCalls.length === 0) {
         const actionRegex = /<action\s+name=["']([a-zA-Z0-9_-]+)["']>([\s\S]*?)<\/action>/gi
         let match: RegExpExecArray | null
@@ -1183,6 +1366,29 @@ AUTONOMOUS TASK COMPLETION RULES:
         }
       }
 
+      if (pendingToolCalls.length === 0) {
+        const jsonCalls = findJsonToolCalls(turnContent)
+        let jsonIndex = 0
+        for (const jc of jsonCalls) {
+          pendingToolCalls.push({
+            id: `json_call_${jsonIndex++}_${turns}`,
+            name: jc.name,
+            args: jc.args,
+          })
+        }
+      }
+
+      if (pendingToolCalls.length > 0) {
+        accumulatedContent = cleanStreamedContent(accumulatedContent)
+        updater.updateAiMessageBlocks((blocks) =>
+          blocks.map((b) =>
+            b.type === 'text' && (b as TextContentBlock).textType === 'text'
+              ? { ...b, content: accumulatedContent }
+              : b,
+          ),
+        )
+      }
+
       // If still no tool calls or actions, check fallback auto-extraction and stop loop
       if (pendingToolCalls.length === 0) {
         const autoCreated = autoExtractAndWriteCodeBlocks(projectRoot, turnContent)
@@ -1199,8 +1405,8 @@ AUTONOMOUS TASK COMPLETION RULES:
           )
         }
 
-        // If model only inspected and didn't write code or take action yet, auto-drive continuation!
-        if (hasExecutedInspection && !hasExecutedModification && turns < 15) {
+        // If user requested an action/coding task, and model only inspected without writing code yet, auto-drive continuation!
+        if (isActionRequired && hasExecutedInspection && !hasExecutedModification && turns < 10) {
           hasExecutedInspection = false
           chatHistory.push({
             role: 'assistant',
@@ -1231,11 +1437,17 @@ AUTONOMOUS TASK COMPLETION RULES:
             tc.name === 'list_directory' ||
             tc.name === 'ocr_image' ||
             tc.name === 'fetch_web_content' ||
+            tc.name === 'search_web' ||
             (tc.name === 'run_terminal_command' &&
               /^(sed\s+-n|grep|cat|head|tail|wc|find|ls|file|stat|view)\b/i.test(cmdStr))
 
           if (isInspectCmd) {
             hasExecutedInspection = true
+            if (tc.name === 'read_files') {
+              for (const p of (parsedArgs.paths || [])) {
+                readFilesTracked.add(String(p))
+              }
+            }
           } else if (tc.name === 'write_file' || tc.name === 'run_terminal_command') {
             hasExecutedModification = true
           }
@@ -1243,7 +1455,10 @@ AUTONOMOUS TASK COMPLETION RULES:
           const oldContent = (tc.name === 'write_file' && filePath && fs.existsSync(filePath)) ? fs.readFileSync(filePath, 'utf-8') : null
 
           const toolExec = await executeLocalTool(projectRoot, tc.name, parsedArgs)
-          const truncatedResult = toolExec.result.length > 3000 ? toolExec.result.slice(0, 3000) + '\n...[output truncated for token efficiency]' : toolExec.result
+          if (tc.name === 'write_file' && !toolExec.success) {
+            hasExecutedModification = false
+          }
+          const truncatedResult = toolExec.result.length > 4000 ? toolExec.result.slice(0, 4000) + '\n...[output truncated]' : toolExec.result
           toolResultById.set(tc.id, truncatedResult)
           toolResultsForHistory.push(`[${tc.name}]\nResult: ${truncatedResult}`)
 
@@ -1252,7 +1467,9 @@ AUTONOMOUS TASK COMPLETION RULES:
             const newContentStr = parsedArgs.content || ''
             const lineCount = newContentStr.split('\n').length
             toolActionNotice += `● **WriteFile**(\`${parsedArgs.path}\`)\n`
-            if (oldContent !== null) {
+            if (!toolExec.success) {
+              toolActionNotice += `  ⎿  Failed: ${truncatedResult.slice(0, 80)}\n`
+            } else if (oldContent !== null) {
               const oldLines = oldContent.split('\n').length
               const diff = lineCount - oldLines
               const diffTag = diff >= 0 ? `+${diff}` : `${diff}`
@@ -1321,41 +1538,25 @@ AUTONOMOUS TASK COMPLETION RULES:
         } catch (_e) {}
       }
 
-      // Feed tool results back into conversation history without triggering Gemini thought_signature errors
-      if (route.provider === 'gemini') {
-        chatHistory.push({
-          role: 'assistant',
-          content: turnContent || `Executed actions: ${pendingToolCalls.map((t) => t.name).join(', ')}`,
-        })
-        chatHistory.push({
-          role: 'user',
-          content: `Action execution output:\n${toolResultsForHistory.join('\n\n')}\nPlease proceed with the next step or summarize.`,
-        })
-      } else {
-        chatHistory.push({
-          role: 'assistant',
-          content: turnContent || '',
-          tool_calls: pendingToolCalls.map((tc) => ({
-            id: tc.id,
-            type: 'function',
-            function: { name: tc.name, arguments: tc.args },
-          })),
-        })
-        for (const tc of pendingToolCalls) {
-          const resultStr = toolResultById.get(tc.id) || ''
-          chatHistory.push({
-            role: 'tool',
-            tool_call_id: tc.id,
-            content: resultStr,
-          })
-        }
-      }
+      chatHistory.push({
+        role: 'assistant',
+        content: turnContent || `Executed actions: ${pendingToolCalls.map((t) => t.name).join(', ')}`,
+      })
+
+      const nextUserInstruction = isActionRequired
+        ? `Tool results:\n${toolResultsForHistory.join('\n\n')}\n\nYou now have all the information you need. DO NOT read any more files. You MUST now write the actual implementation using write_file. Complete the full task end-to-end right now.`
+        : `Tool results:\n${toolResultsForHistory.join('\n\n')}\n\nPlease continue.`
+
+      chatHistory.push({
+        role: 'user',
+        content: nextUserInstruction,
+      })
     }
 
     try {
       useChatStore.getState().setSuggestedFollowups({
         toolCallId: aiMessageId,
-        suggestions: [
+        followups: [
           {
             label: 'Explain next steps',
             prompt: 'What are the recommended next steps for this task?',
@@ -1378,9 +1579,9 @@ AUTONOMOUS TASK COMPLETION RULES:
     const finalRunState: RunState = {
       traceSessionId: aiMessageId,
       output: {
-        type: 'text',
-        message: accumulatedContent,
-      },
+        type: 'lastMessage',
+        value: [{ type: 'text', content: accumulatedContent }],
+      } as any,
     }
     onComplete(finalRunState)
   } catch (err: any) {
@@ -1400,7 +1601,7 @@ AUTONOMOUS TASK COMPLETION RULES:
     const errorRunState: RunState = {
       traceSessionId: aiMessageId,
       output: {
-        type: 'text',
+        type: 'error',
         message: errorMessage,
       },
     }

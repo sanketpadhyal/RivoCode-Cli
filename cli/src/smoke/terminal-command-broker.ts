@@ -380,7 +380,7 @@ export async function runPackagedTerminalBrokerSmoke({
       commandStarted: existsSync(forbiddenSpawnPath),
     }
     assertSmoke(
-      failureMessage.includes('Restart Freebuff'),
+      failureMessage.includes('Restart RivoCode'),
       'broker failure did not include actionable recovery guidance',
     )
     assertSmoke(

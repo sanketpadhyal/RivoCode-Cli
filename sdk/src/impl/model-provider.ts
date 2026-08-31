@@ -2,7 +2,7 @@
 import path from 'path'
 
 import { BYOK_OPENROUTER_HEADER } from '@rivocode/common/constants/byok'
-import { FREEBUFF_ACTING_USER_HEADER } from '@rivocode/common/constants/freebuff-models'
+import { RIVOCODE_ACTING_USER_HEADER } from '@rivocode/common/constants/agents'
 import { isTransientNetworkError } from '@rivocode/common/util/error'
 import {
   OpenAICompatibleChatLanguageModel,
@@ -111,7 +111,7 @@ export function getModelForRequest({
     headers: () => ({
       Authorization: `Bearer ${apiKey}`,
       'user-agent': `ai-sdk/openai-compatible/${VERSION}/codebuff`,
-      ...(userId ? { [FREEBUFF_ACTING_USER_HEADER]: userId } : {}),
+      ...(userId ? { [RIVOCODE_ACTING_USER_HEADER]: userId } : {}),
       ...(openrouterApiKey && { [BYOK_OPENROUTER_HEADER]: openrouterApiKey }),
     }),
     metadataExtractor: {

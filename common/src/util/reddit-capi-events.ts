@@ -1,6 +1,5 @@
-import type { FreebuffRedditRetentionMilestoneDays } from '@rivocode/common/util/reddit-freebuff-retention'
-
 export type RedditConversionSurface = 'cli' | 'web' | 'cloud' | 'chat'
+export type RedditRetentionMilestoneDays = 1 | 7 | 24
 
 export type RedditCapiEventName =
   | 'FirstPrompt'
@@ -11,7 +10,7 @@ export type RedditCapiEventName =
 export const REDDIT_FIRST_PROMPT_EVENT = 'FirstPrompt' as const
 
 export function redditRetentionCapiEventName(
-  milestone: FreebuffRedditRetentionMilestoneDays,
+  milestone: RedditRetentionMilestoneDays,
 ): RedditCapiEventName {
   return `Retention${milestone}d`
 }

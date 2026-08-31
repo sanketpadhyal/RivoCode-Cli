@@ -26,18 +26,12 @@ const isJSONObject = (value: JSONValue | undefined): value is JSONObject =>
   !!value && typeof value === 'object' && !Array.isArray(value)
 
 const gravitySurface = (agentTemplate: { id: string }): string => {
-  if (agentTemplate.id === 'base-chat') return 'freebuff_chat'
-  if (
-    agentTemplate.id.startsWith('base2-free') ||
-    agentTemplate.id.startsWith('base3-free')
-  ) {
-    return 'freebuff_web'
-  }
-  return 'codebuff_cli'
+  if (agentTemplate.id === 'base-chat') return 'rivocode_chat'
+  return 'rivocode_cli'
 }
 
 const isServiceAccountSurface = (surface: string): boolean =>
-  surface === 'freebuff_chat' || surface === 'freebuff_web'
+  surface === 'rivocode_chat'
 
 export const handleGravityIndex = (async (params: {
   previousToolCallFinished: Promise<void>

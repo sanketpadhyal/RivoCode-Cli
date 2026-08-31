@@ -169,7 +169,7 @@ describe('acknowledgeFirstPartyView', () => {
         fetch: async () =>
           new Response(null, {
             status: 204,
-            headers: { 'X-Freebuff-Ack-Outcome': 'deduped' },
+            headers: { 'X-Ack-Outcome': 'deduped' },
           }),
         onAttempt: ({ outcome }) => {
           outcomes.push(outcome)

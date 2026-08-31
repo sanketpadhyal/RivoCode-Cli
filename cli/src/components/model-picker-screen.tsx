@@ -22,6 +22,15 @@ export interface ModelOption {
 
 export const AVAILABLE_MODELS: ModelOption[] = [
   {
+    id: 'ollama-qwen',
+    name: 'qwen2.5-coder:7b',
+    badge: '(Local Ollama · 100% Free & Offline)',
+    icon: '🦙',
+    iconPadding: ' ',
+    iconColor: '#A855F7',
+    description: 'Qwen 2.5 Coder 7B running locally on Ollama (localhost:11434 · Zero Rate Limits)',
+  },
+  {
     id: 'gemini',
     name: 'gemini-3.6-flash',
     badge: '(Google AI · 1M Context & Free)',

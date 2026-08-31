@@ -6,6 +6,8 @@ export interface ProjectSettingsData {
   agentMode?: string
   theme?: string
   version?: string
+  allowedFiles?: string[]
+  allowedCommands?: string[]
 }
 
 export interface ProjectKeysData {

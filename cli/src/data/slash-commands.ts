@@ -1,4 +1,4 @@
-import { AGENT_MODES, IS_FREEBUFF } from '../utils/constants'
+import { AGENT_MODES } from '../utils/constants'
 
 import type { SkillsMap } from '@rivocode/common/types/skill'
 
@@ -11,32 +11,12 @@ export interface SlashCommand {
   insertText?: string
 }
 
-const MODE_COMMANDS: SlashCommand[] = IS_FREEBUFF
-  ? []
-  : AGENT_MODES.map((mode) => ({
-      id: `mode:${mode.toLowerCase()}`,
-      label: `mode:${mode.toLowerCase()}`,
-      description: `Switch to ${mode} mode`,
-      aliases: [`model:${mode.toLowerCase()}`],
-    }))
-
-const FREEBUFF_REMOVED_COMMAND_IDS = new Set([
-  'ads:enable',
-  'ads:disable',
-  'usage',
-  'subscribe',
-  'agent:gpt-5',
-  'image',
-  'publish',
-  'init',
-])
-
-const FREEBUFF_ONLY_COMMAND_IDS = new Set([
-  'plan',
-  'end-session',
-  'dashboard',
-  'reasoning',
-])
+const MODE_COMMANDS: SlashCommand[] = AGENT_MODES.map((mode) => ({
+  id: `mode:${mode.toLowerCase()}`,
+  label: `mode:${mode.toLowerCase()}`,
+  description: `Switch to ${mode} mode`,
+  aliases: [`model:${mode.toLowerCase()}`],
+}))
 
 const ALL_SLASH_COMMANDS: SlashCommand[] = [
   {
@@ -129,7 +109,7 @@ const ALL_SLASH_COMMANDS: SlashCommand[] = [
   {
     id: 'feedback',
     label: 'feedback',
-    description: IS_FREEBUFF ? 'Share general feedback about Freebuff' : 'Share general feedback about Codebuff',
+    description: 'Share general feedback about RivoCode',
   },
   {
     id: 'bash',
@@ -150,24 +130,6 @@ const ALL_SLASH_COMMANDS: SlashCommand[] = [
     description: 'Toggle between light and dark mode',
   },
   {
-    id: 'reasoning',
-    label: 'reasoning',
-    description: 'Set how hard the current model thinks (low / high / max)',
-    aliases: ['effort', 'think'],
-  },
-  {
-    id: 'end-session',
-    label: 'end-session',
-    description: 'End your free session (lets you switch model)',
-    aliases: ['model'],
-  },
-  {
-    id: 'dashboard',
-    label: 'dashboard',
-    description: 'Open your usage, streak and account dashboard in the browser',
-    aliases: ['usage', 'stats', 'streak'],
-  },
-  {
     id: 'logout',
     label: 'logout',
     description: 'Sign out of your session',
@@ -183,13 +145,7 @@ const ALL_SLASH_COMMANDS: SlashCommand[] = [
   },
 ]
 
-export const SLASH_COMMANDS = IS_FREEBUFF
-  ? ALL_SLASH_COMMANDS.filter(
-      (cmd) => !FREEBUFF_REMOVED_COMMAND_IDS.has(cmd.id),
-    )
-  : ALL_SLASH_COMMANDS.filter(
-      (cmd) => !FREEBUFF_ONLY_COMMAND_IDS.has(cmd.id),
-    )
+export const SLASH_COMMANDS = ALL_SLASH_COMMANDS
 
 export const SLASHLESS_COMMAND_IDS = new Set(
   SLASH_COMMANDS.filter((cmd) => cmd.implicitCommand).map((cmd) =>

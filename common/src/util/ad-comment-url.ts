@@ -1,7 +1,7 @@
 import {
   AD_PLATFORM_HOSTS,
   type AdPlatform,
-} from '../constants/freebuff-ads'
+} from '../constants/ad-types'
 
 export type CommentUrlStrength =
   | 'post_confirmed'

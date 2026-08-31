@@ -1,4 +1,4 @@
-import { FREEBUFF_DEEPSEEK_V4_FLASH_MODEL_ID } from '@rivocode/common/constants/freebuff-models'
+import { LITE_MODEL } from './constants'
 
 import type { AgentDefinition } from './types/agent-definition'
 
@@ -73,7 +73,7 @@ const outputSchema = {
 const definition: AgentDefinition = {
   id: 'tmux-cli',
   displayName: 'Tmux CLI Agent',
-  model: FREEBUFF_DEEPSEEK_V4_FLASH_MODEL_ID,
+  model: LITE_MODEL,
   providerOptions: {
     data_collection: 'deny',
   },

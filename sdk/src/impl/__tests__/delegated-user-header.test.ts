@@ -1,4 +1,4 @@
-import { FREEBUFF_ACTING_USER_HEADER } from '@rivocode/common/constants/freebuff-models'
+import { RIVOCODE_ACTING_USER_HEADER } from '@rivocode/common/constants/agents'
 import { afterEach, describe, expect, mock, test } from 'bun:test'
 
 import { addAgentStep, finishAgentRun, startAgentRun } from '../database'
@@ -29,7 +29,7 @@ describe('SDK delegated user headers', () => {
 
     expect((model as any).config.headers()).toMatchObject({
       Authorization: 'Bearer service-key',
-      [FREEBUFF_ACTING_USER_HEADER]: 'end-user',
+      [RIVOCODE_ACTING_USER_HEADER]: 'end-user',
     })
   })
 
@@ -77,7 +77,7 @@ describe('SDK delegated user headers', () => {
     expect(requests).toHaveLength(2)
     for (const request of requests) {
       expect(request.headers).toMatchObject({
-        [FREEBUFF_ACTING_USER_HEADER]: 'end-user',
+        [RIVOCODE_ACTING_USER_HEADER]: 'end-user',
       })
     }
   })
@@ -96,6 +96,6 @@ describe('SDK delegated user headers', () => {
       logger,
     })
 
-    expect(headers).not.toHaveProperty(FREEBUFF_ACTING_USER_HEADER)
+    expect(headers).not.toHaveProperty(RIVOCODE_ACTING_USER_HEADER)
   })
 })

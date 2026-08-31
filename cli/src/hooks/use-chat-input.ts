@@ -2,7 +2,6 @@ import { useCallback, useEffect } from 'react'
 import stringWidth from 'string-width'
 
 import { useChatStore } from '../state/chat-store'
-import { IS_FREEBUFF } from '../utils/constants'
 
 import type { InputValue } from '../types/store'
 import type { AgentMode } from '../utils/constants'
@@ -33,7 +32,7 @@ export const useChatInput = ({
   const inputMode = useChatStore((state) => state.inputMode)
 
   const estimatedToggleWidth =
-    IS_FREEBUFF || inputMode !== 'default' || isCompactHeight || isNarrowWidth
+    inputMode !== 'default' || isCompactHeight || isNarrowWidth
       ? 0
       : stringWidth(`< ${agentMode}`) + 6
 

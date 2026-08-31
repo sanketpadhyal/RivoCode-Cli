@@ -11,6 +11,7 @@ import { isPlainEnterKey } from '../utils/terminal-enter-detection'
 import {
   resolveModelRoute,
   saveStoredApiKey,
+  saveFallbackKeys,
   testApiKeyConnection,
   resolveApiKey,
 } from '../utils/real-ai-service'
@@ -22,9 +23,7 @@ function readSystemClipboard(): string {
     if (process.platform === 'darwin') {
       return execSync('pbpaste', { encoding: 'utf-8' }).trim()
     } else if (process.platform === 'win32') {
-      return execSync('powershell.exe -NoProfile -Command Get-Clipboard', {
-        encoding: 'utf-8',
-      }).trim()
+      return execSync('powershell.exe -NoProfile -Command Get-Clipboard', { encoding: 'utf-8' }).trim()
     } else {
       try {
         return execSync('wl-paste', { encoding: 'utf-8' }).trim()
@@ -43,11 +42,7 @@ interface ApiKeySetupScreenProps {
   onBack: () => void
 }
 
-export const ApiKeySetupScreen = ({
-  modelName,
-  onComplete,
-  onBack,
-}: ApiKeySetupScreenProps) => {
+export const ApiKeySetupScreen = ({ modelName, onComplete, onBack }: ApiKeySetupScreenProps) => {
   const theme = useTheme()
   const { contentMaxWidth, terminalHeight } = useTerminalDimensions()
   const isCompact = terminalHeight < 24
@@ -55,150 +50,293 @@ export const ApiKeySetupScreen = ({
   const route = resolveModelRoute(modelName)
   const existingKey = resolveApiKey(route.provider) || ''
 
+  const [step, setStep] = useState<'primary' | 'fallbacks'>('primary')
   const [inputKey, setInputKey] = useState(existingKey)
+  const [fallback1, setFallback1] = useState('')
+  const [fallback2, setFallback2] = useState('')
+  const [activeFallback, setActiveFallback] = useState<1 | 2>(1)
+  const [primaryKey, setPrimaryKey] = useState('')
   const [status, setStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle')
   const [statusMessage, setStatusMessage] = useState('')
   const [spinnerIndex, setSpinnerIndex] = useState(0)
 
-  const { component: logoComponent } = useLogo({
-    availableWidth: contentMaxWidth,
-  })
+  const { component: logoComponent } = useLogo({ availableWidth: contentMaxWidth })
 
-  // Spinner animation for testing state
   useEffect(() => {
     if (status !== 'testing') return
-    const timer = setInterval(() => {
-      setSpinnerIndex((prev) => (prev + 1) % SPINNER_FRAMES.length)
-    }, 80)
+    const timer = setInterval(() => setSpinnerIndex((prev) => (prev + 1) % SPINNER_FRAMES.length), 80)
     return () => clearInterval(timer)
   }, [status])
 
   const handlePasteClipboard = useCallback(() => {
     const clipboardText = readSystemClipboard()
     if (clipboardText) {
-      setInputKey(clipboardText)
+      if (step === 'primary') {
+        setInputKey(clipboardText)
+      } else if (activeFallback === 1) {
+        setFallback1(clipboardText)
+      } else {
+        setFallback2(clipboardText)
+      }
       setStatus('idle')
       setStatusMessage('Pasted from clipboard!')
     } else {
       setStatus('error')
       setStatusMessage('Clipboard is empty or could not be read.')
     }
-  }, [])
+  }, [step, activeFallback])
 
-  const handleVerifyKey = useCallback(async (keyToTest: string) => {
+  const handleVerifyPrimary = useCallback(async (keyToTest: string) => {
     const trimmed = keyToTest.trim()
     if (!trimmed) {
       setStatus('error')
       setStatusMessage('Please enter or paste your API key first.')
       return
     }
-
     setStatus('testing')
-    setStatusMessage('Sending demo test ping to verify connection...')
-
+    setStatusMessage('Verifying primary key...')
     const result = await testApiKeyConnection(route.provider, trimmed)
-
     if (result.success) {
       setStatus('success')
-      setStatusMessage(
-        `API Connected successfully! (Model replied: "${result.message || 'Connected'}")`,
-      )
-
-      // Save key in env and local storage
-      if (route.provider === 'groq') {
-        process.env.GROQ_API_KEY = trimmed
-      } else if (route.provider === 'gemini') {
-        process.env.GEMINI_API_KEY = trimmed
-      } else {
-        process.env.OPENROUTER_API_KEY = trimmed
-      }
+      setStatusMessage(`Primary key verified! (${result.message || 'Connected'})`)
+      if (route.provider === 'groq') process.env.GROQ_API_KEY = trimmed
+      else if (route.provider === 'gemini') process.env.GEMINI_API_KEY = trimmed
+      else process.env.OPENROUTER_API_KEY = trimmed
       saveStoredApiKey(route.provider, trimmed)
-
+      setPrimaryKey(trimmed)
       setTimeout(() => {
-        onComplete()
-      }, 1200)
+        setStatus('idle')
+        setStatusMessage('')
+        setStep('fallbacks')
+      }, 900)
     } else {
       setStatus('error')
-      setStatusMessage(result.error || 'Failed to verify API key. Please check the key.')
+      setStatusMessage(result.error || 'Failed to verify API key.')
     }
-  }, [route.provider, onComplete])
+  }, [route.provider])
 
-  useKeyboard(
-    useCallback(
-      (key: KeyEvent) => {
-        if (key.ctrl && key.name === 'c') {
-          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
-            key.preventDefault()
-          }
-          void exitCliCleanly()
-          return
-        }
+  const handleFinishFallbacks = useCallback(async () => {
+    const toTest: Array<{ key: string; label: string }> = []
+    if (fallback1.trim()) toTest.push({ key: fallback1.trim(), label: 'Fallback 1' })
+    if (fallback2.trim()) toTest.push({ key: fallback2.trim(), label: 'Fallback 2' })
 
-        if (status === 'testing') {
-          return // Disable input while testing
-        }
+    if (toTest.length === 0) {
+      saveFallbackKeys(route.provider, [])
+      onComplete()
+      return
+    }
 
-        // Paste shortcut: Ctrl+V or Cmd+V or Ctrl+P
-        if (((key.ctrl || key.meta) && (key.name === 'v' || key.name === 'p')) || key.name === 'tab') {
-          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
-            key.preventDefault()
-          }
-          handlePasteClipboard()
-          return
-        }
+    setStatus('testing')
+    const failedKeys: string[] = []
+    const validFallbacks: string[] = []
 
-        if (key.name === 'escape' || (key.ctrl && key.name === 'b')) {
-          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
-            key.preventDefault()
-          }
-          onBack()
-          return
-        }
+    for (const { key, label } of toTest) {
+      setStatusMessage(`Testing ${label}...`)
+      const res = await testApiKeyConnection(route.provider, key)
+      if (res.success) {
+        validFallbacks.push(key)
+      } else {
+        failedKeys.push(label)
+      }
+    }
 
-        if (isPlainEnterKey(key)) {
-          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
-            key.preventDefault()
-          }
-          void handleVerifyKey(inputKey)
-          return
-        }
-
-        if (key.name === 'backspace') {
-          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
-            key.preventDefault()
-          }
-          setInputKey((prev) => prev.slice(0, -1))
-          if (status === 'error') setStatus('idle')
-          return
-        }
-
-        // Quick 'p' paste if input is empty
-        if ((key.name === 'p' || key.name === 'P') && !inputKey) {
-          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
-            key.preventDefault()
-          }
-          handlePasteClipboard()
-          return
-        }
-
-        // Regular character typing
-        const char = key.char || (key.name && key.name.length === 1 ? key.name : '')
-        if (char && !key.ctrl && !key.meta) {
-          if ('preventDefault' in key && typeof key.preventDefault === 'function') {
-            key.preventDefault()
-          }
-          setInputKey((prev) => prev + char)
-          if (status === 'error') setStatus('idle')
-        }
-      },
-      [status, inputKey, handleVerifyKey, handlePasteClipboard, onBack],
-    ),
-  )
+    if (failedKeys.length > 0) {
+      setStatus('error')
+      setStatusMessage(`${failedKeys.join(', ')} failed and was not saved.`)
+      saveFallbackKeys(route.provider, validFallbacks)
+      setTimeout(() => onComplete(), 1800)
+    } else {
+      setStatus('success')
+      setStatusMessage(`All ${validFallbacks.length} fallback key(s) verified! Key rotation active.`)
+      saveFallbackKeys(route.provider, validFallbacks)
+      setTimeout(() => onComplete(), 1200)
+    }
+  }, [fallback1, fallback2, route.provider, onComplete])
 
   const maskApiKey = (key: string) => {
     if (!key) return ''
     if (key.length <= 8) return '•'.repeat(key.length)
     return key.slice(0, 4) + '•'.repeat(Math.max(4, key.length - 8)) + key.slice(-4)
+  }
+
+  useKeyboard(
+    useCallback(
+      (key: KeyEvent) => {
+        if (key.ctrl && key.name === 'c') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') key.preventDefault()
+          void exitCliCleanly()
+          return
+        }
+        if (status === 'testing') return
+
+        if (((key.ctrl || key.meta) && (key.name === 'v' || key.name === 'p')) || key.name === 'tab') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') key.preventDefault()
+          handlePasteClipboard()
+          return
+        }
+
+        if (key.name === 'escape' || (key.ctrl && key.name === 'b')) {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') key.preventDefault()
+          if (step === 'fallbacks') {
+            setStep('primary')
+            setStatus('idle')
+            setStatusMessage('')
+          } else {
+            onBack()
+          }
+          return
+        }
+
+        if (isPlainEnterKey(key)) {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') key.preventDefault()
+          if (step === 'primary') {
+            void handleVerifyPrimary(inputKey)
+          } else {
+            if (activeFallback === 1 && fallback1.trim()) {
+              setActiveFallback(2)
+            } else {
+              void handleFinishFallbacks()
+            }
+          }
+          return
+        }
+
+        if (step === 'fallbacks' && key.name === 'down') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') key.preventDefault()
+          setActiveFallback(2)
+          return
+        }
+
+        if (step === 'fallbacks' && key.name === 'up') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') key.preventDefault()
+          setActiveFallback(1)
+          return
+        }
+
+        if (key.name === 'backspace') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') key.preventDefault()
+          if (step === 'primary') setInputKey((prev) => prev.slice(0, -1))
+          else if (activeFallback === 1) setFallback1((prev) => prev.slice(0, -1))
+          else setFallback2((prev) => prev.slice(0, -1))
+          if (status === 'error') setStatus('idle')
+          return
+        }
+
+        if ((key.name === 'p' || key.name === 'P') && !inputKey && step === 'primary') {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') key.preventDefault()
+          handlePasteClipboard()
+          return
+        }
+
+        const char = (key as any).char || key.sequence || (key.name && key.name.length === 1 ? key.name : '')
+        if (char && !key.ctrl && !key.meta) {
+          if ('preventDefault' in key && typeof key.preventDefault === 'function') key.preventDefault()
+          if (step === 'primary') setInputKey((prev) => prev + char)
+          else if (activeFallback === 1) setFallback1((prev) => prev + char)
+          else setFallback2((prev) => prev + char)
+          if (status === 'error') setStatus('idle')
+        }
+      },
+      [step, status, inputKey, fallback1, fallback2, activeFallback, handleVerifyPrimary, handleFinishFallbacks, handlePasteClipboard, onBack],
+    ),
+  )
+
+  if (step === 'fallbacks') {
+    return (
+      <box
+        style={{
+          borderStyle: 'single',
+          borderColor: '#ffb703',
+          paddingLeft: 2,
+          paddingRight: 2,
+          paddingTop: 1,
+          paddingBottom: 1,
+          flexDirection: 'column',
+          width: '100%',
+        }}
+      >
+        <text style={{ wrapMode: 'none', marginBottom: 1 }}>
+          <span fg="#ffb703" attributes={TextAttributes.BOLD}>
+            Step 2/2: Add Optional Fallback Keys
+          </span>
+          <span fg={theme.muted}> (Auto-rotated on Rate Limit)</span>
+        </text>
+
+        <box style={{ flexDirection: 'column', marginBottom: 1 }}>
+          <text style={{ wrapMode: 'none', marginBottom: 1 }}>
+            <span fg={theme.foreground}>Primary Key: </span>
+            <span fg="#55ff55" attributes={TextAttributes.BOLD}>{maskApiKey(primaryKey)}</span>
+            <span fg="#55ff55"> ✓ Active</span>
+          </text>
+
+          <box style={{ flexDirection: 'column' }}>
+            <text style={{ wrapMode: 'none' }}>
+              <span fg={activeFallback === 1 ? '#ffb703' : theme.muted} attributes={TextAttributes.BOLD}>
+                {activeFallback === 1 ? '▶ ' : '  '}Fallback 1 (optional):{' '}
+              </span>
+              <span
+                fg={activeFallback === 1 ? theme.foreground : theme.muted}
+                bg={activeFallback === 1 ? theme.surface : undefined}
+              >
+                {fallback1 ? maskApiKey(fallback1) : (activeFallback === 1 ? '[Paste or type key]' : '[empty]')}
+              </span>
+              {activeFallback === 1 && <span fg="#55ff55" attributes={TextAttributes.BOLD}> █</span>}
+            </text>
+
+            <text style={{ wrapMode: 'none', marginTop: 1 }}>
+              <span fg={activeFallback === 2 ? '#ffb703' : theme.muted} attributes={TextAttributes.BOLD}>
+                {activeFallback === 2 ? '▶ ' : '  '}Fallback 2 (optional):{' '}
+              </span>
+              <span
+                fg={activeFallback === 2 ? theme.foreground : theme.muted}
+                bg={activeFallback === 2 ? theme.surface : undefined}
+              >
+                {fallback2 ? maskApiKey(fallback2) : (activeFallback === 2 ? '[Paste or type key]' : '[empty]')}
+              </span>
+              {activeFallback === 2 && <span fg="#55ff55" attributes={TextAttributes.BOLD}> █</span>}
+            </text>
+          </box>
+
+          {status === 'testing' && (
+            <text style={{ wrapMode: 'none' }}>
+              <span fg="#ffb703">{SPINNER_FRAMES[spinnerIndex]} </span>
+              <span fg={theme.foreground}>{statusMessage}</span>
+            </text>
+          )}
+          {status === 'success' && (
+            <text style={{ wrapMode: 'none' }}>
+              <span fg="#55ff55" attributes={TextAttributes.BOLD}>✓ </span>
+              <span fg="#55ff55">{statusMessage}</span>
+            </text>
+          )}
+          {status === 'error' && (
+            <text style={{ wrapMode: 'none' }}>
+              <span fg="#ef4444" attributes={TextAttributes.BOLD}>✗ </span>
+              <span fg="#ef4444">{statusMessage}</span>
+            </text>
+          )}
+
+          <box style={{ marginTop: 1 }}>
+            <text style={{ wrapMode: 'none' }}>
+              <span fg={theme.foreground}>enter</span>
+              <span fg={theme.muted}> Next/Done · </span>
+              <span fg={theme.foreground}>↑↓</span>
+              <span fg={theme.muted}> Switch · </span>
+              <span fg={theme.foreground}>tab</span>
+              <span fg={theme.muted}> Paste · </span>
+              <span fg={theme.foreground}>esc</span>
+              <span fg={theme.muted}> Back</span>
+            </text>
+          </box>
+        </box>
+
+        <box style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%', paddingRight: 2 }}>
+          <text style={{ wrapMode: 'none', fg: theme.muted }}>
+            <span>{route.displayName} · Key Rotation</span>
+          </text>
+        </box>
+      </box>
+    )
   }
 
   return (
@@ -221,27 +359,17 @@ export const ApiKeySetupScreen = ({
         )}
 
         <text style={{ wrapMode: 'none' }}>
-          <span fg="#ffb703" attributes={TextAttributes.BOLD}>
-            RivoCode · API Key Setup
-          </span>
+          <span fg="#ffb703" attributes={TextAttributes.BOLD}>RivoCode · API Key Setup</span>
           {'\n'}
-          <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
-            Configure {route.displayName}
-          </span>
+          <span fg={theme.foreground} attributes={TextAttributes.BOLD}>Configure {route.displayName}</span>
           {'\n\n'}
-          <span fg={theme.secondary}>
-            Get a free API key from:
-          </span>
-          {' '}
-          <span fg="#38bdf8" attributes={TextAttributes.UNDERLINE}>
-            {route.apiKeyUrl}
-          </span>
+          <span fg={theme.secondary}>Get a free API key from: </span>
+          <span fg="#38bdf8" attributes={TextAttributes.UNDERLINE}>{route.apiKeyUrl}</span>
           {'\n\n'}
           <span fg={theme.foreground}>Enter or paste your API key below:</span>
           {'\n'}
         </text>
 
-        {/* Input Box */}
         <box
           style={{
             flexDirection: 'column',
@@ -255,9 +383,7 @@ export const ApiKeySetupScreen = ({
           <text style={{ wrapMode: 'none' }}>
             <span fg="#55ff55" attributes={TextAttributes.BOLD}>&gt; </span>
             {inputKey ? (
-              <span fg={theme.foreground} attributes={TextAttributes.BOLD}>
-                {maskApiKey(inputKey)}
-              </span>
+              <span fg={theme.foreground} attributes={TextAttributes.BOLD}>{maskApiKey(inputKey)}</span>
             ) : (
               <span fg={theme.muted}>[Paste clipboard with Tab / Cmd+V / Ctrl+V / p]</span>
             )}
@@ -265,30 +391,24 @@ export const ApiKeySetupScreen = ({
           </text>
         </box>
 
-        {/* Paste helper button */}
         <box style={{ marginBottom: 1 }}>
           <text style={{ wrapMode: 'none' }}>
-            <span fg="#38bdf8" attributes={TextAttributes.BOLD}>
-              [ 📋 Paste from Clipboard: Press Tab or Ctrl+V or p ]
-            </span>
+            <span fg="#38bdf8" attributes={TextAttributes.BOLD}>[ 📋 Paste from Clipboard: Press Tab or Ctrl+V or p ]</span>
           </text>
         </box>
 
-        {/* Status / Verification Feedback */}
         {status === 'testing' && (
           <text style={{ wrapMode: 'none' }}>
             <span fg="#ffb703">{SPINNER_FRAMES[spinnerIndex]} </span>
             <span fg={theme.foreground}>{statusMessage}</span>
           </text>
         )}
-
         {status === 'success' && (
           <text style={{ wrapMode: 'none' }}>
             <span fg="#55ff55" attributes={TextAttributes.BOLD}>✓ </span>
             <span fg="#55ff55">{statusMessage}</span>
           </text>
         )}
-
         {status === 'error' && (
           <text style={{ wrapMode: 'none' }}>
             <span fg="#ef4444" attributes={TextAttributes.BOLD}>✗ </span>
@@ -308,14 +428,7 @@ export const ApiKeySetupScreen = ({
         </box>
       </box>
 
-      <box
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'flex-end',
-          width: '100%',
-          paddingRight: 2,
-        }}
-      >
+      <box style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%', paddingRight: 2 }}>
         <text style={{ wrapMode: 'none', fg: theme.muted }}>
           <span>{route.displayName}</span>
         </text>

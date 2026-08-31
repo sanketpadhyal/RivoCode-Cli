@@ -1,5 +1,3 @@
-import { IS_FREEBUFF } from './constants'
-
 export type InputMode =
   | 'default'
   | 'bash'
@@ -146,12 +144,6 @@ export const INPUT_MODE_CONFIGS: Record<InputMode, InputModeConfig> = {
     disableSlashSuggestions: true,
     blockKeyboardExit: true,
   },
-}
-
-if (IS_FREEBUFF) {
-  for (const key of Object.keys(INPUT_MODE_CONFIGS) as InputMode[]) {
-    INPUT_MODE_CONFIGS[key].showAgentModeToggle = false
-  }
 }
 
 export function getInputModeConfig(mode: InputMode): InputModeConfig {

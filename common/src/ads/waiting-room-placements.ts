@@ -1,4 +1,4 @@
-import { PLACEMENT_SLOTS } from '../constants/freebuff-placements'
+import { PLACEMENT_SLOTS } from '../constants/ad-placements'
 
 export const WAITING_ROOM_PLACEMENT_IDS = PLACEMENT_SLOTS.filter(
   (slot) => slot.available && slot.surface === 'waiting_room',

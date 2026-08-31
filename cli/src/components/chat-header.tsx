@@ -40,7 +40,7 @@ export const ChatHeader = memo(function ChatHeader({
 
   const selectedModel = useChatStore((state) => state.selectedModel)
   const agentMode = useChatStore((state) => state.agentMode)
-  const apiConnected = isApiConnected(selectedModel)
+  const apiConnected = isApiConnected(selectedModel ?? undefined)
 
   const modeLabel = useMemo(() => {
     switch (agentMode) {

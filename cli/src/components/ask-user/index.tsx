@@ -413,7 +413,7 @@ export const MultipleChoiceForm: React.FC<MultipleChoiceFormProps> = ({
           return
         }
 
-        const num = parseInt(key.char || key.name || '', 10)
+        const num = parseInt((key as any).char || key.sequence || key.name || '', 10)
         if (!isNaN(num) && num >= 1 && num <= currentQuestion.options.length) {
           preventDefault()
           const optIdx = num - 1

@@ -279,7 +279,15 @@ export const App = ({
           updateProjectContext(projectRoot, { lastModel: model.name })
           updateProjectSettings(projectRoot, { model: model.name })
           setIsModelSelected(true)
-          setIsApiKeyConfigured(false)
+          if (
+            model.id.includes('ollama') ||
+            model.name.includes('qwen2.5-coder') ||
+            model.name.includes('ollama')
+          ) {
+            setIsApiKeyConfigured(true)
+          } else {
+            setIsApiKeyConfigured(false)
+          }
         }}
         onBack={() => {
           setIsWorkspaceTrusted(false)
@@ -403,7 +411,6 @@ const AuthedSurfaceRoutes = ({
       initialMode={initialMode}
       gitRoot={gitRoot}
       onSwitchToGitRoot={onSwitchToGitRoot}
-      freebuffSession={null}
     />
   )
 }

@@ -343,7 +343,7 @@ describe('parseSkillFileContent', () => {
       '  hermes:',
       '    tags: [ADHD, Productivity]',
       '    category: productivity',
-      '  freebuff-builtin: review',
+      '  rivocode-builtin: review',
       '---',
       '',
       '# i-have-adhd',
@@ -355,7 +355,7 @@ describe('parseSkillFileContent', () => {
     })
 
     expect(parsed).toMatchObject({ name: 'i-have-adhd' })
-    expect(parsed?.metadata?.['freebuff-builtin']).toBe('review')
+    expect(parsed?.metadata?.['rivocode-builtin']).toBe('review')
     expect(parsed?.metadata?.hermes).toMatchObject({ category: 'productivity' })
   })
 

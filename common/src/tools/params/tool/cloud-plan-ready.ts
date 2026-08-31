@@ -50,7 +50,7 @@ const inputSchema = z.object({
 const outputSchema = z.object({ message: z.string() })
 
 const description = `
-Mark a blank Freebuff Cloud project plan as ready for the user to approve.
+Mark a blank RivoCode Cloud project plan as ready for the user to approve.
 
 Call this once you know what the product does and which technologies it uses:
 - You understand the product, its users, and its core flows.

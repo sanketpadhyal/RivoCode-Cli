@@ -1,15 +1,5 @@
 import { buildArray } from '@rivocode/common/util/array'
 import { COMPOSIO_META_TOOL_NAMES } from '@rivocode/common/constants/composio'
-import {
-  FREEBUFF_GEMINI_THINKER_AGENT_ID,
-  FREEBUFF_GEMINI_THINKER_INSTRUCTIONS_PROMPT,
-  FREEBUFF_GEMINI_THINKER_SYSTEM_INSTRUCTION,
-} from '@rivocode/common/constants/freebuff-gemini-thinker'
-import { FREEBUFF_REVIEWER_AGENT_ID_BY_MODEL } from '@rivocode/common/constants/free-agents'
-import {
-  canFreebuffModelSpawnGeminiThinker,
-  FREEBUFF_MINIMAX_M3_MODEL_ID,
-} from '@rivocode/common/constants/freebuff-models'
 import { contextPrunerBudgetForModel } from '@rivocode/common/constants/model-config'
 
 import {
@@ -31,21 +21,19 @@ const BASE2_DEEPER_RESEARCH =
 const THINKER_SPAWN_LIMIT =
   'Spawn at most one thinker agent per user request. Once a thinker has been spawned for the current request, do not spawn any thinker again.'
 
-type Base2Mode = 'default' | 'free' | 'lite' | 'max' | 'fast'
+type Base2Mode = 'default' | 'lite' | 'max' | 'fast'
 
 const MODEL_BY_MODE = {
   default: OPUS_MODEL,
   max: OPUS_MODEL,
   fast: OPUS_MODEL,
   lite: LITE_MODEL,
-  free: FREEBUFF_MINIMAX_M3_MODEL_ID,
 } satisfies Record<Base2Mode, SecretAgentDefinition['model']>
 
-const CODEBUFF_REVIEWER_BY_MODEL: Record<string, string> = {
-  ...FREEBUFF_REVIEWER_AGENT_ID_BY_MODEL,
+const REVIEWER_BY_MODEL: Record<string, string> = {
   [LITE_MODEL]: 'code-reviewer-lite',
 }
-const FALLBACK_REVIEWER_AGENT_ID = 'code-reviewer-deepseek-flash'
+const FALLBACK_REVIEWER_AGENT_ID = 'code-reviewer-lite'
 
 export function createBase2(
   mode: Base2Mode,
@@ -72,16 +60,11 @@ export function createBase2(
   const isFast = mode === 'fast'
   const isLite = mode === 'lite'
   const isMax = mode === 'max'
-  const isFreebuff = mode === 'free'
-  const isLean = mode === 'free' || mode === 'lite'
+  const isLean = mode === 'lite'
 
   const model = modelOverride ?? MODEL_BY_MODE[mode]
-  const hasGeminiThinker =
-    isLite || (isFreebuff && canFreebuffModelSpawnGeminiThinker(model))
   const leanCodeReviewerAgentId =
-    (isFreebuff
-      ? FREEBUFF_REVIEWER_AGENT_ID_BY_MODEL
-      : CODEBUFF_REVIEWER_BY_MODEL)[model] ?? FALLBACK_REVIEWER_AGENT_ID
+    REVIEWER_BY_MODEL[model] ?? FALLBACK_REVIEWER_AGENT_ID
   const contextPrunerMaxContextLength = contextPrunerBudgetForModel(model)
   const defaultProviderOptions = getBase2ProviderOptions(model)
 
@@ -146,12 +129,11 @@ export function createBase2(
       isLean && !noReview && leanCodeReviewerAgentId,
       isDefault && 'code-reviewer',
       isMax && 'code-reviewer-multi-prompt',
-      hasGeminiThinker && FREEBUFF_GEMINI_THINKER_AGENT_ID,
-      !isFreebuff && 'thinker-gpt',
+      'thinker-gpt',
       'context-pruner',
     ),
 
-    systemPrompt: `You are Buffy, the strategic coding assistant. You are the AI agent behind the product, ${isFreebuff ? 'Freebuff' : 'Codebuff'}, a tool where users can chat with you to code with AI${isFreebuff ? ' for free' : ''}.
+    systemPrompt: `You are Buffy, the strategic coding assistant. You are the AI agent behind the product, RivoCode, a tool where users can chat with you to code with AI.
 
 Current date: ${PLACEHOLDER.CURRENT_DATE}.
 
@@ -198,9 +180,6 @@ Use the spawn_agents tool to spawn specialized agents to help you complete the u
 - **Sequence agents properly:** Keep in mind dependencies when spawning different agents. Don't spawn agents in parallel that depend on each other.
   ${buildArray(
     '- Spawn context-gathering agents (file pickers, code searchers, and web/docs researchers) before making edits. Use the list_directory and glob tools directly for searching and exploring the codebase.',
-    hasGeminiThinker && FREEBUFF_GEMINI_THINKER_SYSTEM_INSTRUCTION,
-    isLite &&
-      "- The thinker-with-files-gemini agent is lite mode's one escalation path. It runs a model several times more expensive per token than lite itself and the user is billed for every spawn, so escalate when a problem genuinely needs it rather than routinely. Do not spawn thinker-gpt unless the user asks for it: it costs about the same per token and adds nothing over the gemini thinker here. If the work needs sustained deep reasoning rather than one hard question, say so and suggest the user switch to DEFAULT or MAX mode.",
     isDefault &&
       '- Spawn the editor agent to implement the changes after you have gathered all the context you need.',
     (isDefault || isMax) &&
@@ -220,20 +199,14 @@ Use the spawn_agents tool to spawn specialized agents to help you complete the u
 - **Limit thinker spawns:** ${THINKER_SPAWN_LIMIT}
 - **Never spawn the context-pruner agent:** This agent is spawned automatically for you and you don't need to spawn it yourself.
 
-# ${isFreebuff ? 'Freebuff' : 'Codebuff'} Meta-information
+# RivoCode Meta-information
 
 You are running on the ${model} model.
 
-${
-  isFreebuff
-    ? 'See freebuff.com for more information about the product.'
-    : [
-        'Users send prompts to you in one of a few user-selected modes, like DEFAULT, LITE, MAX, or PLAN.',
-        "Every prompt sent consumes the user's credits, which is calculated based on the API cost of the models used.",
-        'The user can use the "/usage" command to see how many credits they have used and have left, so you can tell them to check their usage this way.',
-        'For other questions, you can direct them to codebuff.com, or especially codebuff.com/docs for detailed information about the product.',
-      ].join('\n')
-}
+Users send prompts to you in one of a few user-selected modes, like DEFAULT, LITE, MAX, or PLAN.
+Every prompt sent consumes the user's credits, which is calculated based on the API cost of the models used.
+The user can use the "/usage" command to see how many credits they have used and have left, so you can tell them to check their usage this way.
+For other questions, you can direct them to rivocode.com for detailed information about the product.
 
 # Response examples
 
@@ -316,14 +289,12 @@ ${PLACEHOLDER.GIT_CHANGES_PROMPT}
           isDefault,
           isMax,
           isLean,
-          hasGeminiThinker,
           hasNoValidation,
           noAskUser,
           noReview,
           leanCodeReviewerAgentId,
         }),
     handleSteps: getBase2HandleSteps({
-      isFreebuff,
       maxContextLength: contextPrunerMaxContextLength,
     }),
   }
@@ -340,58 +311,12 @@ function getBase2ProviderOptions(
 }
 
 function getBase2HandleSteps({
-  isFreebuff,
   maxContextLength,
 }: {
-  isFreebuff: boolean
   maxContextLength: 250_000 | 400_000
 }): Base2HandleSteps {
-  if (isFreebuff) {
-    if (maxContextLength === 250_000) return handleStepsFree250k
-    return handleStepsFree400k
-  }
   if (maxContextLength === 250_000) return handleSteps250k
   return handleSteps400k
-}
-
-const handleStepsFree250k: Base2HandleSteps = function* ({ params }) {
-  while (true) {
-    yield {
-      toolName: 'spawn_agent_inline',
-      input: {
-        agent_type: 'context-pruner',
-        params: {
-          maxContextLength: 250_000,
-          ...(params ?? {}),
-          cacheExpiryMs: 30 * 60 * 1000,
-        },
-      },
-      includeToolCall: false,
-    } as any
-
-    const { stepsComplete } = yield 'STEP'
-    if (stepsComplete) break
-  }
-}
-
-const handleStepsFree400k: Base2HandleSteps = function* ({ params }) {
-  while (true) {
-    yield {
-      toolName: 'spawn_agent_inline',
-      input: {
-        agent_type: 'context-pruner',
-        params: {
-          maxContextLength: 400_000,
-          ...(params ?? {}),
-          cacheExpiryMs: 30 * 60 * 1000,
-        },
-      },
-      includeToolCall: false,
-    } as any
-
-    const { stepsComplete } = yield 'STEP'
-    if (stepsComplete) break
-  }
 }
 
 const handleSteps250k: Base2HandleSteps = function* ({ params }) {
@@ -441,7 +366,6 @@ function buildImplementationInstructionsPrompt({
   isDefault,
   isMax,
   isLean,
-  hasGeminiThinker,
   hasNoValidation,
   noAskUser,
   noReview,
@@ -451,7 +375,6 @@ function buildImplementationInstructionsPrompt({
   isDefault: boolean
   isMax: boolean
   isLean: boolean
-  hasGeminiThinker: boolean
   hasNoValidation: boolean
   noAskUser: boolean
   noReview: boolean
@@ -472,7 +395,6 @@ ${buildArray(
   (isDefault || isMax || isLean) &&
     `- For any task requiring 3+ steps, use the write_todos tool to write out your step-by-step implementation plan. Include ALL of the applicable tasks in the list.${isFast || noReview ? '' : ' You should include a step to review the changes after you have implemented the changes.'}:${hasNoValidation ? '' : ' You should include at least one step to validate/test your changes: be specific about whether to typecheck, run tests, run lints, etc.'} You may be able to do reviewing and validation in parallel in the same step. Skip write_todos for simple tasks like quick edits or answering questions.`,
   `- ${THINKER_SPAWN_LIMIT}`,
-  hasGeminiThinker && FREEBUFF_GEMINI_THINKER_INSTRUCTIONS_PROMPT,
   (isDefault || isMax) &&
     `- For quick problems, briefly explain your reasoning to the user. If you need to think longer, write your thoughts within the <think> tags. Finally, for complex problems, spawn the thinker agent to help find the best solution. (gpt-5-agent is a last resort for complex problems)`,
   isDefault &&

@@ -1,5 +1,4 @@
 import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test'
-import { FREEBUFF_PROVIDER_USAGE_MESSAGE } from '@rivocode/common/constants/freebuff-errors'
 
 import type { ChatMessage } from '../../../types/chat'
 import type { SendMessageTimerController } from '../../../utils/send-message-timer'
@@ -27,7 +26,6 @@ const ensureEnv = () => {
 ensureEnv()
 
 const { useChatStore } = await import('../../../state/chat-store')
-const { IS_FREEBUFF } = await import('../../../utils/constants')
 const { createStreamController } = await import('../../stream-state')
 const {
   setupStreamingContext,
@@ -128,7 +126,7 @@ describe('setupStreamingContext', () => {
       const lastBlock = aiMessage!.blocks?.[aiMessage!.blocks.length - 1]
       expect(lastBlock?.type).toBe('text')
       const textBlock = lastBlock as { type: 'text'; content: string }
-      expect(textBlock?.content).toContain('[response interrupted]')
+      expect(textBlock?.content).toBe('Some text')
 
       expect(aiMessage!.isComplete).toBe(true)
     })
@@ -441,7 +439,7 @@ describe('handleRunCompletion', () => {
     })
   })
 
-  test('provider credit wording follows the Freebuff client policy', () => {
+  test('provider error wording follows error output', () => {
     let messages = createBaseMessages()
     const timerController = createMockTimerController()
     const updater = createBatchedMessageUpdater('ai-1', (fn: any) => {
@@ -470,9 +468,7 @@ describe('handleRunCompletion', () => {
       setHasReceivedPlanResponse: () => {},
     })
 
-    expect(messages[0]?.userError).toBe(
-      IS_FREEBUFF ? FREEBUFF_PROVIDER_USAGE_MESSAGE : 'Not Enough Credits',
-    )
+    expect(messages[0]?.userError).toBe('Not Enough Credits')
   })
 })
 
@@ -856,19 +852,13 @@ describe('handleRunError', () => {
     expect(aiMessage).toBeDefined()
 
     expect(aiMessage!.content).toBe('Partial streamed content')
-    expect(aiMessage!.userError).toContain(
-      IS_FREEBUFF ? FREEBUFF_PROVIDER_USAGE_MESSAGE : 'Out of credits',
-    )
+    expect(aiMessage!.userError).toContain('Out of credits')
 
     expect(aiMessage!.blocks).toEqual([{ type: 'text', content: 'some block' }])
 
     expect(aiMessage!.isComplete).toBe(true)
 
-    if (IS_FREEBUFF) {
-      expect(setInputModeMock).not.toHaveBeenCalled()
-    } else {
-      expect(setInputModeMock).toHaveBeenCalledWith('outOfCredits')
-    }
+    expect(setInputModeMock).toHaveBeenCalledWith('outOfCredits')
 
     expect(timerController.stopCalls).toContain('error')
   })
@@ -1547,147 +1537,5 @@ describe('resetEarlyReturnState', () => {
       expect(canProcessQueue).toBe(false)
       expect(isProcessingQueueRef.current).toBe(false)
     })
-  })
-})
-
-describe('freebuff gate errors', () => {
-  const makeUpdater = (messages: ChatMessage[]) => {
-    const updater = createBatchedMessageUpdater('ai-1', (fn: any) => {
-      const next = fn(messages)
-      messages.length = 0
-      messages.push(...next)
-    })
-    return updater
-  }
-
-  const baseMessage = (): ChatMessage[] => [
-    {
-      id: 'ai-1',
-      variant: 'ai',
-      content: '',
-      blocks: [],
-      timestamp: 'now',
-    },
-  ]
-
-  const gateError = (kind: string, statusCode: number) => ({
-    error: kind,
-    statusCode,
-    message: 'server said so',
-  })
-
-  test('handleRunError maps 409 session_superseded to the restart-required message', () => {
-    const messages = baseMessage()
-    const updater = makeUpdater(messages)
-    handleRunError({
-      error: gateError('session_superseded', 409),
-      timerController: createMockTimerController(),
-      updater,
-      setIsRetrying: () => {},
-      setStreamStatus: () => {},
-      setCanProcessQueue: () => {},
-      updateChainInProgress: () => {},
-    })
-    updater.flush()
-    expect(messages[0].userError).toContain('Another freebuff CLI took over')
-  })
-
-  test('handleRunError suppresses the inline error for 410 session_expired (ended banner takes over)', () => {
-    const messages = baseMessage()
-    const updater = makeUpdater(messages)
-    handleRunError({
-      error: gateError('session_expired', 410),
-      timerController: createMockTimerController(),
-      updater,
-      setIsRetrying: () => {},
-      setStreamStatus: () => {},
-      setCanProcessQueue: () => {},
-      updateChainInProgress: () => {},
-    })
-    updater.flush()
-    expect(messages[0].userError).toBeUndefined()
-  })
-
-  test('handleRunError suppresses the inline error for 428 waiting_room_required (ended banner takes over)', () => {
-    const messages = baseMessage()
-    const updater = makeUpdater(messages)
-    handleRunError({
-      error: gateError('waiting_room_required', 428),
-      timerController: createMockTimerController(),
-      updater,
-      setIsRetrying: () => {},
-      setStreamStatus: () => {},
-      setCanProcessQueue: () => {},
-      updateChainInProgress: () => {},
-    })
-    updater.flush()
-    expect(messages[0].userError).toBeUndefined()
-  })
-
-  test('handleRunError maps 429 waiting_room_queued to the session-pending message', () => {
-    const messages = baseMessage()
-    const updater = makeUpdater(messages)
-    handleRunError({
-      error: gateError('waiting_room_queued', 429),
-      timerController: createMockTimerController(),
-      updater,
-      setIsRetrying: () => {},
-      setStreamStatus: () => {},
-      setCanProcessQueue: () => {},
-      updateChainInProgress: () => {},
-    })
-    updater.flush()
-    expect(messages[0].userError).toContain('still being set up')
-  })
-
-  test('handleRunError ignores gate-shaped errors with non-matching status code', () => {
-    const messages = baseMessage()
-    const updater = makeUpdater(messages)
-    const err = Object.assign(new Error('oops'), {
-      error: 'session_superseded',
-      statusCode: 500,
-    })
-    handleRunError({
-      error: err,
-      timerController: createMockTimerController(),
-      updater,
-      setIsRetrying: () => {},
-      setStreamStatus: () => {},
-      setCanProcessQueue: () => {},
-      updateChainInProgress: () => {},
-    })
-    updater.flush()
-    expect(messages[0].userError).toBe('oops')
-    expect(messages[0].userError).not.toContain('took over')
-  })
-
-  test('handleRunCompletion with gate error output routes through the gate handler', () => {
-    const messages = baseMessage()
-    const updater = makeUpdater(messages)
-    const runState: RunState = {
-      traceSessionId: 'trace-test',
-      sessionState: undefined as any,
-      output: {
-        type: 'error',
-        message: 'server said so',
-        error: 'session_expired',
-        statusCode: 410,
-      } as any,
-    }
-    handleRunCompletion({
-      runState,
-      actualCredits: undefined,
-      agentMode: 'LITE',
-      timerController: createMockTimerController(),
-      updater,
-      aiMessageId: 'ai-1',
-      wasAbortedByUser: false,
-      setStreamStatus: () => {},
-      setCanProcessQueue: () => {},
-      updateChainInProgress: () => {},
-      setHasReceivedPlanResponse: () => {},
-    })
-    updater.flush()
-    expect(messages[0].userError).toBeUndefined()
   })
 })

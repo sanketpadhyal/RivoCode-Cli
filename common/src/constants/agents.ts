@@ -86,3 +86,5 @@ export const AGENT_NAME_TO_TYPES = Object.entries(AGENT_NAMES).reduce(
 export const MAX_AGENT_STEPS_DEFAULT = 200
 
 export const MAX_AGENT_STEP_ROWS = 1_000
+
+export const RIVOCODE_ACTING_USER_HEADER = 'x-rivocode-acting-user-id'

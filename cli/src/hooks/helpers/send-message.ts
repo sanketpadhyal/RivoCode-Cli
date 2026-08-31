@@ -1,19 +1,11 @@
-import { FREEBUFF_PROVIDER_USAGE_MESSAGE } from '@rivocode/common/constants/freebuff-errors'
 import { getErrorObject } from '@rivocode/common/util/error'
 
 import { getProjectRoot } from '../../project-files'
 import { useChatStore } from '../../state/chat-store'
-import { IS_FREEBUFF } from '../../utils/constants'
 import { processBashContext } from '../../utils/bash-context-processor'
 import { markRunningAgentsAsCancelled } from '../../utils/block-operations'
 import {
-  getCountryBlockFromFreeModeError,
-  getFreeModeUnavailableErrorMessage,
-  getFreebuffGateErrorKind,
-  getFreebuffRateLimitErrorMessage,
   isOutOfCreditsError,
-  isFreebuffProviderUsageError,
-  isFreeModeUnavailableError,
   OUT_OF_CREDITS_MESSAGE,
 } from '../../utils/error-handling'
 import { formatElapsedTime } from '../../utils/format-elapsed-time'
@@ -362,40 +354,10 @@ export const handleRunCompletion = (params: {
   }
 
   if (output.type === 'error') {
-    if (IS_FREEBUFF && isFreebuffProviderUsageError(output)) {
-      updater.setError(FREEBUFF_PROVIDER_USAGE_MESSAGE)
-      finalizeAfterError()
-      return
-    }
-
     if (isOutOfCreditsError(output)) {
       updater.setError(OUT_OF_CREDITS_MESSAGE)
       useChatStore.getState().setInputMode('outOfCredits')
       invalidateActivityQuery(usageQueryKeys.current())
-      finalizeAfterError()
-      return
-    }
-
-    if (isFreeModeUnavailableError(output)) {
-      updater.setError(getFreeModeUnavailableErrorMessage(output))
-      finalizeAfterError()
-      return
-    }
-
-    const gateKind = getFreebuffGateErrorKind(output)
-    if (gateKind) {
-      handleFreebuffGateError(gateKind, updater, {
-        messageWasDropped: params.hasReceivedContent === false,
-      })
-      finalizeAfterError()
-      return
-    }
-
-    const freebuffRateLimitMessage = IS_FREEBUFF
-      ? getFreebuffRateLimitErrorMessage(output)
-      : null
-    if (freebuffRateLimitMessage) {
-      updater.setError(freebuffRateLimitMessage)
       finalizeAfterError()
       return
     }
@@ -460,7 +422,6 @@ export const handleRunError = (params: {
     updateChainInProgress,
     isProcessingQueueRef,
     isQueuePausedRef,
-    hasReceivedContent,
   } = params
 
   const errorInfo = getErrorObject(error, { includeRawError: true })
@@ -476,11 +437,6 @@ export const handleRunError = (params: {
   })
   timerController.stop('error')
 
-  if (IS_FREEBUFF && isFreebuffProviderUsageError(error)) {
-    updater.setError(FREEBUFF_PROVIDER_USAGE_MESSAGE)
-    return
-  }
-
   if (isOutOfCreditsError(error)) {
     updater.setError(OUT_OF_CREDITS_MESSAGE)
     useChatStore.getState().setInputMode('outOfCredits')
@@ -488,58 +444,6 @@ export const handleRunError = (params: {
     return
   }
 
-  if (isFreeModeUnavailableError(error)) {
-    updater.setError(getFreeModeUnavailableErrorMessage(error))
-    return
-  }
-
-  const gateKind = getFreebuffGateErrorKind(error)
-  if (gateKind) {
-    handleFreebuffGateError(gateKind, updater, {
-      messageWasDropped: hasReceivedContent === false,
-    })
-    return
-  }
-
-  const freebuffRateLimitMessage = IS_FREEBUFF
-    ? getFreebuffRateLimitErrorMessage(error)
-    : null
-  if (freebuffRateLimitMessage) {
-    updater.setError(freebuffRateLimitMessage)
-    return
-  }
-
   const errorMessage = errorInfo.message || 'An unexpected error occurred'
   updater.setError(errorMessage)
-}
-
-function handleFreebuffGateError(
-  kind: ReturnType<typeof getFreebuffGateErrorKind>,
-  updater: BatchedMessageUpdater,
-  opts: { messageWasDropped?: boolean } = {},
-) {
-  switch (kind) {
-    case 'session_expired':
-    case 'waiting_room_required':
-    case 'session_model_mismatch':
-      updater.markComplete()
-      if (opts.messageWasDropped) {
-        updater.setError(
-          'Your session ended before this message was processed.',
-        )
-      }
-      return
-    case 'waiting_room_queued':
-      updater.setError(
-        'Connecting to model. Try again in a moment.',
-      )
-      return
-    case 'session_superseded':
-      updater.setError(
-        'Session active in another terminal.',
-      )
-      return
-    default:
-      return
-  }
 }

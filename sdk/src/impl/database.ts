@@ -1,5 +1,7 @@
-import { MAX_AGENT_STEP_ROWS } from '@rivocode/common/constants/agents'
-import { FREEBUFF_ACTING_USER_HEADER } from '@rivocode/common/constants/freebuff-models'
+import {
+  MAX_AGENT_STEP_ROWS,
+  RIVOCODE_ACTING_USER_HEADER,
+} from '@rivocode/common/constants/agents'
 import { validateSingleAgent } from '@rivocode/common/templates/agent-validation'
 import { DynamicAgentTemplateSchema } from '@rivocode/common/types/dynamic-agent-template'
 import { getErrorObject } from '@rivocode/common/util/error'
@@ -302,7 +304,7 @@ export async function startAgentRun(
         method: 'POST',
         headers: {
           Authorization: `Bearer ${apiKey}`,
-          ...(userId ? { [FREEBUFF_ACTING_USER_HEADER]: userId } : {}),
+          ...(userId ? { [RIVOCODE_ACTING_USER_HEADER]: userId } : {}),
         },
         body: JSON.stringify({
           action: 'START',
@@ -376,7 +378,7 @@ export async function finishAgentRun(
         method: 'POST',
         headers: {
           Authorization: `Bearer ${apiKey}`,
-          ...(userId ? { [FREEBUFF_ACTING_USER_HEADER]: userId } : {}),
+          ...(userId ? { [RIVOCODE_ACTING_USER_HEADER]: userId } : {}),
         },
         body: JSON.stringify({
           action: 'FINISH',

@@ -21,13 +21,13 @@ describe('getProviderOptions — codebuff_metadata', () => {
   it('merges extraCodebuffMetadata into codebuff_metadata', () => {
     const opts = getProviderOptions({
       ...baseParams,
-      extraCodebuffMetadata: { freebuff_instance_id: 'abc-123' },
+      extraCodebuffMetadata: { custom_instance_id: 'abc-123' },
     })
     const meta = (opts.codebuff as any).codebuff_metadata
     expect(meta).toMatchObject({
       run_id: 'run-1',
       client_id: 'session-1',
-      freebuff_instance_id: 'abc-123',
+      custom_instance_id: 'abc-123',
     })
   })
 
@@ -37,19 +37,19 @@ describe('getProviderOptions — codebuff_metadata', () => {
     expect(Object.keys(meta)).toEqual(
       expect.arrayContaining(['run_id', 'client_id']),
     )
-    expect(meta.freebuff_instance_id).toBeUndefined()
+    expect(meta.custom_instance_id).toBeUndefined()
   })
 
   it('cost_mode passes through alongside extra metadata', () => {
     const opts = getProviderOptions({
       ...baseParams,
       costMode: 'free',
-      extraCodebuffMetadata: { freebuff_instance_id: 'uuid-xyz' },
+      extraCodebuffMetadata: { custom_instance_id: 'uuid-xyz' },
     })
     const meta = (opts.codebuff as any).codebuff_metadata
     expect(meta).toMatchObject({
       cost_mode: 'free',
-      freebuff_instance_id: 'uuid-xyz',
+      custom_instance_id: 'uuid-xyz',
     })
   })
 

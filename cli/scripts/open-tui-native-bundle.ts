@@ -10,7 +10,7 @@ import {
 } from 'fs'
 import { basename, dirname, join } from 'path'
 
-const RECEIPT_FILE = '.freebuff-native-bundle.json'
+const RECEIPT_FILE = '.rivocode-native-bundle.json'
 
 type CompleteBundle = {
   version: string

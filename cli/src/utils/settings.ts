@@ -1,20 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 
-import {
-  FREEBUFF_MODELS,
-  getFreebuffModelEfforts,
-  isFreebuffModelId,
-  migrateSupersededFreebuffModelPreference,
-} from '@rivocode/common/constants/freebuff-models'
-import { isReasoningEffort } from '@rivocode/common/constants/reasoning-effort'
-
 import { getConfigDir } from './auth'
 import { AGENT_MODES } from './constants'
 import { logger } from './logger'
 
 import type { AgentMode } from './constants'
-import type { ReasoningEffort } from '@rivocode/common/constants/reasoning-effort'
 
 const DEFAULT_SETTINGS: Settings = {
   mode: 'DEFAULT' as const,
@@ -24,8 +15,6 @@ const DEFAULT_SETTINGS: Settings = {
 export interface Settings {
   mode?: AgentMode
   adsEnabled?: boolean
-  freebuffModel?: string
-  freebuffReasoningEfforts?: Record<string, ReasoningEffort>
   alwaysUseALaCarte?: boolean
   fallbackToALaCarte?: boolean
   hasSubmittedFirstPrompt?: boolean
@@ -85,33 +74,6 @@ const validateSettings = (parsed: unknown): Settings => {
     settings.adsEnabled = obj.adsEnabled
   }
 
-  if (
-    typeof obj.freebuffModel === 'string' &&
-    isFreebuffModelId(obj.freebuffModel)
-  ) {
-    settings.freebuffModel = obj.freebuffModel
-  }
-
-  const replacement = migrateSupersededFreebuffModelPreference(
-    settings.freebuffModel,
-    FREEBUFF_MODELS.map((model) => model.id),
-  )
-  if (replacement) settings.freebuffModel = replacement
-
-  if (obj.freebuffReasoningEfforts && typeof obj.freebuffReasoningEfforts === 'object') {
-    const efforts: Record<string, ReasoningEffort> = {}
-    for (const [modelId, effort] of Object.entries(
-      obj.freebuffReasoningEfforts as Record<string, unknown>,
-    )) {
-      if (!isReasoningEffort(effort)) continue
-      if (!getFreebuffModelEfforts(modelId)?.includes(effort)) continue
-      efforts[modelId] = effort
-    }
-    if (Object.keys(efforts).length > 0) {
-      settings.freebuffReasoningEfforts = efforts
-    }
-  }
-
   if (typeof obj.alwaysUseALaCarte === 'boolean') {
     settings.alwaysUseALaCarte = obj.alwaysUseALaCarte
   }
@@ -154,36 +116,6 @@ export const loadModePreference = (): AgentMode => {
 
 export const saveModePreference = (mode: AgentMode): void => {
   saveSettings({ mode })
-}
-
-export const loadFreebuffModelPreference = (): string | undefined => {
-  return loadSettings().freebuffModel
-}
-
-export const saveFreebuffModelPreference = (model: string): void => {
-  if (!isFreebuffModelId(model)) return
-  saveSettings({ freebuffModel: model })
-}
-
-export const loadFreebuffReasoningEfforts = (): Record<
-  string,
-  ReasoningEffort
-> => {
-  return loadSettings().freebuffReasoningEfforts ?? {}
-}
-
-export const saveFreebuffReasoningEffort = (
-  model: string,
-  effort: ReasoningEffort | undefined,
-): void => {
-  const existing = loadSettings().freebuffReasoningEfforts ?? {}
-  const next = { ...existing }
-  if (effort === undefined) {
-    delete next[model]
-  } else {
-    next[model] = effort
-  }
-  saveSettings({ freebuffReasoningEfforts: next })
 }
 
 export const hasSubmittedFirstPrompt = (): boolean => {

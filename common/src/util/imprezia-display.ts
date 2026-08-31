@@ -2,9 +2,9 @@ import { z } from 'zod'
 
 import { impreziaBeaconTokenSchema } from './imprezia-ad'
 
-export const IMPREZIA_DISPLAY_ORIGIN = 'https://freebuff.com'
+export const IMPREZIA_DISPLAY_ORIGIN = 'https://rivocode.com'
 
-export const DESKTOP_NEW_TAB_SLOT_ID = 'freebuff-desktop-new-tab'
+export const DESKTOP_NEW_TAB_SLOT_ID = 'rivocode-desktop-new-tab'
 
 export type ImpreziaDisplayRequest = {
   slotId: string

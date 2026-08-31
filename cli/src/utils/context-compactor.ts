@@ -67,7 +67,7 @@ export function compactChatHistory(messages: ChatMessage[], thresholdCount = 16)
 
   const compactedSummaryMessage: ChatMessage = {
     id: 'compacted_context_' + Date.now(),
-    type: 'system',
+    variant: 'ai',
     content: summaryText,
     timestamp: new Date().toISOString(),
     blocks: [

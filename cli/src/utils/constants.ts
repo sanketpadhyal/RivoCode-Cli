@@ -1,12 +1,5 @@
 import type { ToolName } from '@rivocode/sdk'
 
-import { getCliEnv } from './env'
-
-export const IS_FREEBUFF = false
-
-export const END_SESSION_MESSAGE =
-  'Ending session and returning to the model picker…'
-
 export const HIDDEN_AGENT_IDS = ['context-pruner'] as const
 
 export const COLLAPSED_BY_DEFAULT_TOOL_NAMES: readonly ToolName[] = [

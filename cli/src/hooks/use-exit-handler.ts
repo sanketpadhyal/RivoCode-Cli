@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { getCurrentChatId } from '../project-files'
-import { IS_FREEBUFF } from '../utils/constants'
 import { exitCliCleanly } from '../utils/exit-cleanly'
 
 import type { InputValue } from '../types/store'

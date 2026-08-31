@@ -1,4 +1,3 @@
-import { IS_FREEBUFF } from '../utils/constants'
 import { TextAttributes } from '@opentui/core'
 import { safeOpen } from '../utils/open-url'
 import React, { useEffect, useMemo } from 'react'
@@ -39,7 +38,6 @@ const formatRenewalDate = (dateStr: string | null): string => {
 }
 
 export const UsageBanner = ({ showTime }: { showTime: number }) => {
-  if (IS_FREEBUFF) return null
 
   const sessionCreditsUsed = useChatStore((state) => state.sessionCreditsUsed)
   const setInputMode = useChatStore((state) => state.setInputMode)
@@ -87,7 +85,7 @@ export const UsageBanner = ({ showTime }: { showTime: number }) => {
     )
   }
 
-  const colorLevel = getBannerColorLevel(activeData.remainingBalance)
+  const colorLevel = getBannerColorLevel(activeData.remainingBalance ?? null)
   const renewalDate = activeData.next_quota_reset ? formatRenewalDate(activeData.next_quota_reset) : null
 
   const activeSubscription = subscriptionData?.hasSubscription ? subscriptionData : null

@@ -969,7 +969,7 @@ describe('loopAgentSteps - runAgentStep vs runProgrammaticStep behavior', () => 
         responseBody: JSON.stringify({
           error: 'session_superseded',
           message:
-            'Another instance of freebuff has taken over this session. Only one instance per account is allowed.',
+            'Another instance of RivoCode has taken over this session. Only one instance per account is allowed.',
         }),
         isRetryable: true,
       })
@@ -991,7 +991,7 @@ describe('loopAgentSteps - runAgentStep vs runProgrammaticStep behavior', () => 
       expect(result.output.type).toBe('error')
       if (result.output.type === 'error') {
         expect(result.output.message).toBe(
-          'Another instance of freebuff has taken over this session. Only one instance per account is allowed.',
+          'Another instance of RivoCode has taken over this session. Only one instance per account is allowed.',
         )
         expect(result.output.message).not.toContain('Agent run error:')
         expect(result.output.error).toBe('session_superseded')

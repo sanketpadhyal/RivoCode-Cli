@@ -60,7 +60,6 @@ export const getCliEnv = (): CliEnv => ({
   CODEBUFF_LAUNCHER_PID: process.env.CODEBUFF_LAUNCHER_PID,
   CODEBUFF_SHIP_LOGS: process.env.CODEBUFF_SHIP_LOGS,
   CODEBUFF_NO_TERMINAL_WATCHDOG: process.env.CODEBUFF_NO_TERMINAL_WATCHDOG,
-  FREEBUFF_MODE: process.env.FREEBUFF_MODE,
 })
 
 export const getSystemProcessEnv = (): NodeJS.ProcessEnv => process.env

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const IMPREZIA_INTEGRATION_VERSION = 'freebuff-web/1.0.0'
+const IMPREZIA_INTEGRATION_VERSION = 'rivocode/1.0.0'
 
 export const IMPREZIA_SANDBOX_BASE_URL = 'https://api-sandbox.imprezia.ai'
 export const IMPREZIA_PROD_BASE_URL = 'https://api.imprezia.ai'

@@ -20,7 +20,6 @@ interface LogoResult {
 
 function getRivoImageBase64(): string | null {
   const possiblePaths = [
-    '/Users/sanketpadhyal/Desktop/Cli/freebuff/assets/rivo.png',
     path.join(process.cwd(), 'assets/rivo.png'),
     path.join(process.cwd(), '../assets/rivo.png'),
     path.join(__dirname, '../../assets/rivo.png'),

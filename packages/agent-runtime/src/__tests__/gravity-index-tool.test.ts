@@ -150,7 +150,7 @@ describe('gravity_index tool', () => {
     expect(spy.mock.calls[0]?.[0]?.input).not.toHaveProperty('external_user_id')
   })
 
-  test('tags base-chat traffic with the freebuff_chat surface', async () => {
+  test('tags base-chat traffic with the rivocode_chat surface', async () => {
     const spy = spyOn(webApi, 'callGravityIndexAPI').mockResolvedValue({
       result: { search_id: 'search-1' },
     })
@@ -169,7 +169,7 @@ describe('gravity_index tool', () => {
         'base-chat': {
           ...gravityTestAgent,
           id: 'base-chat',
-          displayName: 'Freebuff Chat',
+          displayName: 'RivoCode Chat',
         },
       },
     }
@@ -198,70 +198,12 @@ describe('gravity_index tool', () => {
         input: expect.objectContaining({
           external_user_id: 'test-fingerprint',
           metadata: expect.objectContaining({
-            surface: 'freebuff_chat',
+            surface: 'rivocode_chat',
           }),
         }),
       }),
     )
   })
-
-  test.each(['base2-free-deepseek', 'base3-free-deepseek'])(
-    'tags %s traffic with the freebuff_web surface and forwards external_user_id',
-    async (rootAgentId) => {
-      const spy = spyOn(webApi, 'callGravityIndexAPI').mockResolvedValue({
-        result: { search_id: 'search-1' },
-      })
-
-      mockAgentStream([
-        createToolCallChunk('gravity_index', {
-          action: 'search',
-          query: 'transactional email for Next.js',
-        }),
-        createToolCallChunk('end_turn', {}),
-      ])
-
-      const fileContext = {
-        ...mockFileContext,
-        agentTemplates: {
-          [rootAgentId]: {
-            ...gravityTestAgent,
-            id: rootAgentId,
-            displayName: 'Buffy on DeepSeek',
-          },
-        },
-      }
-      const sessionState = getInitialSessionState(fileContext)
-      const agentState = {
-        ...sessionState.mainAgentState,
-        agentType: rootAgentId,
-      }
-      const { agentTemplates } = assembleLocalAgentTemplates({
-        ...agentRuntimeImpl,
-        fileContext,
-      })
-
-      await runAgentStep({
-        ...runAgentStepBaseParams,
-        agentType: rootAgentId,
-        fileContext,
-        localAgentTemplates: agentTemplates,
-        agentTemplate: agentTemplates[rootAgentId],
-        agentState,
-        prompt: 'Find an email provider',
-      })
-
-      expect(spy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          input: expect.objectContaining({
-            external_user_id: 'test-fingerprint',
-            metadata: expect.objectContaining({
-              surface: 'freebuff_web',
-            }),
-          }),
-        }),
-      )
-    },
-  )
 
   test('stores results without rendering until the agent selects a service', async () => {
     spyOn(webApi, 'callGravityIndexAPI').mockResolvedValue({

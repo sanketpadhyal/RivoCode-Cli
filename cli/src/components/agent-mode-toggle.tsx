@@ -4,7 +4,7 @@ import { Button } from './button'
 import { SegmentedControl } from './segmented-control'
 import { useTheme } from '../hooks/use-theme'
 import { useChatStore } from '../state/chat-store'
-import { AGENT_MODES, IS_FREEBUFF } from '../utils/constants'
+import { AGENT_MODES } from '../utils/constants'
 
 import type { Segment } from './segmented-control'
 import type { AgentMode } from '../utils/constants'
@@ -127,8 +127,6 @@ export const AgentModeToggle = ({
   onToggle: () => void
   onSelectMode?: (mode: AgentMode) => void
 }) => {
-  if (IS_FREEBUFF) return null
-
   const theme = useTheme()
   const inputFocused = useChatStore((state) => state.inputFocused)
   const [isCollapsedHovered, setIsCollapsedHovered] = useState(false)

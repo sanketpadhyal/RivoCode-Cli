@@ -23,6 +23,7 @@ export const CommandPermissionPrompt: React.FC<CommandPermissionPromptProps> = (
 }) => {
   const theme = useTheme()
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const mountTimeRef = React.useRef(Date.now())
 
   useKeyboard(
     useCallback(
@@ -39,7 +40,21 @@ export const CommandPermissionPrompt: React.FC<CommandPermissionPromptProps> = (
           return
         }
 
-        const num = parseInt(key.char || key.name || '', 10)
+        const isEnter =
+          key.name === 'return' ||
+          key.name === 'enter' ||
+          key.name === 'linefeed' ||
+          key.sequence === '\r' ||
+          key.sequence === '\n' ||
+          isPlainEnterKey(key)
+
+        // Ignore enter/space pressed within 250ms of mounting to prevent bleed-through from chat prompt submission
+        if (Date.now() - mountTimeRef.current < 250 && (isEnter || key.name === 'space')) {
+          preventDefault()
+          return
+        }
+
+        const num = parseInt((key as any).char || key.sequence || key.name || '', 10)
         if (!isNaN(num) && num >= 1 && num <= options.length) {
           preventDefault()
           onSubmit(options[num - 1])
@@ -57,14 +72,6 @@ export const CommandPermissionPrompt: React.FC<CommandPermissionPromptProps> = (
           setSelectedIndex((prev) => (prev < options.length - 1 ? prev + 1 : 0))
           return
         }
-
-        const isEnter =
-          key.name === 'return' ||
-          key.name === 'enter' ||
-          key.name === 'linefeed' ||
-          key.sequence === '\r' ||
-          key.sequence === '\n' ||
-          isPlainEnterKey(key)
 
         if (isEnter || key.name === 'space') {
           preventDefault()

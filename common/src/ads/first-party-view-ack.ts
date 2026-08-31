@@ -67,7 +67,7 @@ function timeoutSignal(timeoutMs: number): {
 function isDedupedResponse(response: Response, body: unknown): boolean {
   return (
     response.status === 208 ||
-    response.headers.get('X-Freebuff-Ack-Outcome') === 'deduped' ||
+    response.headers.get('X-Ack-Outcome') === 'deduped' ||
     (typeof body === 'object' &&
       body !== null &&
       ((body as { acknowledgement?: unknown }).acknowledgement === 'deduped' ||

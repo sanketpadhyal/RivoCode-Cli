@@ -13,14 +13,12 @@ import {
 import { buildInterviewPrompt, buildPlanPrompt, buildReviewPrompt } from './prompt-builders'
 import { getProjectRoot } from '../project-files'
 import { useChatStore } from '../state/chat-store'
-import { useFreebuffSessionStore } from '../state/freebuff-session-store'
 import { trackEvent } from '../utils/analytics'
 import {
   buildBashHistoryMessages,
   createRunTerminalToolResult,
 } from '../utils/bash-messages'
 import { showClipboardMessage } from '../utils/clipboard'
-import { IS_FREEBUFF } from '../utils/constants'
 import { getSystemProcessEnv } from '../utils/env'
 import { terminalCommandBroker } from '../utils/terminal-command-broker'
 import { getSystemMessage, getUserMessage } from '../utils/message-history'
@@ -258,22 +256,15 @@ export async function routeUserPrompt(
   const hasAttachments = pendingAttachments.length > 0
   if (!trimmed && !hasAttachments) return
 
-  if (IS_FREEBUFF) {
-    const freebuffSession = useFreebuffSessionStore.getState().session
-    trackEvent(AnalyticsEvent.MESSAGE_SENT, {
-      surface: 'cli',
-      accessTier:
-        freebuffSession && 'accessTier' in freebuffSession
-          ? freebuffSession.accessTier
-          : 'unknown',
-      mode: agentMode,
-      inputMode,
-      inputLength: trimmed.length,
-      isSlashCommand: isSlashCommand(trimmed),
-      isBashCommand: trimmed.startsWith('!'),
-      hasImages: pendingImages.length > 0,
-    })
-  }
+  trackEvent(AnalyticsEvent.MESSAGE_SENT, {
+    surface: 'cli',
+    mode: agentMode,
+    inputMode,
+    inputLength: trimmed.length,
+    isSlashCommand: isSlashCommand(trimmed),
+    isBashCommand: trimmed.startsWith('!'),
+    hasImages: pendingImages.length > 0,
+  })
 
   if (inputMode === 'bash') {
     const commandWithBang = '!' + trimmed

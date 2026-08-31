@@ -15,8 +15,8 @@ windowsTest(
     const bash = findWindowsBash(getSystemProcessEnv())
     expect(bash).not.toBeNull()
 
-    const msysPath = `/tmp/freebuff-path-${randomUUID()}.txt`
-    const content = 'freebuff msys path probe'
+    const msysPath = `/tmp/rivocode-path-${randomUUID()}.txt`
+    const content = 'rivocode msys path probe'
     const created = spawnSync(
       bash!,
       ['-lc', `printf '${content}' > '${msysPath}'`],

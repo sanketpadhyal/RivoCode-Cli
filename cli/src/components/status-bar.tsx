@@ -49,7 +49,6 @@ interface StatusBarProps {
   scrollToLatest: () => void
   statusIndicatorState: StatusIndicatorState
   onStop?: () => void
-  freebuffSession?: unknown
 }
 
 export const StatusBar = ({
@@ -67,8 +66,8 @@ export const StatusBar = ({
   const lastUserPrompt = React.useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i]
-      if (msg?.sender === 'user' && msg.text) {
-        return msg.text
+      if (msg?.variant === 'user' && msg.content) {
+        return msg.content
       }
     }
     return ''

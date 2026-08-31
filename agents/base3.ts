@@ -64,11 +64,10 @@ ${PLACEHOLDER.GIT_CHANGES_PROMPT}
 export function createBase3CliRoot(
   options: {
     model?: SecretAgentDefinition['model']
-    isFreebuff?: boolean
     noAskUser?: boolean
   } = {},
 ): Omit<SecretAgentDefinition, 'id'> {
-  const { model = OPUS_MODEL, isFreebuff = false, noAskUser = false } = options
+  const { model = OPUS_MODEL, noAskUser = false } = options
   const base3 = createBase3(model)
 
   const root: Omit<SecretAgentDefinition, 'id'> = {
@@ -91,7 +90,7 @@ export function createBase3CliRoot(
       'skill',
     ],
     systemPrompt: `${base3.systemPrompt}
-${buildCliAppendix({ isFreebuff, model, noAskUser })}`,
+${buildCliAppendix({ model, noAskUser })}`,
   }
 
   if (!noAskUser) return root
@@ -107,11 +106,9 @@ const HUMAN_TOOL_NAMES: ReadonlySet<string> = new Set([
 ])
 
 function buildCliAppendix({
-  isFreebuff,
   model,
   noAskUser = false,
 }: {
-  isFreebuff: boolean
   model: SecretAgentDefinition['model']
   noAskUser?: boolean
 }): string {
@@ -127,20 +124,14 @@ ${
 ${gravityIndexGuidance()}
 ${SKILL_DISCOVERY_GUIDANCE}
 
-# ${isFreebuff ? 'Freebuff' : 'Codebuff'} Meta-information
+# RivoCode Meta-information
 
 You are running on the ${model} model.
 
-${
-  isFreebuff
-    ? 'You are the AI agent behind Freebuff, a tool where users can chat with you to code with AI for free. See freebuff.com for more information about the product.'
-    : [
-        'Users send prompts to you in one of a few user-selected modes, like DEFAULT, LITE, MAX, or PLAN.',
-        "Every prompt sent consumes the user's credits, which is calculated based on the API cost of the models used.",
-        'The user can use the "/usage" command to see how many credits they have used and have left, so you can tell them to check their usage this way.',
-        'For other questions, you can direct them to codebuff.com, or especially codebuff.com/docs for detailed information about the product.',
-      ].join('\n')
-}
+Users send prompts to you in one of a few user-selected modes, like DEFAULT, LITE, MAX, or PLAN.
+Every prompt sent consumes the user's credits, which is calculated based on the API cost of the models used.
+The user can use the "/usage" command to see how many credits they have used and have left, so you can tell them to check their usage this way.
+For other questions, you can direct them to rivocode.com for detailed information about the product.
 
 ${PLACEHOLDER.SYSTEM_INFO_PROMPT}
 `

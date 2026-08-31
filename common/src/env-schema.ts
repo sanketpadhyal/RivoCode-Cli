@@ -5,7 +5,6 @@ export const CLIENT_ENV_PREFIX = 'NEXT_PUBLIC_'
 export const clientEnvSchema = z.object({
   NEXT_PUBLIC_CB_ENVIRONMENT: z.enum(['dev', 'test', 'prod']).default('dev'),
   NEXT_PUBLIC_CODEBUFF_APP_URL: z.string().default('http://localhost:3000'),
-  NEXT_PUBLIC_FREEBUFF_APP_URL: z.string().optional(),
   NEXT_PUBLIC_SUPPORT_EMAIL: z.string().default('mrsanketpadhyal@gmail.com'),
   NEXT_PUBLIC_POSTHOG_API_KEY: z.string().default('ph_dummy'),
   NEXT_PUBLIC_POSTHOG_HOST_URL: z.string().default('https://app.posthog.com'),
@@ -30,7 +29,6 @@ export type ClientEnv = z.infer<typeof clientEnvSchema>
 export const clientProcessEnv: ClientInput = {
   NEXT_PUBLIC_CB_ENVIRONMENT: process.env.NEXT_PUBLIC_CB_ENVIRONMENT,
   NEXT_PUBLIC_CODEBUFF_APP_URL: process.env.NEXT_PUBLIC_CODEBUFF_APP_URL,
-  NEXT_PUBLIC_FREEBUFF_APP_URL: process.env.NEXT_PUBLIC_FREEBUFF_APP_URL,
   NEXT_PUBLIC_SUPPORT_EMAIL: process.env.NEXT_PUBLIC_SUPPORT_EMAIL,
   NEXT_PUBLIC_POSTHOG_API_KEY: process.env.NEXT_PUBLIC_POSTHOG_API_KEY,
   NEXT_PUBLIC_POSTHOG_HOST_URL: process.env.NEXT_PUBLIC_POSTHOG_HOST_URL,

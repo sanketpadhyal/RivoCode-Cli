@@ -10,7 +10,6 @@ import {
   formatProcessDiagnostics,
 } from './process-diagnostics'
 import { buildInterviewPrompt, buildPlanPrompt, buildReviewPromptFromArgs } from './prompt-builders'
-import { handleReasoningCommand } from './reasoning'
 import { runBashCommand } from './router'
 import { handleUsageCommand } from './usage'
 import { useThemeStore } from '../hooks/use-theme'
@@ -22,7 +21,7 @@ import { clearChatTexts } from '../workspace/project-context'
 import { getProjectRoot } from '../project-files'
 import { useFeedbackStore } from '../state/feedback-store'
 import { useLoginStore } from '../state/login-store'
-import { AGENT_MODES, END_SESSION_MESSAGE, IS_FREEBUFF } from '../utils/constants'
+import { AGENT_MODES } from '../utils/constants'
 import { exitCliCleanly } from '../utils/exit-cleanly'
 import { getSystemMessage, getUserMessage } from '../utils/message-history'
 import { capturePendingAttachments } from '../utils/pending-attachments'
@@ -128,23 +127,6 @@ export function defineCommandWithArgs(
 const clearInput = (params: RouterParams) => {
   params.setInputValue({ text: '', cursorPosition: 0, lastEditDueToNav: false })
 }
-
-const FREEBUFF_REMOVED_COMMANDS = new Set([
-  'ads:enable',
-  'ads:disable',
-  'usage',
-  'subscribe',
-  'image',
-  'publish',
-  'gpt-5-agent',
-])
-
-const FREEBUFF_ONLY_COMMANDS = new Set([
-  'plan',
-  'end-session',
-  'dashboard',
-  'reasoning',
-])
 
 const ALL_COMMANDS: CommandDefinition[] = [
   defineCommand({
@@ -383,7 +365,7 @@ const ALL_COMMANDS: CommandDefinition[] = [
       clearInput(params)
     },
   }),
-  ...(IS_FREEBUFF ? [] : AGENT_MODES).map((mode) =>
+  ...AGENT_MODES.map((mode) =>
     defineCommandWithArgs({
       name: `mode:${mode.toLowerCase()}`,
       aliases: [`model:${mode.toLowerCase()}`],
@@ -536,39 +518,9 @@ const ALL_COMMANDS: CommandDefinition[] = [
       clearInput(params)
     },
   }),
-  defineCommandWithArgs({
-    name: 'reasoning',
-    aliases: ['effort', 'think'],
-    handler: (params, args) => {
-      const { message } = handleReasoningCommand(args)
-      params.setMessages((prev) => [
-        ...prev,
-        getUserMessage(params.inputValue.trim()),
-        getSystemMessage(message),
-      ])
-      params.saveToHistory(params.inputValue.trim())
-      clearInput(params)
-    },
-  }),
-  defineCommand({
-    name: 'end-session',
-    aliases: ['model'],
-    handler: (params) => {
-      params.setMessages((prev) => [
-        ...prev,
-        getUserMessage(params.inputValue.trim()),
-        getSystemMessage('Resetting session…'),
-      ])
-      params.saveToHistory(params.inputValue.trim())
-      clearInput(params)
-      startNewChat()
-    },
-  }),
 ]
 
-export const COMMAND_REGISTRY: CommandDefinition[] = IS_FREEBUFF
-  ? ALL_COMMANDS.filter((cmd) => !FREEBUFF_REMOVED_COMMANDS.has(cmd.name))
-  : ALL_COMMANDS.filter((cmd) => !FREEBUFF_ONLY_COMMANDS.has(cmd.name))
+export const COMMAND_REGISTRY: CommandDefinition[] = ALL_COMMANDS
 
 export function findCommand(cmd: string): CommandDefinition | undefined {
   const lowerCmd = cmd.toLowerCase()

@@ -9,7 +9,6 @@ import {
 
 import { useAgentValidation } from '../hooks/use-agent-validation'
 import { useElapsedTime } from '../hooks/use-elapsed-time'
-import { holdsLiveFreebuffSlot } from '../utils/freebuff-session-api'
 import {
   useMessageQueue,
   type QueuedMessage,
@@ -21,8 +20,6 @@ import {
   type SubscriptionResponse,
 } from '../hooks/use-subscription-query'
 import { useChatStore } from '../state/chat-store'
-import { useFreebuffSessionStore } from '../state/freebuff-session-store'
-import { IS_FREEBUFF } from '../utils/constants'
 import { logger } from '../utils/logger'
 import {
   applyActiveRunQueuePolicy,
@@ -109,18 +106,6 @@ export const ChatRuntimeProvider = ({
     }
   }, [askUserState, mainAgentTimer])
 
-  const freebuffSession = useFreebuffSessionStore((state) => state.session)
-  const sendBlocked = IS_FREEBUFF && !holdsLiveFreebuffSlot(freebuffSession)
-
-  useEffect(() => {
-    if (sendBlocked) {
-      logger.info(
-        {},
-        '[chat-runtime] Freebuff session over; holding queued messages until rejoin',
-      )
-    }
-  }, [sendBlocked])
-
   const queue = useMessageQueue(
     (message) =>
       sendMessageRef.current?.({
@@ -130,7 +115,6 @@ export const ChatRuntimeProvider = ({
       }) ?? Promise.resolve(),
     isChainInProgressRef,
     activeAgentStreamsRef,
-    { sendBlocked },
   )
 
   const queueControls: ActiveRunQueueControls = {

@@ -62,7 +62,6 @@ import { stopActiveRun } from './utils/active-run'
 import { trackEvent } from './utils/analytics'
 import { showClipboardMessage } from './utils/clipboard'
 import { readClipboardImage } from './utils/clipboard-image'
-import { END_SESSION_MESSAGE, IS_FREEBUFF } from './utils/constants'
 import { getSystemMessage } from './utils/message-history'
 import { getInputModeConfig } from './utils/input-modes'
 import {
@@ -76,6 +75,7 @@ import {
 } from './utils/keyboard-actions'
 import { loadLocalAgents } from './utils/local-agent-registry'
 import { logger } from './utils/logger'
+import { isImageFile } from './utils/image-handler'
 import {
   addClipboardPlaceholder,
   addPendingFileFromPath,
@@ -96,7 +96,6 @@ import { compactChatHistory } from './utils/context-compactor'
 import type { CommandResult } from './commands/command-registry'
 import type { MultilineInputHandle } from './components/multiline-input'
 import type { MatchedSlashCommand } from './hooks/use-suggestion-engine'
-import type { FreebuffSessionResponse } from './types/freebuff-session'
 import type { User } from './utils/auth'
 import type { AgentMode } from './utils/constants'
 import type { FileTreeNode } from '@rivocode/common/util/file'
@@ -115,7 +114,6 @@ export const Chat = ({
   initialMode,
   gitRoot,
   onSwitchToGitRoot,
-  freebuffSession,
 }: {
   consumeInitialPrompt: () => string | null
   fileTree: FileTreeNode[]
@@ -127,15 +125,12 @@ export const Chat = ({
   initialMode?: AgentMode
   gitRoot?: string | null
   onSwitchToGitRoot?: () => void
-  freebuffSession: FreebuffSessionResponse | null
 }) => {
   const [forceFileOnlyMentions, setForceFileOnlyMentions] = useState(false)
   const headerRef = useRef<BoxRenderable | null>(null)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
 
-  const [showSuggestedPrompts, setShowSuggestedPrompts] = useState(
-    () => IS_FREEBUFF && !hasSubmittedFirstPrompt(),
-  )
+  const [showSuggestedPrompts, setShowSuggestedPrompts] = useState(false)
 
   useAskUserBridge()
 
@@ -185,7 +180,7 @@ export const Chat = ({
     recordClick,
     recordImpression,
   } = useGravityAd({
-    enabled: IS_FREEBUFF || !hasSubscription,
+    enabled: !hasSubscription,
     provider: 'gravity',
     inline: true,
     surface: 'cli_chat',
@@ -1467,15 +1462,11 @@ export const Chat = ({
     }
   }, [subscriptionRateLimit?.limited, fallbackToALaCarte])
 
-  const hasActiveFreebuffSession =
-    IS_FREEBUFF && freebuffSession?.status === 'active'
-  const isFreebuffSessionOver = false
   const shouldShowStatusLine =
     !feedbackMode &&
     (hasStatusIndicatorContent ||
       shouldShowQueuePreview ||
-      !isAtBottom ||
-      hasActiveFreebuffSession)
+      !isAtBottom)
 
   const lastMouseActivityRef = useRef<number>(0)
   const handleMouseActivity = useCallback(() => {
@@ -1587,7 +1578,6 @@ export const Chat = ({
             scrollToLatest={scrollToLatest}
             statusIndicatorState={statusIndicatorState}
             onStop={chatKeyboardHandlers.onInterruptStream}
-            freebuffSession={null}
           />
         )}
 

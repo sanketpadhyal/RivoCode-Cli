@@ -1,5 +1,4 @@
 
-import { IS_FREEBUFF } from './constants'
 import { getCliEnv } from './env'
 import { writeTerminalControlSync } from './terminal-io'
 
