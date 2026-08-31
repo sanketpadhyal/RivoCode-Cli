@@ -18,6 +18,7 @@ export interface ModelOption {
   icon: string
   iconPadding: string
   iconColor: string
+  category?: 'recommended' | 'other'
 }
 
 export const AVAILABLE_MODELS: ModelOption[] = [
@@ -29,6 +30,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     iconPadding: ' ',
     iconColor: '#F43F5E',
     description: 'MiniMax M2.7 on OpenRouter · 196,000 token window · Fast, high-productivity foundation model for coding & long sessions',
+    category: 'recommended',
   },
   {
     id: 'llama-3.3-70b-free',
@@ -38,6 +40,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     iconPadding: ' ',
     iconColor: '#0081FB',
     description: 'Free Meta Llama 3.3 70B on OpenRouter (openrouter.ai/keys) · Easy setup & long sessions · Good for basic coding, Git & React · Not suitable for large refactors',
+    category: 'other',
   },
   {
     id: 'gemini',
@@ -47,6 +50,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     iconPadding: ' ',
     iconColor: '#38BDF8',
     description: 'Google Gemini via Google AI Studio (aistudio.google.com) · 1M token window · Recommended for big tasks, deep reasoning & large codebases',
+    category: 'other',
   },
 ]
 
@@ -256,15 +260,35 @@ export const ModelPickerScreen = ({
             Select a model below. You will enter your free API key after selection.
           </span>
           {'\n\n'}
-          <span fg={theme.muted} attributes={TextAttributes.BOLD}>
-            Recommended
-          </span>
-          {'\n\n'}
           {filteredModels.map((model, idx) => {
             const isSelected = idx === selectedIndex
+            const prevModel = idx > 0 ? filteredModels[idx - 1] : null
+            const showRecommendedHeader =
+              model.category === 'recommended' &&
+              (!prevModel || prevModel.category !== 'recommended')
+            const showOtherHeader =
+              model.category === 'other' &&
+              (!prevModel || prevModel.category !== 'other')
 
             return (
               <React.Fragment key={model.id}>
+                {showRecommendedHeader && (
+                  <>
+                    <span fg={theme.muted} attributes={TextAttributes.BOLD}>
+                      Recommended
+                    </span>
+                    {'\n\n'}
+                  </>
+                )}
+                {showOtherHeader && (
+                  <>
+                    {idx > 0 ? '\n\n' : ''}
+                    <span fg={theme.muted} attributes={TextAttributes.BOLD}>
+                      Other Models
+                    </span>
+                    {'\n\n'}
+                  </>
+                )}
                 <span fg={isSelected ? theme.primary : theme.muted}>
                   {isSelected ? '▶ ' : '  '}
                 </span>
@@ -283,7 +307,10 @@ export const ModelPickerScreen = ({
                 ) : null}
                 {'\n'}
                 <span fg={theme.muted}>       {model.description}</span>
-                {idx < filteredModels.length - 1 ? '\n\n' : ''}
+                {idx < filteredModels.length - 1 &&
+                filteredModels[idx + 1].category === model.category
+                  ? '\n\n'
+                  : ''}
               </React.Fragment>
             )
           })}

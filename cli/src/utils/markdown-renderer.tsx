@@ -473,7 +473,7 @@ const renderCodeBlock = (code: Code, state: RenderState): ReactNode[] => {
   const lines = code.value.split('\n')
   const nodes: ReactNode[] = []
 
-  if (code.lang) {
+  if (code.lang && code.lang !== 'diff') {
     nodes.push(
       <span key={nextKey()} fg={palette.codeHeaderFg}>
         {`// ${code.lang}`}
@@ -485,17 +485,37 @@ const renderCodeBlock = (code: Code, state: RenderState): ReactNode[] => {
   lines.forEach((line, index) => {
     const displayLine = line === '' ? ' ' : line
     let fgColor = palette.codeTextFg
+    let bgColor = palette.codeMonochrome ? undefined : palette.codeBackground
+
     if (code.lang === 'diff') {
-      if (line.startsWith('+')) fgColor = '#22c55e'
-      else if (line.startsWith('-')) fgColor = '#ef4444'
-      else if (line.startsWith('@@') || line.startsWith('diff')) fgColor = '#eab308'
+      const isDel = /^\s*\d*\s*[-]\s*/.test(line) || line.startsWith('-')
+      const isAdd = /^\s*\d*\s*[+]\s*/.test(line) || line.startsWith('+')
+      const isHunk = line.startsWith('@@') || line.startsWith('diff')
+      const isContext = /^\s*\d+\s{2,}/.test(line)
+
+      if (isDel) {
+        fgColor = '#f87171'
+        bgColor = '#450a0a'
+      } else if (isAdd) {
+        fgColor = '#4ade80'
+        bgColor = '#052e16'
+      } else if (isHunk) {
+        fgColor = '#38bdf8'
+        bgColor = undefined
+      } else if (isContext) {
+        fgColor = '#cbd5e1'
+        bgColor = undefined
+      } else {
+        fgColor = '#64748b'
+        bgColor = undefined
+      }
     }
 
     nodes.push(
       <span
         key={nextKey()}
         fg={fgColor}
-        bg={palette.codeMonochrome ? undefined : palette.codeBackground}
+        bg={bgColor}
       >
         {displayLine}
       </span>,
@@ -855,14 +875,32 @@ const renderNode = (
 
     case 'text': {
       const textVal = (node as Text).value
-      const symbolRegex = /(●|•|⎿|└|├|│)/
+      const symbolRegex = /(●|•|⎿|└|├|│|\+\d+|\-\d+)/
       if (symbolRegex.test(textVal)) {
-        const parts = textVal.split(/(●|•|⎿|└|├|│)/)
+        const parts = textVal.split(/(●|•|⎿|└|├|│|\+\d+|\-\d+)/)
         const textNodes: ReactNode[] = []
         parts.forEach((part) => {
-          if (part === '●' || part === '•' || part === '⎿' || part === '└' || part === '├' || part === '│') {
+          if (part === '●' || part === '•') {
             textNodes.push(
               <span key={state.nextKey()} fg="#38bdf8">
+                {part}
+              </span>,
+            )
+          } else if (part === '⎿' || part === '└' || part === '├' || part === '│') {
+            textNodes.push(
+              <span key={state.nextKey()} fg="#64748b">
+                {part}
+              </span>,
+            )
+          } else if (part.startsWith('+') && !isNaN(Number(part.slice(1)))) {
+            textNodes.push(
+              <span key={state.nextKey()} fg="#4ade80">
+                {part}
+              </span>,
+            )
+          } else if (part.startsWith('-') && !isNaN(Number(part.slice(1)))) {
+            textNodes.push(
+              <span key={state.nextKey()} fg="#f87171">
                 {part}
               </span>,
             )
