@@ -3,9 +3,8 @@ import { useTheme } from '../hooks/use-theme'
 
 import type { PendingTextAttachment } from '../types/store'
 
-const TEXT_CARD_WIDTH = 24
-const MAX_PREVIEW_LINES = 2
-const TEXT_CONTENT_WIDTH = TEXT_CARD_WIDTH - 4
+const TEXT_CARD_WIDTH = 34
+const MAX_PREVIEW_CHARS = 50
 
 interface TextAttachmentCardProps {
   attachment: PendingTextAttachment | { preview: string; charCount: number }
@@ -20,23 +19,26 @@ export const TextAttachmentCard = ({
 }: TextAttachmentCardProps) => {
   const theme = useTheme()
 
-  const maxPreviewChars = TEXT_CONTENT_WIDTH * MAX_PREVIEW_LINES
+  const rawPreview = attachment.preview.trim().replace(/\r?\n+/g, ' ')
   const displayPreview =
-    attachment.preview.slice(0, maxPreviewChars) +
-    (attachment.preview.length > maxPreviewChars ? '…' : '')
+    rawPreview.slice(0, MAX_PREVIEW_CHARS) +
+    (rawPreview.length > MAX_PREVIEW_CHARS ? '…' : '')
 
   return (
     <AttachmentCard
       width={TEXT_CARD_WIDTH}
       onRemove={onRemove}
       showRemoveButton={showRemoveButton}
+      label="[Text Attachment]"
     >
       <box
         style={{
-          paddingLeft: 1,
-          paddingRight: 1,
-          height: 3,
-          justifyContent: 'center',
+          paddingLeft: 0,
+          paddingRight: 0,
+          paddingTop: 0,
+          paddingBottom: 0,
+          flexDirection: 'column',
+          gap: 0,
         }}
       >
         <text
@@ -45,19 +47,8 @@ export const TextAttachmentCard = ({
             wrapMode: 'word',
           }}
         >
-          {displayPreview || '(empty)'}
+          {displayPreview || '(empty text)'}
         </text>
-      </box>
-
-      <box
-        style={{
-          paddingLeft: 1,
-          paddingRight: 1,
-          flexDirection: 'row',
-          gap: 1,
-        }}
-      >
-        <text style={{ fg: theme.info }}>📄</text>
         <text
           style={{
             fg: theme.muted,

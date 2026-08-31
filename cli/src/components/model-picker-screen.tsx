@@ -22,13 +22,22 @@ export interface ModelOption {
 
 export const AVAILABLE_MODELS: ModelOption[] = [
   {
-    id: 'openrouter-free',
-    name: 'openrouter-free',
-    badge: '(OpenRouter · 100% Free Tier · Easy API)',
-    icon: '❃',
-    iconPadding: '  ',
-    iconColor: '#10A37F',
-    description: 'Free Llama 3.3 70B on OpenRouter (openrouter.ai/keys) · Easy setup & long sessions · Good for basic coding, Git & React · Not suitable for large refactors',
+    id: 'minimax-free',
+    name: 'minimax-free',
+    badge: '(MiniMax M2.7 · 196k Context · Free Tier)',
+    icon: '∿',
+    iconPadding: ' ',
+    iconColor: '#F43F5E',
+    description: 'MiniMax M2.7 on OpenRouter · 196,000 token window · Fast, high-productivity foundation model for coding & long sessions',
+  },
+  {
+    id: 'llama-3.3-70b-free',
+    name: 'llama-3.3-70b-free',
+    badge: '(Meta Llama 3.3 · Free Tier)',
+    icon: '∞',
+    iconPadding: ' ',
+    iconColor: '#0081FB',
+    description: 'Free Meta Llama 3.3 70B on OpenRouter (openrouter.ai/keys) · Easy setup & long sessions · Good for basic coding, Git & React · Not suitable for large refactors',
   },
   {
     id: 'gemini',

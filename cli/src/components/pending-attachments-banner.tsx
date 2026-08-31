@@ -60,7 +60,16 @@ export const PendingAttachmentsBanner = () => {
   }
 
   return (
-    <BottomBanner borderColorKey="imageCardBorder">
+    <box
+      style={{
+        flexDirection: 'column',
+        paddingLeft: 1,
+        paddingRight: 1,
+        paddingTop: 0,
+        paddingBottom: 0,
+        gap: 1,
+      }}
+    >
       {errorImages.map((image, index) => (
         <text key={`error-${image.path}-${index}`} style={{ fg: theme.error }}>
           {image.note} ({image.filename})
@@ -98,6 +107,6 @@ export const PendingAttachmentsBanner = () => {
           />
         ))}
       </box>
-    </BottomBanner>
+    </box>
   )
 }

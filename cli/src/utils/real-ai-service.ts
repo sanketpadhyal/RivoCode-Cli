@@ -205,12 +205,42 @@ export interface ModelRoute {
 export function resolveModelRoute(modelName: string): ModelRoute {
   const normalized = (modelName || 'gemini').toLowerCase()
 
-  if (normalized.includes('openrouter')) {
+  if (normalized.includes('minimax')) {
     return {
       provider: 'openrouter',
       endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-      modelId: 'openrouter/auto',
-      displayName: 'OpenRouter Free (Llama 3.3 70B)',
+      modelId: 'minimax/minimax-m2.7:free',
+      displayName: 'MiniMax M2.7 (Free Tier)',
+      apiKeyUrl: 'https://openrouter.ai/keys',
+    }
+  }
+
+  if (normalized.includes('cohere') || normalized.includes('north')) {
+    return {
+      provider: 'openrouter',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      modelId: 'cohere/north-mini-code:free',
+      displayName: 'Cohere North Code (256k Context Free)',
+      apiKeyUrl: 'https://openrouter.ai/keys',
+    }
+  }
+
+  if (normalized.includes('r1') || normalized.includes('deepseek-r1')) {
+    return {
+      provider: 'openrouter',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      modelId: 'deepseek/deepseek-r1:free',
+      displayName: 'DeepSeek R1 Reasoning (Free Tier)',
+      apiKeyUrl: 'https://openrouter.ai/keys',
+    }
+  }
+
+  if (normalized.includes('llama') || normalized.includes('openrouter')) {
+    return {
+      provider: 'openrouter',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      modelId: 'meta-llama/llama-3.3-70b-instruct:free',
+      displayName: 'Meta Llama 3.3 70B (Free Tier)',
       apiKeyUrl: 'https://openrouter.ai/keys',
     }
   }
@@ -229,8 +259,8 @@ export function resolveModelRoute(modelName: string): ModelRoute {
     return {
       provider: 'openrouter',
       endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-      modelId: 'deepseek/deepseek-chat',
-      displayName: 'DeepSeek V3 (OpenRouter)',
+      modelId: 'deepseek/deepseek-chat:free',
+      displayName: 'DeepSeek V3 (Free OpenRouter)',
       apiKeyUrl: 'https://openrouter.ai/keys',
     }
   }

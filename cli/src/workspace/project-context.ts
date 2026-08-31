@@ -63,7 +63,7 @@ export function initProjectWorkspace(projectRoot: string): WorkspaceInitResult {
         createdAt: parsed.createdAt || new Date().toISOString(),
         lastActive: parsed.lastActive || new Date().toISOString(),
         sessionCount: (parsed.sessionCount || 1) + 1,
-        lastModel: parsed.lastModel || 'openrouter-free',
+        lastModel: parsed.lastModel || 'llama-3.3-70b-free',
         lastAgentMode: parsed.lastAgentMode || 'DEFAULT',
       }
     } catch {
@@ -73,7 +73,7 @@ export function initProjectWorkspace(projectRoot: string): WorkspaceInitResult {
         createdAt: new Date().toISOString(),
         lastActive: new Date().toISOString(),
         sessionCount: 1,
-        lastModel: 'openrouter-free',
+        lastModel: 'llama-3.3-70b-free',
         lastAgentMode: 'DEFAULT',
       }
     }

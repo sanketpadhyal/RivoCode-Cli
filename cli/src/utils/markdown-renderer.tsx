@@ -51,6 +51,7 @@ export interface MarkdownPalette {
   codeTextFg: string
   codeMonochrome: boolean
   linkFg: string
+  strongFg?: string
 }
 
 export interface MarkdownRenderOptions {
@@ -70,13 +71,14 @@ const defaultPalette: MarkdownPalette = {
     5: 'green',
     6: 'green',
   },
-  listBulletFg: 'white',
+  listBulletFg: '#38bdf8',
   blockquoteBorderFg: 'gray',
   blockquoteTextFg: 'gray',
   dividerFg: '#666',
   codeTextFg: 'brightWhite',
   codeMonochrome: false,
-  linkFg: '#3B82F6',
+  linkFg: '#38bdf8',
+  strongFg: '#38bdf8',
 }
 
 const resolvePalette = (
@@ -851,8 +853,27 @@ const renderNode = (
       return nodes
     }
 
-    case 'text':
-      return [(node as Text).value]
+    case 'text': {
+      const textVal = (node as Text).value
+      const symbolRegex = /(●|•|⎿|└|├|│)/
+      if (symbolRegex.test(textVal)) {
+        const parts = textVal.split(/(●|•|⎿|└|├|│)/)
+        const textNodes: ReactNode[] = []
+        parts.forEach((part) => {
+          if (part === '●' || part === '•' || part === '⎿' || part === '└' || part === '├' || part === '│') {
+            textNodes.push(
+              <span key={state.nextKey()} fg="#38bdf8">
+                {part}
+              </span>,
+            )
+          } else if (part) {
+            textNodes.push(part)
+          }
+        })
+        return textNodes
+      }
+      return [textVal]
+    }
 
     case 'strong': {
       const children = renderNodes(
@@ -861,7 +882,11 @@ const renderNode = (
         node.type,
       )
       return [
-        <span key={state.nextKey()} attributes={TextAttributes.BOLD}>
+        <span
+          key={state.nextKey()}
+          attributes={TextAttributes.BOLD}
+          fg={state.palette.strongFg ?? '#38bdf8'}
+        >
           {wrapSegmentsInFragments(children, state.nextKey())}
         </span>,
       ]

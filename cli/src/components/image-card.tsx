@@ -123,7 +123,7 @@ export const ImageCard = ({
             image={image}
             width={THUMBNAIL_WIDTH}
             height={THUMBNAIL_HEIGHT}
-            fallback={<text style={{ fg: theme.info }}>🖼️</text>}
+            fallback={<text style={{ fg: theme.info || '#38bdf8' }}>[IMG]</text>}
           />
         )}
       </box>
