@@ -25,9 +25,11 @@ docs/specs/
 .codex
 .aider*
 .codebuff*
+
 __mock-projects__
 
 .infisical.json
 scratch-*
 scripts/_tmp-*
+
 .claude/worktrees/

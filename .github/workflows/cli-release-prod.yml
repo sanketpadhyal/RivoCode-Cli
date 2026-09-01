@@ -1,0 +1,190 @@
+name: Production Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type (patch, minor, major)'
+        required: false
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  bump-version:
+    name: Bump Version & Tag
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+      tag_name: ${{ steps.version.outputs.tag_name }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump Version
+        id: version
+        run: |
+          VERSION_TYPE="${{ github.event.inputs.version_type || 'patch' }}"
+          echo "Bumping version ($VERSION_TYPE)..."
+          # Extract current version from package.json
+          CURRENT_VERSION=$(bun -e "console.log(require('./package.json').version)")
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Compute next version
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          if [ "$VERSION_TYPE" = "major" ]; then
+            major=$((major + 1))
+            minor=0
+            patch=0
+          elif [ "$VERSION_TYPE" = "minor" ]; then
+            minor=$((minor + 1))
+            patch=0
+          else
+            patch=$((patch + 1))
+          fi
+          NEW_VERSION="$major.$minor.$patch"
+          TAG_NAME="v$NEW_VERSION"
+          
+          echo "New version: $NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          
+          # Update version in package.json files
+          bun -e "const fs = require('fs'); ['package.json', 'cli/package.json'].forEach(p => { if (fs.existsSync(p)) { const j = JSON.parse(fs.readFileSync(p, 'utf8')); j.version = '$NEW_VERSION'; fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n'); } })"
+          
+          git commit -am "chore(release): bump version to $NEW_VERSION"
+          git tag "$TAG_NAME"
+          git push origin HEAD --tags
+
+  build-and-release:
+    name: Build & Release (${{ matrix.target }})
+    needs: bump-version
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x64
+            artifact_name: rivo-linux-x64
+            binary_path: cli/bin/rivo
+          - os: ubuntu-latest
+            target: linux-arm64
+            artifact_name: rivo-linux-arm64
+            binary_path: cli/bin/rivo
+            override_target: bun-linux-arm64
+            override_platform: linux
+            override_arch: arm64
+          - os: macos-latest
+            target: darwin-arm64
+            artifact_name: rivo-darwin-arm64
+            binary_path: cli/bin/rivo
+          - os: macos-13
+            target: darwin-x64
+            artifact_name: rivo-darwin-x64
+            binary_path: cli/bin/rivo
+          - os: windows-latest
+            target: win32-x64
+            artifact_name: rivo-windows-x64.exe
+            binary_path: cli/bin/rivo.exe
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.bump-version.outputs.tag_name }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Build Binary
+        shell: bash
+        env:
+          OVERRIDE_TARGET: ${{ matrix.override_target }}
+          OVERRIDE_PLATFORM: ${{ matrix.override_platform }}
+          OVERRIDE_ARCH: ${{ matrix.override_arch }}
+        run: |
+          bun --cwd cli build:binary
+
+      - name: Package Binary & Native Assets
+        shell: bash
+        run: |
+          mkdir -p dist-package
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            cp cli/bin/rivo.exe dist-package/${{ matrix.artifact_name }}
+            if [ -f "cli/bin/tree-sitter.wasm" ]; then cp cli/bin/tree-sitter.wasm dist-package/; fi
+            cd dist-package && 7z a ../${{ matrix.artifact_name }}.zip *
+          else
+            cp cli/bin/rivo dist-package/${{ matrix.artifact_name }}
+            chmod +x dist-package/${{ matrix.artifact_name }}
+            if [ -f "cli/bin/tree-sitter.wasm" ]; then cp cli/bin/tree-sitter.wasm dist-package/; fi
+            cd dist-package && tar -czvf ../${{ matrix.artifact_name }}.tar.gz *
+          fi
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-binary
+          path: |
+            *.tar.gz
+            *.zip
+
+  publish-github-release:
+    name: Publish Release Assets
+    needs: [bump-version, build-and-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.bump-version.outputs.tag_name }}
+
+      - name: Download All Binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Generate Checksums
+        run: |
+          cd release-assets
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.bump-version.outputs.tag_name }}
+          name: RivoCode ${{ needs.bump-version.outputs.tag_name }}
+          files: |
+            release-assets/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

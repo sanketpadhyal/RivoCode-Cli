@@ -114,6 +114,10 @@ export interface AgentState {
     { description: string | undefined; inputSchema: {} }
   >
 
+  /**
+   * Estimated token count calculated locally using the GPT-4o tokenizer.
+   * Models with their own tokenizers may vary slightly.
+   */
   contextTokenCount: number
 }
 
