@@ -20,6 +20,12 @@ const MODE_COMMANDS: SlashCommand[] = AGENT_MODES.map((mode) => ({
 
 const ALL_SLASH_COMMANDS: SlashCommand[] = [
   {
+    id: 'terminal',
+    label: 'terminal',
+    description: 'View active background terminal sessions and live execution logs (Esc to return)',
+    aliases: ['logs', 'terminal-logs'],
+  },
+  {
     id: 'copy',
     label: 'copy',
     description: 'Copy the full conversation (messages + tool results) to the clipboard',

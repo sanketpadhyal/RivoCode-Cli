@@ -155,8 +155,8 @@ export const ApiKeySetupScreen = ({ modelName, onComplete, onBack }: ApiKeySetup
 
   const maskApiKey = (key: string) => {
     if (!key) return ''
-    if (key.length <= 8) return '•'.repeat(key.length)
-    return key.slice(0, 4) + '•'.repeat(Math.max(4, key.length - 8)) + key.slice(-4)
+    if (key.length <= 8) return '•'.repeat(Math.min(8, key.length))
+    return key.slice(0, 4) + '••••••••' + key.slice(-4)
   }
 
   useKeyboard(
@@ -175,7 +175,7 @@ export const ApiKeySetupScreen = ({ modelName, onComplete, onBack }: ApiKeySetup
           return
         }
 
-        if (key.name === 'escape' || (key.ctrl && key.name === 'b')) {
+        if (key.name === 'escape') {
           if ('preventDefault' in key && typeof key.preventDefault === 'function') key.preventDefault()
           if (step === 'fallbacks') {
             setStep('primary')
@@ -246,7 +246,7 @@ export const ApiKeySetupScreen = ({ modelName, onComplete, onBack }: ApiKeySetup
       <box
         style={{
           borderStyle: 'single',
-          borderColor: '#ffb703',
+          borderColor: theme.border,
           paddingLeft: 2,
           paddingRight: 2,
           paddingTop: 1,
@@ -255,84 +255,110 @@ export const ApiKeySetupScreen = ({ modelName, onComplete, onBack }: ApiKeySetup
           width: '100%',
         }}
       >
-        <text style={{ wrapMode: 'none', marginBottom: 1 }}>
-          <span fg="#ffb703" attributes={TextAttributes.BOLD}>
-            Step 2/2: Add Optional Fallback Keys
-          </span>
-          <span fg={theme.muted}> (Auto-rotated on Rate Limit)</span>
-        </text>
-
+        {/* Title Header */}
         <box style={{ flexDirection: 'column', marginBottom: 1 }}>
-          <text style={{ wrapMode: 'none', marginBottom: 1 }}>
-            <span fg={theme.foreground}>Primary Key: </span>
-            <span fg="#55ff55" attributes={TextAttributes.BOLD}>{maskApiKey(primaryKey)}</span>
-            <span fg="#55ff55"> ✓ Active</span>
+          <text style={{ wrapMode: 'none' }}>
+            <span fg="#38bdf8" attributes={TextAttributes.BOLD}>
+              🔑 Optional Fallback Keys
+            </span>
+            <span fg={theme.muted}>
+              {' · Auto-switches on rate limits'}
+            </span>
           </text>
-
-          <box style={{ flexDirection: 'column' }}>
-            <text style={{ wrapMode: 'none' }}>
-              <span fg={activeFallback === 1 ? '#ffb703' : theme.muted} attributes={TextAttributes.BOLD}>
-                {activeFallback === 1 ? '▶ ' : '  '}Fallback 1 (optional):{' '}
-              </span>
-              <span
-                fg={activeFallback === 1 ? theme.foreground : theme.muted}
-                bg={activeFallback === 1 ? theme.surface : undefined}
-              >
-                {fallback1 ? maskApiKey(fallback1) : (activeFallback === 1 ? '[Paste or type key]' : '[empty]')}
-              </span>
-              {activeFallback === 1 && <span fg="#55ff55" attributes={TextAttributes.BOLD}> █</span>}
-            </text>
-
-            <text style={{ wrapMode: 'none', marginTop: 1 }}>
-              <span fg={activeFallback === 2 ? '#ffb703' : theme.muted} attributes={TextAttributes.BOLD}>
-                {activeFallback === 2 ? '▶ ' : '  '}Fallback 2 (optional):{' '}
-              </span>
-              <span
-                fg={activeFallback === 2 ? theme.foreground : theme.muted}
-                bg={activeFallback === 2 ? theme.surface : undefined}
-              >
-                {fallback2 ? maskApiKey(fallback2) : (activeFallback === 2 ? '[Paste or type key]' : '[empty]')}
-              </span>
-              {activeFallback === 2 && <span fg="#55ff55" attributes={TextAttributes.BOLD}> █</span>}
-            </text>
-          </box>
-
-          {status === 'testing' && (
-            <text style={{ wrapMode: 'none' }}>
-              <span fg="#ffb703">{SPINNER_FRAMES[spinnerIndex]} </span>
-              <span fg={theme.foreground}>{statusMessage}</span>
-            </text>
-          )}
-          {status === 'success' && (
-            <text style={{ wrapMode: 'none' }}>
-              <span fg="#55ff55" attributes={TextAttributes.BOLD}>✓ </span>
-              <span fg="#55ff55">{statusMessage}</span>
-            </text>
-          )}
-          {status === 'error' && (
-            <text style={{ wrapMode: 'none' }}>
-              <span fg="#ef4444" attributes={TextAttributes.BOLD}>✗ </span>
-              <span fg="#ef4444">{statusMessage}</span>
-            </text>
-          )}
-
-          <box style={{ marginTop: 1 }}>
-            <text style={{ wrapMode: 'none' }}>
-              <span fg={theme.foreground}>enter</span>
-              <span fg={theme.muted}> Next/Done · </span>
-              <span fg={theme.foreground}>↑↓</span>
-              <span fg={theme.muted}> Switch · </span>
-              <span fg={theme.foreground}>tab</span>
-              <span fg={theme.muted}> Paste · </span>
-              <span fg={theme.foreground}>esc</span>
-              <span fg={theme.muted}> Back</span>
-            </text>
-          </box>
+          <text style={{ wrapMode: 'none' }}>
+            <span fg={theme.muted}>
+              Add backup API keys to ensure uninterrupted coding (press Enter to skip)
+            </span>
+          </text>
         </box>
 
-        <box style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%', paddingRight: 2 }}>
-          <text style={{ wrapMode: 'none', fg: theme.muted }}>
-            <span>{route.displayName} · Key Rotation</span>
+        {/* Primary Key Status Row */}
+        <box
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: theme.surface,
+            paddingLeft: 1,
+            paddingRight: 1,
+            paddingTop: 0,
+            paddingBottom: 0,
+            marginBottom: 1,
+          }}
+        >
+          <text style={{ wrapMode: 'none' }}>
+            <span fg="#4ade80" attributes={TextAttributes.BOLD}>
+              ✓ Primary Key:{' '}
+            </span>
+            <span fg={theme.foreground}>
+              {maskApiKey(primaryKey)}
+            </span>
+            <span fg="#4ade80"> (Active)</span>
+          </text>
+        </box>
+
+        {/* Fallback Input Rows */}
+        <box style={{ flexDirection: 'column', marginBottom: 1 }}>
+          <text style={{ wrapMode: 'none' }}>
+            <span fg={activeFallback === 1 ? '#38bdf8' : theme.muted} attributes={TextAttributes.BOLD}>
+              {activeFallback === 1 ? '❯ ' : '  '}Fallback 1 (optional):{' '}
+            </span>
+            <span
+              fg={activeFallback === 1 ? theme.foreground : theme.muted}
+              bg={activeFallback === 1 ? theme.surface : undefined}
+            >
+              {fallback1 ? maskApiKey(fallback1) : (activeFallback === 1 ? '[paste or type key]' : '[empty]')}
+            </span>
+            {activeFallback === 1 && <span fg="#38bdf8" attributes={TextAttributes.BOLD}> █</span>}
+          </text>
+
+          <text style={{ wrapMode: 'none', marginTop: 1 }}>
+            <span fg={activeFallback === 2 ? '#38bdf8' : theme.muted} attributes={TextAttributes.BOLD}>
+              {activeFallback === 2 ? '❯ ' : '  '}Fallback 2 (optional):{' '}
+            </span>
+            <span
+              fg={activeFallback === 2 ? theme.foreground : theme.muted}
+              bg={activeFallback === 2 ? theme.surface : undefined}
+            >
+              {fallback2 ? maskApiKey(fallback2) : (activeFallback === 2 ? '[paste or type key]' : '[empty]')}
+            </span>
+            {activeFallback === 2 && <span fg="#38bdf8" attributes={TextAttributes.BOLD}> █</span>}
+          </text>
+        </box>
+
+        {/* Validation Status messages */}
+        {status === 'testing' && (
+          <text style={{ wrapMode: 'none', marginBottom: 1 }}>
+            <span fg="#38bdf8">{SPINNER_FRAMES[spinnerIndex]} </span>
+            <span fg={theme.foreground}>{statusMessage}</span>
+          </text>
+        )}
+        {status === 'success' && (
+          <text style={{ wrapMode: 'none', marginBottom: 1 }}>
+            <span fg="#4ade80" attributes={TextAttributes.BOLD}>✓ </span>
+            <span fg="#4ade80">{statusMessage}</span>
+          </text>
+        )}
+        {status === 'error' && (
+          <text style={{ wrapMode: 'none', marginBottom: 1 }}>
+            <span fg="#f87171" attributes={TextAttributes.BOLD}>✕ </span>
+            <span fg="#f87171">{statusMessage}</span>
+          </text>
+        )}
+
+        {/* Footer actions */}
+        <box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 1 }}>
+          <text style={{ wrapMode: 'none' }}>
+            <span fg={theme.foreground} attributes={TextAttributes.BOLD}>enter</span>
+            <span fg={theme.muted}> Done / Skip · </span>
+            <span fg={theme.foreground} attributes={TextAttributes.BOLD}>↑/↓</span>
+            <span fg={theme.muted}> Switch · </span>
+            <span fg={theme.foreground} attributes={TextAttributes.BOLD}>tab / ctrl+v</span>
+            <span fg={theme.muted}> Paste · </span>
+            <span fg={theme.foreground} attributes={TextAttributes.BOLD}>esc</span>
+            <span fg={theme.muted}> Back</span>
+          </text>
+          <text style={{ wrapMode: 'none' }}>
+            <span fg={theme.muted}>{route.displayName} · Rate Limit Rotation</span>
           </text>
         </box>
       </box>

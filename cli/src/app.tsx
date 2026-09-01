@@ -5,7 +5,9 @@ import { useShallow } from 'zustand/react/shallow'
 
 import { Chat } from './chat'
 import { ChatHistoryScreen } from './components/chat-history-screen'
+import { TerminalLogScreen } from './components/terminal-log-screen'
 import { ChatRuntimeProvider } from './contexts/chat-runtime-context'
+import { useChatStore } from './state/chat-store'
 import { SettingUpSession } from './settingup/settingupsession'
 import { ContinueWorkScreen } from './workspace/continue-work-screen'
 import {
@@ -26,7 +28,6 @@ import { useTerminalFocus } from './hooks/use-terminal-focus'
 import { getProjectRoot, startNewChat } from './project-files'
 import { useChatHistoryStore } from './state/chat-history-store'
 import { stopActiveRun } from './utils/active-run'
-import { useChatStore } from './state/chat-store'
 import type { TopBannerType } from './types/store'
 import { findGitRoot } from './utils/git'
 
@@ -320,36 +321,32 @@ const ChatSurface = (props: ChatSurfaceProps) => {
   )
 }
 
-const ChatSurfaceRoutes = ({
-  consumeInitialPrompt,
-  fileTree,
-  inputRef,
-  initialMode,
-  gitRoot,
-  onSwitchToGitRoot,
-  showChatHistory,
-  onSelectChat,
-  onCancelChatHistory,
-  onNewChat,
-}: ChatSurfaceProps) => {
-  if (showChatHistory) {
+const ChatSurfaceRoutes = (props: ChatSurfaceProps) => {
+  const showTerminalLogs = useChatStore((state) => state.showTerminalLogs)
+  const closeTerminalLogs = useChatStore((state) => state.closeTerminalLogs)
+
+  if (showTerminalLogs) {
+    return <TerminalLogScreen onBack={closeTerminalLogs} />
+  }
+
+  if (props.showChatHistory) {
     return (
       <ChatHistoryScreen
-        onSelectChat={onSelectChat}
-        onCancel={onCancelChatHistory}
-        onNewChat={onNewChat}
+        onSelectChat={props.onSelectChat}
+        onCancel={props.onCancelChatHistory}
+        onNewChat={props.onNewChat}
       />
     )
   }
 
   return (
     <Chat
-      consumeInitialPrompt={consumeInitialPrompt}
-      fileTree={fileTree}
-      inputRef={inputRef}
-      initialMode={initialMode}
-      gitRoot={gitRoot}
-      onSwitchToGitRoot={onSwitchToGitRoot}
+      consumeInitialPrompt={props.consumeInitialPrompt}
+      fileTree={props.fileTree}
+      inputRef={props.inputRef}
+      initialMode={props.initialMode}
+      gitRoot={props.gitRoot}
+      onSwitchToGitRoot={props.onSwitchToGitRoot}
     />
   )
 }

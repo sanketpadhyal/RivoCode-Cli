@@ -15,6 +15,7 @@ import { MultilineInput, type MultilineInputHandle } from './multiline-input'
 import { OutOfCreditsBanner } from './out-of-credits-banner'
 import { PublishContainer } from './publish-container'
 import { SuggestionMenu, type SuggestionItem } from './suggestion-menu'
+import { TextAttributes } from '@opentui/core'
 import { useAskUserBridge } from '../hooks/use-ask-user-bridge'
 import { useEvent } from '../hooks/use-event'
 import { tryGetProjectRoot } from '../project-files'
@@ -25,7 +26,7 @@ import { getTokenStats } from '../utils/context-compactor'
 import { BORDER_CHARS } from '../utils/ui-constants'
 
 import type { useTheme } from '../hooks/use-theme'
-import type { InputValue } from '../types/store'
+import type { InputValue, TerminalSession } from '../types/store'
 import type { AgentMode } from '../utils/constants'
 import type { MouseEvent } from '@opentui/core'
 
@@ -122,6 +123,10 @@ export const ChatInputBar = ({
   const messages = useChatStore((state) => state.messages)
   const selectedModel = useChatStore((state) => state.selectedModel)
   const tokenStats = getTokenStats(messages, selectedModel)
+  const sessions = useChatStore((state) => state.terminalSessions)
+  const activeSession =
+    sessions.find((s: TerminalSession) => s.status === 'running') ||
+    (sessions.length > 0 ? sessions[0] : null)
 
   const modeConfig = getInputModeConfig(inputMode)
   const askUserState = useChatStore((state) => state.askUserState)
@@ -428,13 +433,28 @@ export const ChatInputBar = ({
           }}
         >
           <box style={{ flexDirection: 'row', alignItems: 'center' }}>
-            {autoAcceptEdits && (
+            {activeSession ? (
+              <text style={{ wrapMode: 'none' }}>
+                <span
+                  fg={activeSession.status === 'running' ? '#38bdf8' : '#94a3b8'}
+                  attributes={TextAttributes.BOLD}
+                >
+                  {`{} [Terminal: ${activeSession.command.slice(0, 20)}] `}
+                </span>
+                <span fg={activeSession.status === 'running' ? '#4ade80' : '#38bdf8'}>
+                  {activeSession.status === 'running' ? '● Running ' : '✓ Done '}
+                </span>
+                <span fg={theme.muted}>
+                  {'(Ctrl+O to view logs)'}
+                </span>
+              </text>
+            ) : autoAcceptEdits ? (
               <text style={{ wrapMode: 'none' }}>
                 <span fg="#f43f5e">
                   {'⚡ auto accept edits is on'}
                 </span>
               </text>
-            )}
+            ) : null}
           </box>
           <box style={{ flexDirection: 'row', alignItems: 'center' }}>
             <text style={{ wrapMode: 'none' }}>
@@ -564,7 +584,22 @@ export const ChatInputBar = ({
         }}
       >
         <box style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {autoAcceptEdits ? (
+          {activeSession ? (
+            <text style={{ wrapMode: 'none' }}>
+              <span
+                fg={activeSession.status === 'running' ? '#38bdf8' : '#94a3b8'}
+                attributes={TextAttributes.BOLD}
+              >
+                {`{} [Terminal: ${activeSession.command.slice(0, 26)}] `}
+              </span>
+              <span fg={activeSession.status === 'running' ? '#4ade80' : '#38bdf8'}>
+                {activeSession.status === 'running' ? '● Running ' : '✓ Done '}
+              </span>
+              <span fg={theme.muted}>
+                {'(Ctrl+O to view logs)'}
+              </span>
+            </text>
+          ) : autoAcceptEdits ? (
             <text style={{ wrapMode: 'none' }}>
               <span fg="#f43f5e">
                 {'◈ auto accept edits is on'}

@@ -43,6 +43,12 @@ export function runBashCommand(command: string) {
   const commandCwd = process.cwd()
   const startTime = Date.now()
 
+  useChatStore.getState().addTerminalSession({
+    id,
+    command,
+    cwd: commandCwd,
+  })
+
   if (ghost) {
     addPendingBashMessage({
       id,
@@ -76,6 +82,9 @@ export function runBashCommand(command: string) {
       const stdout = 'stdout' in value ? value.stdout || '' : ''
       const stderr = 'stderr' in value ? value.stderr || '' : ''
       const exitCode = 'exitCode' in value ? value.exitCode ?? 0 : 0
+
+      useChatStore.getState().appendTerminalLog(id, [stdout, stderr].filter(Boolean).join('\n'))
+      useChatStore.getState().finishTerminalSession(id, { exitCode })
 
       const durationMs = Date.now() - startTime
       trackEvent(AnalyticsEvent.TERMINAL_COMMAND_COMPLETED, {
@@ -137,6 +146,8 @@ export function runBashCommand(command: string) {
     .catch((error) => {
       const errorMessage =
         error instanceof Error ? error.message : String(error)
+
+      useChatStore.getState().finishTerminalSession(id, { exitCode: 1, error: errorMessage })
 
       const durationMs = Date.now() - startTime
       trackEvent(AnalyticsEvent.TERMINAL_COMMAND_COMPLETED, {
@@ -389,6 +400,12 @@ export async function routeUserPrompt(
 
     setInputFocused(true)
     inputRef.current?.focus()
+    return
+  }
+
+  const lowerCmd = trimmed.toLowerCase()
+  if (lowerCmd === '/terminal' || lowerCmd === '/logs' || lowerCmd === '/terminal-logs') {
+    useChatStore.getState().openTerminalLogs()
     return
   }
 
