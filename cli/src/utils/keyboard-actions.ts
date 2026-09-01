@@ -77,6 +77,7 @@ export type ChatKeyboardAction =
   | { type: 'paste' }
 
   | { type: 'open-buy-credits' }
+  | { type: 'open-terminal-logs' }
 
   | { type: 'none' }
 
@@ -235,10 +236,10 @@ export function resolveChatKeyboardAction(
     return { type: 'history-down' }
   }
 
-  const isCtrlT = key.ctrl && key.name === 't' && !key.meta && !key.option
+  const isCtrlO = key.ctrl && (key.name === 'o' || key.name === 't') && !key.meta && !key.option
 
-  if (isCtrlT) {
-    return { type: 'toggle-all' }
+  if (isCtrlO) {
+    return { type: 'open-terminal-logs' }
   }
 
   if (

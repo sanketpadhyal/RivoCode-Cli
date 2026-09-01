@@ -1,4 +1,4 @@
-import { exec, execSync } from 'child_process'
+import { exec, execSync, spawn } from 'child_process'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -672,30 +672,82 @@ export async function executeLocalTool(
         } catch (_askErr) {}
       }
 
-      const runPromise = new Promise<string>((resolve) => {
-        exec(
-          rawCommand,
-          {
-            cwd: projectRoot,
-            timeout: 30000,
-            encoding: 'utf-8',
-            maxBuffer: 10 * 1024 * 1024,
-          },
-          (error, stdout, stderr) => {
-            if (error) {
-              const combined = [stdout, stderr, error.message].filter(Boolean).join('\n')
-              resolve(combined || `Command exited with code ${error.code || 1}`)
-            } else {
-              resolve(stdout || stderr || '(Command executed successfully with no output)')
-            }
-          },
-        )
+      const sessionId = useChatStore.getState().addTerminalSession({
+        command: rawCommand,
+        cwd: projectRoot,
+      })
 
-        // For background tasks (e.g. servers starting with & or nohup), resolve quickly so UI never hangs
-        if (rawCommand.includes('&') || rawCommand.includes('nohup') || rawCommand.includes('http.server')) {
-          setTimeout(() => {
-            resolve('(Background server/task started successfully)')
-          }, 800)
+      const runPromise = new Promise<string>((resolve) => {
+        let stdoutAcc = ''
+        let stderrAcc = ''
+        let hasResolved = false
+
+        const safeResolve = (res: string) => {
+          if (!hasResolved) {
+            hasResolved = true
+            resolve(res)
+          }
+        }
+
+        try {
+          const child = spawn(rawCommand, {
+            cwd: projectRoot,
+            shell: true,
+            env: { ...process.env, FORCE_COLOR: '1' },
+          })
+
+          if (child.pid) {
+            useChatStore.setState((s) => {
+              const sess = s.terminalSessions.find((t) => t.id === sessionId)
+              if (sess) sess.pid = child.pid
+            })
+          }
+
+          child.stdout?.on('data', (chunk: Buffer) => {
+            const str = chunk.toString()
+            stdoutAcc += str
+            useChatStore.getState().appendTerminalLog(sessionId, str)
+          })
+
+          child.stderr?.on('data', (chunk: Buffer) => {
+            const str = chunk.toString()
+            stderrAcc += str
+            useChatStore.getState().appendTerminalLog(sessionId, str)
+          })
+
+          child.on('error', (err) => {
+            useChatStore.getState().finishTerminalSession(sessionId, { error: err.message, exitCode: 1 })
+            safeResolve(`Error launching command: ${err.message}`)
+          })
+
+          child.on('close', (code) => {
+            useChatStore.getState().finishTerminalSession(sessionId, { exitCode: code })
+            const output = [stdoutAcc, stderrAcc].filter(Boolean).join('\n').trim()
+            safeResolve(output || (code === 0 ? '(Command executed successfully with no output)' : `Command exited with code ${code}`))
+          })
+
+          // For servers / background tasks, resolve early so conversation never hangs
+          const isBackground =
+            rawCommand.includes('&') ||
+            rawCommand.includes('nohup') ||
+            rawCommand.includes('dev') ||
+            rawCommand.includes('serve') ||
+            rawCommand.includes('watch') ||
+            rawCommand.includes('http.server')
+
+          if (isBackground) {
+            setTimeout(() => {
+              const currentLogs = [stdoutAcc, stderrAcc].filter(Boolean).join('\n').trim()
+              safeResolve(
+                currentLogs
+                  ? `(Background process started. Initial logs:)\n${currentLogs.slice(0, 1000)}`
+                  : '(Background task started successfully. Live logs streaming in Terminal Monitor.)',
+              )
+            }, 1200)
+          }
+        } catch (spawnErr: any) {
+          useChatStore.getState().finishTerminalSession(sessionId, { error: spawnErr.message, exitCode: 1 })
+          safeResolve(`Failed to spawn command: ${spawnErr.message}`)
         }
       })
 
@@ -1083,7 +1135,7 @@ Never assume the user's name or personal background unless they explicitly intro
 
 AUTONOMOUS CAPABILITIES (YOU HAVE FULL LOCAL SYSTEM & LIVE INTERNET ACCESS):
 - write_file(path, content): Create or overwrite files directly in the workspace.
-- run_terminal_command(command): Execute shell/terminal commands directly.
+- run_terminal_command(command): Execute shell/terminal commands directly. For background tasks, dev servers, or long-running commands, run them directly without redirecting to /dev/null so live logs are streamed to the user's terminal monitor.
 - read_files(paths): Read workspace files into context.
 - list_directory(path): List folder contents.
 - ocr_image(path): Extract text from images, screenshots, or UI mockups using native OS OCR (Apple Vision on macOS / WinRT OCR on Windows).

@@ -1,3 +1,4 @@
+import { exec } from 'child_process'
 import { castDraft, enableMapSet } from 'immer'
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
@@ -24,6 +25,7 @@ import type {
   PendingAttachment,
   PendingImage,
   PendingBashMessage,
+  TerminalSession,
   SuggestedFollowup,
   SuggestedFollowupsState,
   ClickedFollowupsMap,
@@ -42,6 +44,7 @@ export type {
   PendingAttachment,
   PendingImage,
   PendingBashMessage,
+  TerminalSession,
   SuggestedFollowup,
   SuggestedFollowupsState,
   ClickedFollowupsMap,
@@ -75,6 +78,9 @@ export type ChatStoreState = {
   askUserState: AskUserState
   pendingAttachments: PendingAttachment[]
   pendingBashMessages: PendingBashMessage[]
+  terminalSessions: TerminalSession[]
+  activeTerminalSessionId: string | null
+  showTerminalLogs: boolean
   suggestedFollowups: SuggestedFollowupsState | null
   clickedFollowupsMap: ClickedFollowupsMap
   selectedModel: string | null
@@ -163,6 +169,14 @@ type ChatStoreActions = {
   ) => void
   removePendingBashMessage: (id: string) => void
   clearPendingBashMessages: () => void
+  addTerminalSession: (info: { id?: string; command: string; cwd: string; pid?: number }) => string
+  appendTerminalLog: (id: string, text: string) => void
+  finishTerminalSession: (id: string, outcome: { exitCode?: number | null; error?: string }) => void
+  openTerminalLogs: (sessionId?: string) => void
+  closeTerminalLogs: () => void
+  killTerminalSession: (id: string) => void
+  clearTerminalSessions: () => void
+  setActiveTerminalSessionId: (id: string) => void
   setSuggestedFollowups: (state: SuggestedFollowupsState | null) => void
   markFollowupClicked: (toolCallId: string, index: number) => void
   setSelectedModel: (model: string | null) => void
@@ -202,6 +216,9 @@ const initialState: ChatStoreState = {
   askUserState: null,
   pendingAttachments: [],
   pendingBashMessages: [],
+  terminalSessions: [],
+  activeTerminalSessionId: null,
+  showTerminalLogs: false,
   suggestedFollowups: null,
   clickedFollowupsMap: new Map<string, Set<number>>(),
   selectedModel: 'gemini-3.6-flash',
@@ -489,6 +506,109 @@ export const useChatStore = create<ChatStore>()(
       set((state) => {
         state.pendingBashMessages = []
       }),
+
+    addTerminalSession: ({ id = crypto.randomUUID(), command, cwd, pid }) => {
+      const session: TerminalSession = {
+        id,
+        command,
+        cwd,
+        status: 'running',
+        startedAt: Date.now(),
+        logs: [`$ ${command}`, `[Working Directory: ${cwd}]`, '---'],
+        pid,
+      }
+      set((state) => {
+        state.terminalSessions = [session, ...state.terminalSessions.filter((s) => s.id !== id)].slice(0, 50)
+        state.activeTerminalSessionId = id
+      })
+      return id
+    },
+
+    appendTerminalLog: (id, text) => {
+      if (!text) return
+      const lines = text.split('\n')
+      set((state) => {
+        const s = state.terminalSessions.find((sess) => sess.id === id)
+        if (s) {
+          for (const line of lines) {
+            if (line.length > 0 || s.logs.length === 0 || s.logs[s.logs.length - 1].length > 0) {
+              s.logs.push(line)
+            }
+          }
+          if (s.logs.length > 3000) {
+            s.logs = s.logs.slice(-3000)
+          }
+        }
+      })
+    },
+
+    finishTerminalSession: (id, { exitCode = 0, error }) => {
+      set((state) => {
+        const s = state.terminalSessions.find((sess) => sess.id === id)
+        if (s) {
+          const isFail = (exitCode !== null && exitCode !== 0) || Boolean(error)
+          const completionMsg = isFail
+            ? `\n[Process exited with error (code ${exitCode ?? 1})]`
+            : `\n[Process completed successfully (exit code ${exitCode ?? 0})]`
+          if (error) {
+            s.logs.push(`Error: ${error}`)
+          }
+          s.logs.push(completionMsg)
+          s.status = isFail ? 'failed' : 'completed'
+          s.exitCode = exitCode ?? (isFail ? 1 : 0)
+          s.endedAt = Date.now()
+        }
+      })
+    },
+
+    openTerminalLogs: (sessionId) => {
+      set((state) => {
+        const targetId = sessionId || state.activeTerminalSessionId || state.terminalSessions[0]?.id || null
+        state.showTerminalLogs = true
+        state.activeTerminalSessionId = targetId
+      })
+    },
+
+    closeTerminalLogs: () => {
+      set((state) => {
+        state.showTerminalLogs = false
+      })
+    },
+
+    killTerminalSession: (id) => {
+      set((state) => {
+        const s = state.terminalSessions.find((sess) => sess.id === id)
+        if (s) {
+          if (s.pid) {
+            try {
+              if (process.platform === 'win32') {
+                exec(`taskkill /pid ${s.pid} /T /F`, () => {})
+              } else {
+                process.kill(s.pid, 'SIGTERM')
+              }
+            } catch {}
+          }
+          s.status = 'failed'
+          s.exitCode = 130
+          s.endedAt = Date.now()
+          s.logs.push('\n[Process terminated by user]')
+        }
+      })
+    },
+
+    clearTerminalSessions: () => {
+      set((state) => {
+        state.terminalSessions = []
+        state.activeTerminalSessionId = null
+        state.showTerminalLogs = false
+      })
+    },
+
+    setActiveTerminalSessionId: (id) => {
+      set((state) => {
+        state.activeTerminalSessionId = id
+      })
+    },
 
     setSuggestedFollowups: (suggestedFollowups) =>
       set((state) => {

@@ -1263,6 +1263,9 @@ export const Chat = ({
         }
         safeOpen(WEBSITE_URL + '/usage')
       },
+      onOpenTerminalLogs: () => {
+        useChatStore.getState().openTerminalLogs()
+      },
     }),
     [
       setInputMode,

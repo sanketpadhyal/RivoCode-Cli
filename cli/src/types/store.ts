@@ -73,6 +73,18 @@ export type PendingAttachment = PendingImageAttachment | PendingTextAttachment |
 
 export type PendingImage = PendingImageAttachment
 
+export type TerminalSession = {
+  id: string
+  command: string
+  cwd: string
+  status: 'running' | 'completed' | 'failed'
+  exitCode?: number | null
+  startedAt: number
+  endedAt?: number
+  logs: string[]
+  pid?: number
+}
+
 export type PendingBashMessage = {
   id: string
   command: string

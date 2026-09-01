@@ -69,6 +69,7 @@ export type ChatKeyboardHandlers = {
   onToggleAll: () => void
 
   onOpenBuyCredits: () => void
+  onOpenTerminalLogs?: () => void
 }
 
 export type UseChatKeyboardOptions = {
@@ -223,6 +224,9 @@ function dispatchAction(
       return true
     case 'open-buy-credits':
       handlers.onOpenBuyCredits()
+      return true
+    case 'open-terminal-logs':
+      handlers.onOpenTerminalLogs?.()
       return true
     case 'none':
       return false
