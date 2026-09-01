@@ -36,9 +36,11 @@ jobs:
         run: bun --cwd cli typecheck
 
       - name: Run Tests
+        env:
+          NODE_ENV: production
         run: |
-          bun test cli/src
-          bun test common/src
+          bun --cwd cli test
+          bun --cwd common test
 
   build-matrix:
     name: Verify Binary Build (${{ matrix.os }})
