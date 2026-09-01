@@ -901,13 +901,128 @@ function computeDetailedDiff(
 
 function cleanStreamedContent(text: string): string {
   let cleaned = text
-  cleaned = cleaned.replace(/```(?:json)?\s*\n?\{[\s\S]*?\}\s*\n?```/gi, '')
+
+  // 1. Remove XML function/tool call blocks
+  cleaned = cleaned.replace(/<function_calls\b[^>]*>[\s\S]*?<\/function_calls>/gi, '')
+  cleaned = cleaned.replace(/<function_call\b[^>]*>[\s\S]*?<\/function_call>/gi, '')
+  cleaned = cleaned.replace(/<tool_calls\b[^>]*>[\s\S]*?<\/tool_calls>/gi, '')
+  cleaned = cleaned.replace(/<tool_call\b[^>]*>[\s\S]*?<\/tool_call>/gi, '')
+  cleaned = cleaned.replace(/<invoke\b[^>]*>[\s\S]*?<\/invoke>/gi, '')
   cleaned = cleaned.replace(/<action\s+name=["'][^"']+["']>[\s\S]*?<\/action>/gi, '')
+  cleaned = cleaned.replace(/<function=[^>]+>[\s\S]*?<\/function>/gi, '')
+  cleaned = cleaned.replace(/<tool=[^>]+>[\s\S]*?<\/tool>/gi, '')
+
+  // 2. Remove leaked placeholders and hallucinated headers
+  cleaned = cleaned.replace(/●\s*\*\*write_file\*\*\(.*?\)\s*<see next tool call>/gi, '')
+  cleaned = cleaned.replace(/<see next tool call>/gi, '')
+  cleaned = cleaned.replace(/<function_calls>/gi, '')
+  cleaned = cleaned.replace(/<\/function_calls>/gi, '')
+
+  // 3. Remove standalone JSON tool blocks
+  cleaned = cleaned.replace(/```(?:json)?\s*\n?\{[\s\S]*?\}\s*\n?```/gi, '')
   cleaned = cleaned.replace(/\{\s*"(?:name|tool|tool_name)"\s*:\s*"[a-zA-Z0-9_-]+"[\s\S]*?\}\s*\}/gi, '')
+
+  // 4. Remove partial trailing tags during streaming
+  cleaned = cleaned.replace(/<\/?(?:function_calls?|tool_calls?|invoke|action|parameter|function|tool)[^>]*$/gi, '')
   cleaned = cleaned.replace(/\{\s*"(?:name|tool|tool_name)"\s*:\s*"[a-zA-Z0-9_-]+"[\s\S]*$/gi, '')
   cleaned = cleaned.replace(/<action\s+name=["'][^"']+["']>[\s\S]*$/gi, '')
   cleaned = cleaned.replace(/```(?:json)?\s*\n?\{\s*"(?:name|tool)"[\s\S]*$/gi, '')
+
   return cleaned
+}
+
+function extractXmlAndCustomToolCalls(
+  text: string,
+  turns: number,
+): Array<{ id: string; name: string; args: string }> {
+  const tools: Array<{ id: string; name: string; args: string }> = []
+  let toolIdx = 0
+
+  // 1. <tool_call> { ... } </tool_call>
+  const toolCallTagRegex = /<tool_call>([\s\S]*?)<\/tool_call>/gi
+  let match: RegExpExecArray | null
+  while ((match = toolCallTagRegex.exec(text)) !== null) {
+    const raw = match[1]?.trim()
+    try {
+      const parsed = parseJsonLenient(raw)
+      if (parsed?.name) {
+        tools.push({
+          id: `tool_${toolIdx++}_${turns}`,
+          name: parsed.name,
+          args:
+            typeof parsed.arguments === 'object'
+              ? JSON.stringify(parsed.arguments)
+              : typeof parsed.parameters === 'object'
+                ? JSON.stringify(parsed.parameters)
+                : String(parsed.arguments || parsed.parameters || parsed.args || '{}'),
+        })
+      }
+    } catch (_e) {}
+  }
+
+  // 2. <invoke name="..."> ... </invoke>
+  const invokeRegex = /<invoke\s+name=["']([a-zA-Z0-9_-]+)["']>([\s\S]*?)<\/invoke>/gi
+  while ((match = invokeRegex.exec(text)) !== null) {
+    const name = match[1]?.trim()
+    const body = match[2]?.trim()
+    if (name) {
+      if (body.includes('<parameter')) {
+        const params: Record<string, any> = {}
+        const paramRegex = /<parameter\s+name=["']([a-zA-Z0-9_-]+)["']>([\s\S]*?)<\/parameter>/gi
+        let pMatch: RegExpExecArray | null
+        while ((pMatch = paramRegex.exec(body)) !== null) {
+          params[pMatch[1]] = pMatch[2]?.trim()
+        }
+        tools.push({
+          id: `invoke_${toolIdx++}_${turns}`,
+          name,
+          args: JSON.stringify(params),
+        })
+      } else if (body.startsWith('{')) {
+        tools.push({
+          id: `invoke_${toolIdx++}_${turns}`,
+          name,
+          args: body,
+        })
+      } else {
+        tools.push({
+          id: `invoke_${toolIdx++}_${turns}`,
+          name,
+          args: JSON.stringify({ command: body }),
+        })
+      }
+    }
+  }
+
+  // 3. <function=write_file>...</function>
+  const funcTagRegex = /<function=([a-zA-Z0-9_-]+)>([\s\S]*?)<\/function>/gi
+  while ((match = funcTagRegex.exec(text)) !== null) {
+    const name = match[1]?.trim()
+    const rawArgs = match[2]?.trim()
+    if (name && rawArgs) {
+      tools.push({
+        id: `fn_${toolIdx++}_${turns}`,
+        name,
+        args: rawArgs.startsWith('{') ? rawArgs : JSON.stringify({ command: rawArgs }),
+      })
+    }
+  }
+
+  // 4. <action name="...">...</action>
+  const actionRegex = /<action\s+name=["']([a-zA-Z0-9_-]+)["']>([\s\S]*?)<\/action>/gi
+  while ((match = actionRegex.exec(text)) !== null) {
+    const name = match[1]?.trim()
+    const rawArgs = match[2]?.trim()
+    if (name && rawArgs) {
+      tools.push({
+        id: `action_${toolIdx++}_${turns}`,
+        name,
+        args: rawArgs.startsWith('{') ? rawArgs : JSON.stringify({ command: rawArgs }),
+      })
+    }
+  }
+
+  return tools
 }
 
 function parseJsonLenient(raw: string): any {
@@ -1156,9 +1271,12 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
 - NEVER say "Let me read the remaining files", "Let me first understand", "I'll now look at", or any other stalling phrase — just write the code directly!
 - Do NOT say "I have read the files, should I proceed?" or "Here is what I plan to do" without actually writing the code! Take immediate action.
 - NEVER read the same file twice. NEVER re-read files you already have in context.
-- NEVER tell the user to manually create files, copy-paste code, or run bash commands when you can do it yourself!
 - Complete the entire end-to-end task in one go so the user doesn't need to ask you to continue.
-- After writing all code files, verify the implementation is complete and done.`
+- After writing all code files, verify the implementation is complete and done.
+
+NO RAW XML/TOOL TAGS & NO FULL-FILE CODE DUMPS:
+- NEVER output raw XML tags like <function_calls>, <invoke>, <parameter>, <tool_call>, or raw JSON tool invocations into your chat text.
+- When you edit or write files with write_file, DO NOT dump the full file contents in markdown code blocks in your written chat response. The environment automatically generates and renders a concise diff for the user. Keep your written response concise, explaining what was modified.`
 
   const existingMessages = useChatStore.getState().messages
   const recentMessages = existingMessages.slice(-24)
@@ -1461,22 +1579,11 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
         }
       }
 
-      // If no function tool calls were made, check action tags and robust JSON tool calls from local/Ollama models
+      // If no function tool calls were made, check XML/action tags and robust JSON tool calls
       if (pendingToolCalls.length === 0) {
-        const actionRegex = /<action\s+name=["']([a-zA-Z0-9_-]+)["']>([\s\S]*?)<\/action>/gi
-        let match: RegExpExecArray | null
-        let actionIndex = 0
-
-        while ((match = actionRegex.exec(turnContent)) !== null) {
-          const name = match[1]?.trim()
-          const rawArgs = match[2]?.trim()
-          if (name && rawArgs) {
-            pendingToolCalls.push({
-              id: `action_${actionIndex++}_${turns}`,
-              name,
-              args: rawArgs.startsWith('{') ? rawArgs : JSON.stringify({ command: rawArgs }),
-            })
-          }
+        const xmlCalls = extractXmlAndCustomToolCalls(turnContent, turns)
+        if (xmlCalls.length > 0) {
+          pendingToolCalls.push(...xmlCalls)
         }
       }
 
