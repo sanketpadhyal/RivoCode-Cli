@@ -1,13 +1,13 @@
 <div align="center">
 
-<img src="./assets/rivo.png" alt="RivoCode Logo" width="160" height="160" />
+<img src="./assets/rivo.png" alt="RivoCode Logo" width="120" height="120" />
 
 # RivoCode CLI
 
 **A modern, terminal-native AI coding assistant built for speed, full codebase awareness, and multi-file workflows.**
 
 [![npm version](https://img.shields.io/npm/v/@rivocode-cli/cli?style=flat-square&color=007ACC&label=npm%20package)](https://www.npmjs.com/package/@rivocode-cli/cli)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey?style=flat-square)](https://github.com/sanketpadhyal/RivoCode-Cli/releases)
 [![Node Version](https://img.shields.io/badge/Node.js-%3E%3D20.0.0-green?style=flat-square)](https://nodejs.org)
 
@@ -256,4 +256,4 @@ Remove-Item -Recurse -Force ~/.rivocode
 
 ## License
 
-This project is licensed under the [Apache-2.0 License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
