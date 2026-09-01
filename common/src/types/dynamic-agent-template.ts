@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 import { ALLOWED_MODEL_PREFIXES, models } from '../old-constants'
 import { mcpConfigSchema } from './mcp'
 
-import type { JSONSchema } from 'zod/v4/core'
+import type { JsonSchema } from '../templates/initial-agents-dir/types/util-types'
 
 const filteredModels = Object.values(models).filter((model) =>
   ALLOWED_MODEL_PREFIXES.some((prefix) => model.startsWith(prefix)),
@@ -14,8 +14,8 @@ if (filteredModels.length === 0) {
 }
 
 export const JsonSchemaSchema: z.ZodType<
-  JSONSchema.BaseSchema,
-  JSONSchema.BaseSchema
+  JsonSchema,
+  JsonSchema
 > = z.lazy(() =>
   z.looseObject({
     type: z
