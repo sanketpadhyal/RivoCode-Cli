@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/rivo.png" alt="RivoCode Logo" width="120" height="120" />
+<img src="logo0.png" alt="RivoCode Logo" width="120" height="120" />
 
 # RivoCode CLI
 
