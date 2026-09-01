@@ -1,13 +1,14 @@
 {
-  "name": "rivocode",
+  "name": "@rivocode-cli/cli",
   "version": "1.0.1",
   "description": "RivoCode — AI-powered terminal coding assistant",
   "author": "Sanket Padhyal <mrsanketpadhyal@gmail.com>",
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
-    "rivocode": "./bin/rivo.js",
-    "rivo": "./bin/rivo.js"
+    "rivo": "bin/rivo.js",
+    "rivocode": "bin/rivo.js",
+    "cli": "bin/rivo.js"
   },
   "files": [
     "bin",
