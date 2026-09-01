@@ -1499,8 +1499,13 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
         )
       }
 
+      const validToolCalls = pendingToolCalls.filter(
+        (tc): tc is { id: string; name: string; args: string } =>
+          Boolean(tc && typeof tc === 'object' && tc.name),
+      )
+
       // If still no tool calls or actions, check fallback auto-extraction and stop loop
-      if (pendingToolCalls.length === 0) {
+      if (validToolCalls.length === 0) {
         const autoCreated = autoExtractAndWriteCodeBlocks(projectRoot, turnContent)
         if (autoCreated.length > 0) {
           hasExecutedModification = true
@@ -1535,10 +1540,9 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
 
       // Execute each tool and format output for user UI
       const toolResultsForHistory: string[] = []
-      const toolResultById = new Map<string, string>()
       let hasNewToolExecution = false
 
-      for (const tc of pendingToolCalls) {
+      for (const tc of validToolCalls) {
         if (!tc || !tc.name) continue
         try {
           const parsedArgs = JSON.parse(tc.args || '{}')
@@ -1557,7 +1561,6 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
           // If identical inspection/read command was already executed in this session, use cached result
           if (isInspectCmd && executedToolSignatures.has(toolSig)) {
             const cachedRes = executedToolSignatures.get(toolSig) || ''
-            toolResultById.set(tc.id, cachedRes)
             toolResultsForHistory.push(`[${tc.name}]\nResult: ${cachedRes}`)
             continue
           }
@@ -1581,7 +1584,6 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
             hasExecutedModification = false
           }
           const truncatedResult = toolExec.result.length > 4000 ? toolExec.result.slice(0, 4000) + '\n...[output truncated]' : toolExec.result
-          toolResultById.set(tc.id, truncatedResult)
           executedToolSignatures.set(toolSig, truncatedResult)
           toolResultsForHistory.push(`[${tc.name}]\nResult: ${truncatedResult}`)
 
@@ -1668,43 +1670,19 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
         break
       }
 
-      if (route.provider !== 'gemini' && pendingToolCalls.length > 0) {
-        chatHistory.push({
-          role: 'assistant',
-          content: turnContent || '',
-          tool_calls: pendingToolCalls.map((tc) => ({
-            id: tc.id,
-            type: 'function',
-            function: {
-              name: tc.name,
-              arguments: tc.args,
-            },
-          })),
-        })
+      chatHistory.push({
+        role: 'assistant',
+        content: turnContent || `Executed: ${validToolCalls.map((t) => t.name).join(', ')}`,
+      })
 
-        for (const tc of pendingToolCalls) {
-          const res = toolResultById.get(tc.id) || '(completed)'
-          chatHistory.push({
-            role: 'tool',
-            tool_call_id: tc.id,
-            content: res,
-          })
-        }
-      } else {
-        chatHistory.push({
-          role: 'assistant',
-          content: turnContent || `Executed actions: ${pendingToolCalls.map((t) => t.name).join(', ')}`,
-        })
+      const nextUserInstruction = isActionRequired
+        ? `Tool execution results:\n${toolResultsForHistory.join('\n\n')}\n\nYou have completed the necessary tools. Now finalize the task and present your final answer directly to the user.`
+        : `Tool execution results:\n${toolResultsForHistory.join('\n\n')}\n\nBased on these tool results, provide your final direct answer to the user now. Do not call additional tools.`
 
-        const nextUserInstruction = isActionRequired
-          ? `Tool results:\n${toolResultsForHistory.join('\n\n')}\n\nYou now have all the information you need. Complete the task and provide your final response.`
-          : `Tool results:\n${toolResultsForHistory.join('\n\n')}\n\nPlease summarize your answer for the user directly based on the tool results.`
-
-        chatHistory.push({
-          role: 'user',
-          content: nextUserInstruction,
-        })
-      }
+      chatHistory.push({
+        role: 'user',
+        content: nextUserInstruction,
+      })
     }
 
     try {
