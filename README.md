@@ -1,177 +1,259 @@
-# Rivo CLI
+<div align="center">
 
-A modern, AI-powered CLI tool for developers that brings intelligent code assistance directly to your terminal.
+<img src="./assets/rivo.png" alt="RivoCode Logo" width="160" height="160" />
 
-## Features
+# RivoCode CLI
 
-### Chat Interface
-- Interactive chat with AI assistants directly in your terminal
-- Syntax-highlighted code blocks with copy support
-- Markdown rendering for rich responses
-- Message threading for conversation context
+**A modern, terminal-native AI coding assistant built for speed, full codebase awareness, and multi-file workflows.**
 
-### Attachment System
-- Attach text, images, and files to messages
-- Preview cards for different attachment types
-- Pending attachments banner showing queued items
-- Support for multiple file formats
+[![npm version](https://img.shields.io/npm/v/@rivocode-cli/cli?style=flat-square&color=007ACC&label=npm%20package)](https://www.npmjs.com/package/@rivocode-cli/cli)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey?style=flat-square)](https://github.com/sanketpadhyal/RivoCode-Cli/releases)
+[![Node Version](https://img.shields.io/badge/Node.js-%3E%3D20.0.0-green?style=flat-square)](https://nodejs.org)
 
-### AI Model Integration
-- Multiple AI provider support:
-  - **MiniMax** (MiniMax-M3) - Fast, cost-effective LLM
-  - **Llama 3.3** - Open source model
-  - **Gemini** - Google's AI model
-- Easy model switching via model picker
-- Streaming responses for real-time output
+</div>
 
-### Project Context
-- Codebase-aware AI assistance
-- AST-based indexing for intelligent context
-- Automatic project structure analysis
-- Vector embeddings for semantic search
+---
 
-### File Tools
-- Read, write, and edit files directly from chat
-- Run terminal commands
-- Search and replace across files
-- Create and manage project structure
+## Overview
 
-## Tech Stack
+RivoCode is an autonomous AI coding assistant that operates directly within your terminal. It indexes your project AST with Tree-Sitter, plans architectural implementations, edits multiple files across your workspace, executes shell commands, and connects to high-performance LLM providers without requiring desktop IDE context switching.
 
-- **React Native** / **Expo** for cross-platform mobile support
-- **TypeScript** for type safety
-- **Expo Router** for file-based navigation
-- **Zustand** for state management
-- **TanStack Query** for data fetching
-- **OpenAI SDK** for AI integrations
+---
 
-## MiniMax Integration
+## Quick Start
 
-### API Setup
-
-1. Sign up at [MiniMax Platform](https://platform.minimax.io)
-2. Get your API key from the dashboard
-3. Configure in your environment:
+Run RivoCode instantly without manual binary downloads:
 
 ```bash
-# Add to .env file
-MINIMAX_API_KEY=your_api_key_here
+npx @rivocode-cli/cli
 ```
 
-### Usage with MiniMax
+Pass an initial prompt directly from your terminal:
 
 ```bash
-# Direct API call example
-curl https://api.minimax.io/v1/chat/completions \
-  -H "Authorization: Bearer $MINIMAX_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "MiniMax-M3",
-    "messages": [{"role": "user", "content": "Hello!"}]
-  }'
+npx @rivocode-cli/cli "Refactor authentication middleware to use JWT"
 ```
 
-### Available MiniMax Features
+---
 
-| Feature | Description |
-|---------|-------------|
-| **MiniMax-M3** | Latest LLM model |
-| **Image Generation** | AI image creation |
-| **Video Generation V2** | Text-to-video |
-| **Text-to-Speech** | Voice synthesis |
-| **Voice Design** | Custom voice creation |
-| **Music Generation** | AI music creation |
+## Installation
 
-### SDK Integration
+Install RivoCode globally across your operating system for access via the `rivo` command.
+
+### macOS Installation
+
+#### Using npm:
+```bash
+npm install -g @rivocode-cli/cli
+```
+
+#### Using Homebrew / Bun:
+```bash
+bun add -g @rivocode-cli/cli
+```
+
+#### Using pnpm:
+```bash
+pnpm add -g @rivocode-cli/cli
+```
+
+#### Using yarn:
+```bash
+yarn global add @rivocode-cli/cli
+```
+
+---
+
+### Windows Installation
+
+Open **PowerShell** or **Command Prompt** (Run as Administrator if necessary):
+
+#### Using npm:
+```powershell
+npm install -g @rivocode-cli/cli
+```
+
+#### Using pnpm:
+```powershell
+pnpm add -g @rivocode-cli/cli
+```
+
+#### Using yarn:
+```powershell
+yarn global add @rivocode-cli/cli
+```
+
+---
+
+### Linux Installation
+
+#### Using npm:
+```bash
+sudo npm install -g @rivocode-cli/cli
+```
+
+#### Using bun:
+```bash
+bun add -g @rivocode-cli/cli
+```
+
+---
+
+### Verify Installation
+
+After global installation, launch the CLI from any directory:
 
 ```bash
-npm install @ai-sdk/minimax
+rivo
 ```
 
-```javascript
-import { createMiniMax } from '@ai-sdk/minimax';
-
-const minimax = createMiniMax({ apiKey: process.env.MINIMAX_API_KEY });
-const response = await minimax('Your question here');
-```
-
-## Project Structure
-
-```
-cli/
-├── src/
-│   ├── app/                 # Expo Router screens
-│   ├── components/          # Reusable UI components
-│   ├── hooks/               # Custom React hooks
-│   ├── services/            # API and AI service integrations
-│   ├── stores/              # Zustand state stores
-│   ├── types/               # TypeScript type definitions
-│   └── utils/               # Utility functions
-├── assets/                  # Static assets
-└── app.json                 # Expo configuration
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-- Expo CLI
-- MiniMax API key (for MiniMax integration)
-
-### Installation
+Check the installed version:
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd rivocode
-
-# Install dependencies
-npm install
-
-# Start the development server
-npx expo start
+rivo --version
 ```
 
-### Configuration
+---
 
-Set up your AI provider API keys:
+## Core Capabilities
+
+### 1. Codebase Awareness & AST Mapping
+RivoCode builds an abstract syntax tree (AST) map of your repository using WebAssembly Tree-Sitter grammars. It resolves functions, classes, type declarations, and imports across the entire workspace to provide accurate context.
+
+### 2. Multi-File Atomic Editing
+The agent constructs full structural modifications, validates diffs, and writes patches directly across multiple project files in a single pass.
+
+### 3. Integrated Terminal & Tool Execution
+RivoCode executes builds, linters, tests, and file system commands directly to verify implementations and self-correct runtime errors.
+
+### 4. Zero-Latency Terminal UI
+Powered by OpenTUI and React reconciler engines, RivoCode delivers syntax highlighting, markdown rendering, progress trackers, and real-time streaming tokens.
+
+---
+
+## AI Model Providers & Configuration
+
+Set provider API keys in your shell environment or a local `.env` file:
 
 ```bash
-# Add to your environment or .env file
-MINIMAX_API_KEY=your_api_key
-OPENAI_API_KEY=your_api_key
-GEMINI_API_KEY=your_api_key
+# MiniMax
+export MINIMAX_API_KEY="your_minimax_api_key"
+
+# Google Gemini
+export GEMINI_API_KEY="your_gemini_api_key"
+
+# Anthropic Claude
+export ANTHROPIC_API_KEY="your_anthropic_api_key"
+
+# OpenAI
+export OPENAI_API_KEY="your_openai_api_key"
+
+# OpenRouter
+export OPENROUTER_API_KEY="your_openrouter_api_key"
 ```
 
-## Usage
+---
 
-### Starting the CLI
+## CLI Options & Execution Modes
+
+| Option | Flag | Description |
+| :--- | :--- | :--- |
+| **Plan Mode** | `--plan` | Generates detailed architectural roadmaps before applying code changes |
+| **Lite Mode** | `--lite` | Fast execution optimized for quick edits and single-file modifications |
+| **Max Mode** | `--max` | Extended reasoning mode for complex refactoring tasks |
+| **Continue Session** | `--continue [id]` | Resumes an active or previous conversation session |
+| **Working Directory** | `--cwd <path>` | Sets the project root path explicitly |
+| **Clear Logs** | `--clear-logs` | Cleans previous session logs before starting |
+| **Version** | `-v, --version` | Outputs current CLI version |
+| **Help** | `-h, --help` | Displays usage instructions |
+
+### Execution Examples:
 
 ```bash
-npx expo start
+# Start in architectural planning mode
+rivo --plan
+
+# Run a quick fix in Lite mode
+rivo --lite "Fix TypeScript error in user.service.ts"
+
+# Continue the previous session
+rivo --continue
 ```
 
-### Chat Commands
+---
 
-- `/help` - Show available commands
-- `/model [name]` - Switch AI model (mini, llama, gemini)
-- `/clear` - Clear conversation history
-- `/attach [file]` - Attach file to message
+## Interactive Chat Commands
 
-### Switching Models
+Inside the active terminal session, use slash commands to manage your workflow:
+
+| Command | Action |
+| :--- | :--- |
+| `/model` | Open interactive model switcher (MiniMax, Gemini, Claude, etc.) |
+| `/help` | Display list of interactive commands and shortcuts |
+| `/clear` | Clear active conversation history |
+| `/attach <file>` | Attach specific file context into current prompt |
+
+---
+
+## Architecture & Technology Stack
 
 ```
-/model mini     # Use MiniMax
-/model llama    # Use Llama 3.3
-/model gemini   # Use Gemini
+rivocode/
+├── bin/                    # Universal Node.js cross-platform launcher
+├── cli/                    # OpenTUI & React terminal application
+│   ├── src/
+│   │   ├── commands/       # CLI routing and command registration
+│   │   ├── components/     # Terminal UI components
+│   │   ├── hooks/          # Keyboard and lifecycle hooks
+│   │   └── utils/          # AST indexing and terminal brokers
+│   └── scripts/            # Cross-compilation scripts
+├── sdk/                    # Core RivoCode TypeScript SDK
+└── packages/
+    ├── agent-runtime/      # Agent loops and tool invocation execution
+    ├── code-map/           # Tree-Sitter AST indexer
+    └── llm-providers/      # Multi-provider streaming adapter
 ```
+
+- **Runtime & Compilation**: Bun `--compile` standalone cross-platform binaries
+- **Terminal UI**: OpenTUI + React 19 + Yoga Layout engine
+- **Code Parsing**: WebAssembly Tree-Sitter
+- **Package Distribution**: npm registry wrapper with automated GitHub release retrieval
+
+---
+
+## Uninstallation
+
+### Remove Global Package
+
+```bash
+# npm
+npm uninstall -g @rivocode-cli/cli
+
+# bun
+bun remove -g @rivocode-cli/cli
+
+# pnpm
+pnpm remove -g @rivocode-cli/cli
+
+# yarn
+yarn global remove @rivocode-cli/cli
+```
+
+### Clean Binary Cache & Configuration
+
+#### macOS & Linux:
+```bash
+rm -rf ~/.rivocode
+```
+
+#### Windows (PowerShell):
+```powershell
+Remove-Item -Recurse -Force ~/.rivocode
+```
+
+---
 
 ## License
 
-MIT License
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+This project is licensed under the [Apache-2.0 License](LICENSE).
