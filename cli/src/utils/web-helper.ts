@@ -111,72 +111,181 @@ export function ensureWebToolExists(): string {
   return WEB_SCRIPT_PATH
 }
 
-export function htmlToMarkdown(html: string): string {
-  if (!html) return ''
-  return html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-    .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
-    .replace(/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/gi, '')
-    .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, '')
-    .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, '')
-    .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, '')
-    .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n# $1\n')
-    .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n## $1\n')
-    .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n### $1\n')
-    .replace(/<h[4-6][^>]*>(.*?)<\/h[4-6]>/gi, '\n#### $1\n')
-    .replace(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/gis, '\n```\n$1\n```\n')
-    .replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
-    .replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
-    .replace(/<li[^>]*>(.*?)<\/li>/gi, '\n* $1')
-    .replace(/<p[^>]*>(.*?)<\/p>/gi, '\n$1\n')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
+function decodeHtmlEntities(str: string): string {
+  if (!str) return ''
+  return str
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;/g, "'")
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+    .replace(/&amp;/g, '&')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
+}
+
+function cleanHtmlSnippet(html: string): string {
+  if (!html) return ''
+  return decodeHtmlEntities(
+    html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim(),
+  )
+}
+
+export function htmlToMarkdown(html: string): string {
+  if (!html) return ''
+  return decodeHtmlEntities(
+    html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+      .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
+      .replace(/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/gi, '')
+      .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, '')
+      .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, '')
+      .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, '')
+      .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n# $1\n')
+      .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n## $1\n')
+      .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n### $1\n')
+      .replace(/<h[4-6][^>]*>(.*?)<\/h[4-6]>/gi, '\n#### $1\n')
+      .replace(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/gis, '\n```\n$1\n```\n')
+      .replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
+      .replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
+      .replace(/<li[^>]*>(.*?)<\/li>/gi, '\n* $1')
+      .replace(/<p[^>]*>(.*?)<\/p>/gi, '\n$1\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim(),
+  )
 }
 
 export async function searchWeb(query: string): Promise<string> {
+  const trimmed = query.trim()
+  if (!trimmed) return 'Please provide a search query.'
+
+  const results: Array<{ title: string; url: string; snippet: string }> = []
+  const encoded = encodeURIComponent(trimmed)
+
+  // 1. DuckDuckGo HTML Search
   try {
-    const encoded = encodeURIComponent(query.trim())
     const searchUrl = `https://html.duckduckgo.com/html/?q=${encoded}`
     const res = await fetch(searchUrl, {
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
       },
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(8000),
     })
-    const rawHtml = await res.text()
 
-    // Extract search snippets
-    const results: string[] = []
-    const snippetRegex = /<a class="result__snippet[^>]*>(.*?)<\/a>/gis
-    const titleRegex = /<a class="result__url"[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gis
+    if (res.ok) {
+      const rawHtml = await res.text()
+      const blocks = rawHtml.split(/<div[^>]*class="[^"]*\bresult\b[^"]*"/)
+      for (const block of blocks.slice(1)) {
+        if (results.length >= 8) break
+        const titleMatch = /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/is.exec(block)
+        const snippetMatch = /<a[^>]*class="[^"]*result__snippet[^"]*"[^>]*>(.*?)<\/a>/is.exec(block)
 
-    let match: RegExpExecArray | null
-    while ((match = snippetRegex.exec(rawHtml)) !== null && results.length < 6) {
-      const cleanSnippet = match[1]?.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&#39;/g, "'").trim()
-      if (cleanSnippet) {
-        results.push(`• ${cleanSnippet}`)
+        if (titleMatch) {
+          let rawUrl = titleMatch[1] || ''
+          const uddgMatch = /uddg=([^&"]+)/.exec(rawUrl)
+          if (uddgMatch && uddgMatch[1]) {
+            rawUrl = decodeURIComponent(uddgMatch[1])
+          } else if (rawUrl.startsWith('//')) {
+            rawUrl = `https:${rawUrl}`
+          }
+
+          const cleanTitle = cleanHtmlSnippet(titleMatch[2] || '')
+          const cleanSnippet = snippetMatch ? cleanHtmlSnippet(snippetMatch[1] || '') : ''
+
+          if (cleanTitle && (rawUrl.startsWith('http://') || rawUrl.startsWith('https://'))) {
+            results.push({
+              title: cleanTitle,
+              url: rawUrl,
+              snippet: cleanSnippet,
+            })
+          }
+        }
       }
     }
+  } catch (_e) {}
 
-    if (results.length > 0) {
-      return `Search results for "${query}":\n\n` + results.join('\n\n')
-    }
-
-    const md = htmlToMarkdown(rawHtml)
-    return md.slice(0, 4000) || `No search results found for "${query}"`
-  } catch (err: any) {
-    return `[Search error for "${query}": ${err?.message || String(err)}]`
+  // 2. DuckDuckGo Instant Answers API (fallback & rich answers)
+  if (results.length < 3) {
+    try {
+      const ddgApiUrl = `https://api.duckduckgo.com/?q=${encoded}&format=json&no_html=1&skip_disambig=1`
+      const res = await fetch(ddgApiUrl, {
+        headers: { 'User-Agent': 'RivoCode/1.0' },
+        signal: AbortSignal.timeout(5000),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        if (json.AbstractText && json.AbstractURL) {
+          results.unshift({
+            title: json.Heading || trimmed,
+            url: json.AbstractURL,
+            snippet: json.AbstractText,
+          })
+        }
+        if (Array.isArray(json.RelatedTopics)) {
+          for (const topic of json.RelatedTopics) {
+            if (results.length >= 8) break
+            if (topic.Text && topic.FirstURL) {
+              results.push({
+                title: topic.Text.split(' - ')[0] || topic.Text.slice(0, 50),
+                url: topic.FirstURL,
+                snippet: topic.Text,
+              })
+            }
+          }
+        }
+      }
+    } catch (_e) {}
   }
+
+  // 3. Wikipedia API (for general knowledge, frameworks, historical terms, people)
+  if (results.length < 3) {
+    try {
+      const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encoded}&utf8=&format=json`
+      const res = await fetch(wikiUrl, {
+        headers: { 'User-Agent': 'RivoCode/1.0' },
+        signal: AbortSignal.timeout(5000),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const searchHits = json?.query?.search || []
+        for (const hit of searchHits.slice(0, 3)) {
+          if (results.length >= 8) break
+          results.push({
+            title: `${hit.title} - Wikipedia`,
+            url: `https://en.wikipedia.org/wiki/${encodeURIComponent(hit.title.replace(/\s+/g, '_'))}`,
+            snippet: cleanHtmlSnippet(hit.snippet || ''),
+          })
+        }
+      }
+    } catch (_e) {}
+  }
+
+  if (results.length === 0) {
+    return `No search results found for query: "${trimmed}".`
+  }
+
+  // Format into clean, LLM-optimized markdown
+  let output = `Live Web Search Results for "${trimmed}":\n\n`
+  results.forEach((r, idx) => {
+    output += `${idx + 1}. **[${r.title}](${r.url})**\n`
+    if (r.snippet) {
+      output += `   ${r.snippet}\n`
+    }
+    output += '\n'
+  })
+
+  return output.trim()
 }
 
 export async function fetchWebContent(targetUrl: string): Promise<string> {
@@ -185,8 +294,10 @@ export async function fetchWebContent(targetUrl: string): Promise<string> {
     const urlObj = new URL(targetUrl)
     const res = await fetch(urlObj.href, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 RivoCode/1.0',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,application/json,text/plain;q=0.8,*/*;q=0.7',
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 RivoCode/1.0',
+        Accept:
+          'text/html,application/xhtml+xml,application/xml;q=0.9,application/json,text/plain;q=0.8,*/*;q=0.7',
       },
       signal: AbortSignal.timeout(12000),
     })

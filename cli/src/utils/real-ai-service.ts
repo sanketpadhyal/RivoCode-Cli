@@ -1652,8 +1652,9 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
           } else if (tc.name === 'search_web' || tc.name === 'web_search') {
             const qDisplay = parsedArgs.query || parsedArgs.q || 'query'
             toolActionNotice += `● **WebSearch**("${qDisplay}")\n`
-            const firstResult = (toolExec.result || '').split('\n').filter(l => l.trim().startsWith('•'))[0] || 'Results retrieved'
-            toolActionNotice += `  ⎿  ${firstResult.slice(0, 80)}\n`
+            const firstResult = (toolExec.result || '').split('\n').filter((l) => l.trim().startsWith('1.') || l.trim().startsWith('•'))[0] || 'Results retrieved'
+            const cleanPreview = firstResult.replace(/^\d+\.\s*\*\*\[?|\]?\(http[^)]+\)\*\*?/g, '').replace(/<[^>]+>/g, '').trim()
+            toolActionNotice += `  ⎿  ${(cleanPreview || firstResult).slice(0, 80)}\n`
           } else {
             toolActionNotice += `● **${tc.name}**\n`
           }
