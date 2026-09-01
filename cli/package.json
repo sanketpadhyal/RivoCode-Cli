@@ -1,6 +1,6 @@
 {
   "name": "@rivocode/cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Sanket Padhyal <mrsanketpadhyal@gmail.com>",
   "private": true,
   "type": "module",
