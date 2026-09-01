@@ -100,10 +100,13 @@ jobs:
             target: darwin-arm64
             artifact_name: rivo-darwin-arm64
             binary_path: cli/bin/rivo
-          - os: macos-13
+          - os: macos-latest
             target: darwin-x64
             artifact_name: rivo-darwin-x64
             binary_path: cli/bin/rivo
+            override_target: bun-darwin-x64
+            override_platform: darwin
+            override_arch: x64
           - os: windows-latest
             target: win32-x64
             artifact_name: rivo-windows-x64.exe
