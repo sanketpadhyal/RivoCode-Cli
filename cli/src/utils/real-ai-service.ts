@@ -1218,6 +1218,7 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
     let hasExecutedInspection = false
     let hasExecutedModification = false
     const readFilesTracked = new Set<string>()
+    const executedToolSignatures = new Map<string, string>()
 
     while (turns < maxTurns && !signal.aborted) {
       turns++
@@ -1535,11 +1536,14 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
       // Execute each tool and format output for user UI
       const toolResultsForHistory: string[] = []
       const toolResultById = new Map<string, string>()
+      let hasNewToolExecution = false
+
       for (const tc of pendingToolCalls) {
         if (!tc || !tc.name) continue
         try {
           const parsedArgs = JSON.parse(tc.args || '{}')
           const cmdStr = (parsedArgs.command || '').trim()
+          const toolSig = `${tc.name}:${JSON.stringify(parsedArgs)}`
 
           const isInspectCmd =
             tc.name === 'read_files' ||
@@ -1548,8 +1552,17 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
             tc.name === 'fetch_web_content' ||
             tc.name === 'search_web' ||
             (tc.name === 'run_terminal_command' &&
-              /^(sed\s+-n|grep|cat|head|tail|wc|find|ls|file|stat|view)\b/i.test(cmdStr))
+              /^(sed\s+-n|grep|cat|head|tail|wc|find|ls|file|stat|view|pwd|whoami)\b/i.test(cmdStr))
 
+          // If identical inspection/read command was already executed in this session, use cached result
+          if (isInspectCmd && executedToolSignatures.has(toolSig)) {
+            const cachedRes = executedToolSignatures.get(toolSig) || ''
+            toolResultById.set(tc.id, cachedRes)
+            toolResultsForHistory.push(`[${tc.name}]\nResult: ${cachedRes}`)
+            continue
+          }
+
+          hasNewToolExecution = true
           if (isInspectCmd) {
             hasExecutedInspection = true
             if (tc.name === 'read_files') {
@@ -1569,6 +1582,7 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
           }
           const truncatedResult = toolExec.result.length > 4000 ? toolExec.result.slice(0, 4000) + '\n...[output truncated]' : toolExec.result
           toolResultById.set(tc.id, truncatedResult)
+          executedToolSignatures.set(toolSig, truncatedResult)
           toolResultsForHistory.push(`[${tc.name}]\nResult: ${truncatedResult}`)
 
           let toolActionNotice = '\n\n'
@@ -1649,19 +1663,48 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
         } catch (_e) {}
       }
 
-      chatHistory.push({
-        role: 'assistant',
-        content: turnContent || `Executed actions: ${pendingToolCalls.map((t) => t.name).join(', ')}`,
-      })
+      if (!hasNewToolExecution && turns > 1) {
+        // Break out of loop if all tool calls in this turn were duplicate reads
+        break
+      }
 
-      const nextUserInstruction = isActionRequired
-        ? `Tool results:\n${toolResultsForHistory.join('\n\n')}\n\nYou now have all the information you need. DO NOT read any more files. You MUST now write the actual implementation using write_file. Complete the full task end-to-end right now.`
-        : `Tool results:\n${toolResultsForHistory.join('\n\n')}\n\nPlease continue.`
+      if (route.provider !== 'gemini' && pendingToolCalls.length > 0) {
+        chatHistory.push({
+          role: 'assistant',
+          content: turnContent || '',
+          tool_calls: pendingToolCalls.map((tc) => ({
+            id: tc.id,
+            type: 'function',
+            function: {
+              name: tc.name,
+              arguments: tc.args,
+            },
+          })),
+        })
 
-      chatHistory.push({
-        role: 'user',
-        content: nextUserInstruction,
-      })
+        for (const tc of pendingToolCalls) {
+          const res = toolResultById.get(tc.id) || '(completed)'
+          chatHistory.push({
+            role: 'tool',
+            tool_call_id: tc.id,
+            content: res,
+          })
+        }
+      } else {
+        chatHistory.push({
+          role: 'assistant',
+          content: turnContent || `Executed actions: ${pendingToolCalls.map((t) => t.name).join(', ')}`,
+        })
+
+        const nextUserInstruction = isActionRequired
+          ? `Tool results:\n${toolResultsForHistory.join('\n\n')}\n\nYou now have all the information you need. Complete the task and provide your final response.`
+          : `Tool results:\n${toolResultsForHistory.join('\n\n')}\n\nPlease summarize your answer for the user directly based on the tool results.`
+
+        chatHistory.push({
+          role: 'user',
+          content: nextUserInstruction,
+        })
+      }
     }
 
     try {
