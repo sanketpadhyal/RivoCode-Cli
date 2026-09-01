@@ -11,8 +11,7 @@ node_modules
 dev
 dist
 dist-env
-bin
-tsconfig.tsbuildinfo
+cli/bin/
 *.tsbuildinfo
 
 tags

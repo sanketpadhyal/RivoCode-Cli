@@ -50,7 +50,7 @@ async function triggerWorkflow(versionType: string) {
       -H "Accept: application/vnd.github.v3+json" \
       -H "Authorization: token ${process.env.GITHUB_TOKEN}" \
       -H "Content-Type: application/json" \
-      https://api.github.com/repos/rivocode/rivocode/actions/workflows/cli-release-prod.yml/dispatches \
+      https://api.github.com/repos/sanketpadhyal/RivoCode-Cli/actions/workflows/cli-release-prod.yml/dispatches \
       -d '{"ref":"main","inputs":{"version_type":"${versionType}"}}'`
 
     const response = execSync(triggerCmd, { encoding: 'utf8' })
@@ -59,7 +59,7 @@ async function triggerWorkflow(versionType: string) {
       log(`⚠️  Workflow dispatch failed: ${response}`)
       log('The workflow may need to be updated on GitHub. Continuing anyway...')
       log(
-        'Please manually trigger the workflow at: https://github.com/rivocode/rivocode/actions/workflows/cli-release-prod.yml',
+        'Please manually trigger the workflow at: https://github.com/sanketpadhyal/RivoCode-Cli/actions/workflows/cli-release-prod.yml',
       )
     } else {
       log('🎉 Release workflow triggered!')
@@ -67,7 +67,7 @@ async function triggerWorkflow(versionType: string) {
   } catch (err: any) {
     log(`⚠️  Failed to trigger workflow automatically: ${err.message}`)
     log(
-      'You may need to trigger it manually at: https://github.com/rivocode/rivocode/actions/workflows/cli-release-prod.yml',
+      'You may need to trigger it manually at: https://github.com/sanketpadhyal/RivoCode-Cli/actions/workflows/cli-release-prod.yml',
     )
   }
 }
@@ -84,7 +84,7 @@ async function main() {
   await triggerWorkflow(versionType)
 
   log('')
-  log('Monitor progress at: https://github.com/rivocode/rivocode/actions')
+  log('Monitor progress at: https://github.com/sanketpadhyal/RivoCode-Cli/actions')
 }
 
 main().catch((err) => {
