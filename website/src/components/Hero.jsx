@@ -15,7 +15,7 @@ const Hero = () => {
         <div className="hero-info">
           {/* Main Title */}
           <h1 className="hero-title">
-            Your Terminal-Native <br />
+            Your Terminal-Native <br className="hero-br-desktop" />
             <span className="gradient-text">Autonomous AI Engineer</span>
           </h1>
 

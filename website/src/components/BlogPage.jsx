@@ -111,7 +111,7 @@ const BlogPage = () => {
     <div className="app-landing blog-page">
       <Navbar />
 
-      <main style={{ paddingTop: '90px' }}>
+      <main className="docs-main-content">
         {/* 4 Architecture Facts */}
         <section className="docs-facts-section">
           <div className="section-container">
