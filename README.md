@@ -4,6 +4,8 @@
 
 # RivoCode CLI
 
+>> NPMJS PACKAGE INSTALL BUG WILL BE FIXED SOON.
+
 **A modern, terminal-native AI coding assistant built for speed, full codebase awareness, and multi-file workflows.**
 
 [![npm version](https://img.shields.io/npm/v/@rivocode-cli/cli?style=flat-square&color=007ACC&label=npm%20package)](https://www.npmjs.com/package/@rivocode-cli/cli)
