@@ -57,7 +57,7 @@ function getTargetInfo() {
         isWindows: false,
       };
     }
-  } else if (osType === 'linux') {
+  } else if (osType === 'linux' || osType === 'android') {
     if (archType === 'x64') {
       return {
         target: 'linux-x64',
@@ -67,7 +67,7 @@ function getTargetInfo() {
         isWindows: false,
       };
     }
-    if (archType === 'arm64') {
+    if (archType === 'arm64' || archType === 'arm') {
       return {
         target: 'linux-arm64',
         binaryName: 'rivo-linux-arm64',
