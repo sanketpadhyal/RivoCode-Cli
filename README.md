@@ -7,6 +7,7 @@
 **A modern, terminal-native AI coding assistant built for speed, full codebase awareness, and multi-file workflows.**
 
 [![npm version](https://img.shields.io/npm/v/@rivocode-cli/cli?style=flat-square&color=007ACC&label=npm%20package)](https://www.npmjs.com/package/@rivocode-cli/cli)
+[![GitHub release](https://img.shields.io/github/v/release/sanketpadhyal/RivoCode-Cli?style=flat-square&color=green)](https://github.com/sanketpadhyal/RivoCode-Cli/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey?style=flat-square)](https://github.com/sanketpadhyal/RivoCode-Cli/releases)
 [![Node Version](https://img.shields.io/badge/Node.js-%3E%3D20.0.0-green?style=flat-square)](https://nodejs.org)
