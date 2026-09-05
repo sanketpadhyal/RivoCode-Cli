@@ -1,6 +1,6 @@
 {
   "name": "@rivocode-cli/cli",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "RivoCode — AI-powered terminal coding assistant",
   "author": "Sanket Padhyal <mrsanketpadhyal@gmail.com>",
   "license": "MIT",
