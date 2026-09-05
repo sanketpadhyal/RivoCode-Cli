@@ -25,9 +25,9 @@ function getPackageVersion() {
   try {
     const pkgPath = join(__dirname, '..', 'package.json');
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
-    return pkg.version || '1.0.2';
+    return pkg.version || '2.0.0';
   } catch {
-    return '1.0.2';
+    return '2.0.0';
   }
 }
 

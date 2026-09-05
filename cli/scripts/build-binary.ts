@@ -121,12 +121,19 @@ function getCliTargetLabel(targetInfo: TargetInfo): string {
 }
 
 async function main() {
-  const [, , binaryNameArg, version] = process.argv
-  const binaryName = binaryNameArg ?? 'codecane'
+  const [, , binaryNameArg, versionArg] = process.argv
+  const binaryName = binaryNameArg || 'rivo'
 
-  if (!version) {
-    throw new Error('Version argument is required when building a binary')
-  }
+  const pkgJsonVersion = (
+    JSON.parse(readFileSync(join(cliRoot, 'package.json'), 'utf8')) as {
+      version?: string
+    }
+  ).version
+
+  const version =
+    versionArg && versionArg !== '$npm_package_version' && versionArg.trim() !== ''
+      ? versionArg
+      : (pkgJsonVersion ?? '2.0.0')
 
   log(`Building ${binaryName} @ ${version}`)
 
