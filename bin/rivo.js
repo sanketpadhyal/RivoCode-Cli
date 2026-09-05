@@ -9,6 +9,7 @@ import {
   unlinkSync,
   readFileSync,
   renameSync,
+  readdirSync,
 } from 'node:fs';
 import { homedir, platform, arch } from 'node:os';
 import { join, dirname } from 'node:path';
@@ -24,9 +25,9 @@ function getPackageVersion() {
   try {
     const pkgPath = join(__dirname, '..', 'package.json');
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
-    return pkg.version || '1.0.1';
+    return pkg.version || '1.0.2';
   } catch {
-    return '1.0.1';
+    return '1.0.2';
   }
 }
 
@@ -93,6 +94,14 @@ function getTargetInfo() {
   );
 }
 
+function safeUnlink(filePath) {
+  if (existsSync(filePath)) {
+    try {
+      unlinkSync(filePath);
+    } catch {}
+  }
+}
+
 function downloadFile(url, dest, maxRedirects = 5) {
   return new Promise((resolve, reject) => {
     if (maxRedirects < 0) {
@@ -130,12 +139,12 @@ function downloadFile(url, dest, maxRedirects = 5) {
         });
 
         fileStream.on('error', (err) => {
-          unlinkSync(dest);
+          safeUnlink(dest);
           reject(err);
         });
       })
       .on('error', (err) => {
-        if (existsSync(dest)) unlinkSync(dest);
+        safeUnlink(dest);
         reject(err);
       });
   });
@@ -201,19 +210,32 @@ async function ensureBinary() {
       renameSync(rawBinaryPath, finalBinaryPath);
     }
 
+    // Fallback search if target binary was not found directly at finalBinaryPath
+    if (!existsSync(finalBinaryPath)) {
+      const files = readdirSync(cacheBase);
+      const matched = files.find(
+        (f) => f.startsWith('rivo') && !f.endsWith('.tar.gz') && !f.endsWith('.zip')
+      );
+      if (matched) {
+        renameSync(join(cacheBase, matched), finalBinaryPath);
+      }
+    }
+
+    if (!existsSync(finalBinaryPath)) {
+      throw new Error(`Extracted binary was not found at ${finalBinaryPath}`);
+    }
+
     if (!targetInfo.isWindows && existsSync(finalBinaryPath)) {
       chmodSync(finalBinaryPath, 0o755);
     }
 
     // Clean up archive
-    if (existsSync(tempArchive)) {
-      unlinkSync(tempArchive);
-    }
+    safeUnlink(tempArchive);
 
     return finalBinaryPath;
   } catch (err) {
     // Clean up on failure
-    if (existsSync(tempArchive)) unlinkSync(tempArchive);
+    safeUnlink(tempArchive);
     throw new Error(
       `Failed to install RivoCode v${VERSION}:\n${err.message}\n` +
         `You can manually download the binary from: https://github.com/${GITHUB_REPO}/releases/tag/v${VERSION}`
