@@ -11,14 +11,17 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
     "preserveSymlinks": false,
-    "baseUrl": ".",
     "paths": {
       "@rivocode/sdk": [
         "../sdk/src/index.ts"
       ],
       "@rivocode/common/*": [
         "../common/src/*"
+      ],
+      "posthog-node": [
+        "../common/src/types/posthog-node.d.ts"
       ]
     }
   },
@@ -28,6 +31,7 @@
   ],
   "exclude": [
     "node_modules",
+    "../node_modules",
     "dist"
   ]
 }

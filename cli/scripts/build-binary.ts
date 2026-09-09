@@ -133,7 +133,7 @@ async function main() {
   const version =
     versionArg && versionArg !== '$npm_package_version' && versionArg.trim() !== ''
       ? versionArg
-      : (pkgJsonVersion ?? '2.0.0')
+      : (pkgJsonVersion ?? '3.0.0')
 
   log(`Building ${binaryName} @ ${version}`)
 

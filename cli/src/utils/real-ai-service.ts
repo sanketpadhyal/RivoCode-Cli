@@ -205,12 +205,32 @@ export interface ModelRoute {
 export function resolveModelRoute(modelName: string): ModelRoute {
   const normalized = (modelName || 'gemini').toLowerCase()
 
-  if (normalized.includes('minimax')) {
+  if (normalized.includes('nemotron')) {
     return {
       provider: 'openrouter',
       endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-      modelId: 'minimax/minimax-m2.7:free',
-      displayName: 'MiniMax M2.7 (Free Tier)',
+      modelId: 'nvidia/nemotron-3-ultra-550b-a55b:free',
+      displayName: 'NVIDIA Nemotron 3 Ultra (Free OpenRouter)',
+      apiKeyUrl: 'https://openrouter.ai/keys',
+    }
+  }
+
+  if (normalized.includes('laguna-s') || normalized.includes('poolside-s') || normalized.includes('laguna-s-2.1')) {
+    return {
+      provider: 'openrouter',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      modelId: 'poolside/laguna-s-2.1:free',
+      displayName: 'Poolside Laguna S 2.1 Coding Agent (Free Tier)',
+      apiKeyUrl: 'https://openrouter.ai/keys',
+    }
+  }
+
+  if (normalized.includes('laguna') || normalized.includes('poolside')) {
+    return {
+      provider: 'openrouter',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      modelId: 'poolside/laguna-xs-2.1:free',
+      displayName: 'Poolside Laguna XS 2.1 (Free Tier)',
       apiKeyUrl: 'https://openrouter.ai/keys',
     }
   }
@@ -239,8 +259,8 @@ export function resolveModelRoute(modelName: string): ModelRoute {
     return {
       provider: 'openrouter',
       endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-      modelId: 'meta-llama/llama-3.3-70b-instruct:free',
-      displayName: 'Meta Llama 3.3 70B (Free Tier)',
+      modelId: 'poolside/laguna-s-2.1:free',
+      displayName: 'Poolside Laguna S 2.1 Coding Agent (Free Tier)',
       apiKeyUrl: 'https://openrouter.ai/keys',
     }
   }
@@ -585,13 +605,15 @@ export async function executeLocalTool(
             ''
           const answerStr = String(answerText).toLowerCase()
 
-          if (answerStr.includes('always allow') || answerStr.includes('always')) {
+          if (answerStr.includes('yes') || answerStr.includes('always') || answerStr.startsWith('1') || answerStr.startsWith('2')) {
             sessionAllowedFiles.add(relPath)
             sessionAllowedFiles.add(filePath)
-            updateProjectSettings(projectRoot, {
-              allowedFiles: Array.from(sessionAllowedFiles),
-            })
-          } else if (answerStr.includes('no') || answerStr.includes('3. no')) {
+            if (answerStr.includes('always')) {
+              updateProjectSettings(projectRoot, {
+                allowedFiles: Array.from(sessionAllowedFiles),
+              })
+            }
+          } else if (answerStr.includes('no') || answerStr.includes('3. no') || answerStr.startsWith('3')) {
             return {
               success: false,
               result: `Edit cancelled by user: ${relPath}`,
@@ -645,15 +667,19 @@ export async function executeLocalTool(
           const answerStr = String(answerText).toLowerCase()
 
           if (
-            answerStr.includes('always allow in this conversation') ||
-            answerStr.includes('persist to settings.json') ||
+            answerStr.includes('yes') ||
+            answerStr.includes('always') ||
+            answerStr.startsWith('1') ||
             answerStr.startsWith('2') ||
             answerStr.startsWith('3')
           ) {
             sessionAllowedCommands.add(cmdPrefix)
-            updateProjectSettings(projectRoot, {
-              allowedCommands: Array.from(sessionAllowedCommands),
-            })
+            sessionAllowedCommands.add(rawCommand)
+            if (answerStr.includes('persist') || answerStr.startsWith('3')) {
+              updateProjectSettings(projectRoot, {
+                allowedCommands: Array.from(sessionAllowedCommands),
+              })
+            }
           }
 
           if (
@@ -1274,8 +1300,8 @@ AUTONOMOUS TASK COMPLETION RULES (CRITICAL - NEVER VIOLATE):
 - Complete the entire end-to-end task in one go so the user doesn't need to ask you to continue.
 - After writing all code files, verify the implementation is complete and done.
 
-NO RAW XML/TOOL TAGS & NO FULL-FILE CODE DUMPS:
-- NEVER output raw XML tags like <function_calls>, <invoke>, <parameter>, <tool_call>, or raw JSON tool invocations into your chat text.
+CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
+- Use native tool calls or standard tool call blocks (e.g. write_file, run_terminal_command, search_web) to execute actions.
 - When you edit or write files with write_file, DO NOT dump the full file contents in markdown code blocks in your written chat response. The environment automatically generates and renders a concise diff for the user. Keep your written response concise, explaining what was modified.`
 
   const existingMessages = useChatStore.getState().messages
@@ -1339,16 +1365,21 @@ NO RAW XML/TOOL TAGS & NO FULL-FILE CODE DUMPS:
     let maxTokensSetting = isClaude ? undefined : route.provider === 'groq' ? 3500 : route.provider === 'openrouter' ? 4096 : 8192
     let hasExecutedInspection = false
     let hasExecutedModification = false
+    let hasForcedFinalAnswer = false
     const readFilesTracked = new Set<string>()
     const executedToolSignatures = new Map<string, string>()
 
     while (turns < maxTurns && !signal.aborted) {
       turns++
-      const pendingToolCalls: Array<{ id: string; name: string; args: string }> = []
+      const pendingToolCalls: Array<{ id: string; name: string; args: string; extra_content?: any }> = []
 
       if (chatHistory.length > 20) {
         const sysMsg = chatHistory[0]
-        const recentTurns = chatHistory.slice(-10)
+        let startIndex = Math.max(1, chatHistory.length - 10)
+        while (startIndex < chatHistory.length && chatHistory[startIndex]?.role !== 'user') {
+          startIndex++
+        }
+        const recentTurns = startIndex < chatHistory.length ? chatHistory.slice(startIndex) : chatHistory.slice(-4)
         chatHistory.length = 0
         if (sysMsg) chatHistory.push(sysMsg)
         chatHistory.push({
@@ -1369,8 +1400,8 @@ NO RAW XML/TOOL TAGS & NO FULL-FILE CODE DUMPS:
         requestBody.max_tokens = maxTokensSetting
       }
 
-      // Pass native tools for Groq/OpenRouter (Gemini uses action tags to avoid thought_signature 400s)
-      if (route.provider !== 'gemini') {
+      // Pass native tools for all providers (except when forcing final text response)
+      if (!hasForcedFinalAnswer) {
         requestBody.tools = AGENT_TOOLS
       }
 
@@ -1380,6 +1411,32 @@ NO RAW XML/TOOL TAGS & NO FULL-FILE CODE DUMPS:
         body: JSON.stringify(requestBody),
         signal,
       })
+
+      // Auto-repair on HTTP 400 (e.g. sequence errors, thought_signature mismatch, or tool call invalidity)
+      if (response.status === 400 && !signal.aborted) {
+        const errText = await response.text().catch(() => '')
+        if (
+          errText.includes('thought_signature') ||
+          errText.includes('sequence') ||
+          errText.includes('messages') ||
+          errText.includes('tool') ||
+          errText.includes('context')
+        ) {
+          const sys = chatHistory[0]
+          const lastUser = chatHistory.filter((m) => m.role === 'user').pop()
+          chatHistory.length = 0
+          if (sys) chatHistory.push(sys)
+          if (lastUser) chatHistory.push(lastUser)
+          requestBody.messages = chatHistory
+          delete requestBody.tools
+          response = await fetch(route.endpoint, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(requestBody),
+            signal,
+          })
+        }
+      }
 
       // Auto-recover from 402 (credit reservation) or 413 (TPM limit) on Groq/OpenRouter
       if ((response.status === 402 || response.status === 413) && !signal.aborted) {
@@ -1553,8 +1610,6 @@ NO RAW XML/TOOL TAGS & NO FULL-FILE CODE DUMPS:
                     : b,
                 ),
               )
-              // Smooth streaming pacing
-              await new Promise((resolve) => setTimeout(resolve, 8))
             }
 
             if (delta.tool_calls) {
@@ -1572,6 +1627,9 @@ NO RAW XML/TOOL TAGS & NO FULL-FILE CODE DUMPS:
                 }
                 if (tc.function?.arguments) {
                   pendingToolCalls[index].args += tc.function.arguments
+                }
+                if (tc.extra_content) {
+                  pendingToolCalls[index].extra_content = tc.extra_content
                 }
               }
             }
@@ -1611,7 +1669,7 @@ NO RAW XML/TOOL TAGS & NO FULL-FILE CODE DUMPS:
       }
 
       const validToolCalls = pendingToolCalls.filter(
-        (tc): tc is { id: string; name: string; args: string } =>
+        (tc): tc is { id: string; name: string; args: string; extra_content?: any } =>
           Boolean(tc && typeof tc === 'object' && tc.name),
       )
 
@@ -1631,19 +1689,40 @@ NO RAW XML/TOOL TAGS & NO FULL-FILE CODE DUMPS:
           )
         }
 
-        // If user requested an action/coding task, and model only inspected without writing code yet, auto-drive continuation!
-        if (isActionRequired && hasExecutedInspection && !hasExecutedModification && turns < 10) {
-          hasExecutedInspection = false
+        // If inspection/read tools were executed but no code modification has occurred yet, drive model to build the app!
+        if (!hasExecutedModification && executedToolSignatures.size > 0 && turns < 10) {
           chatHistory.push({
             role: 'assistant',
-            content: turnContent || 'I have inspected the files.',
+            content: turnContent || 'I have inspected the directory structure.',
           })
           chatHistory.push({
             role: 'user',
             content:
-              'Great! Now proceed immediately to write the complete code changes using write_file or execute the required terminal commands to complete the entire implementation.',
+              'Now proceed immediately to create the application files using write_file or execute the required terminal commands (e.g. npx create-react-app or bun create) to build the complete implementation.',
           })
           continue
+        }
+
+        // Once files have been created/modified, force a final text response turn without tools!
+        if (!turnContent.trim() && executedToolSignatures.size > 0 && !hasForcedFinalAnswer && turns < maxTurns) {
+          hasForcedFinalAnswer = true
+          chatHistory.push({
+            role: 'user',
+            content: 'All file changes and tool executions are complete. Briefly summarize your work and confirm completion to the user now. Do not call any tools.',
+          })
+          continue
+        }
+
+        // If turn content is still empty after tools completed, add a clean completion check mark
+        if (executedToolSignatures.size > 0 && !turnContent.trim() && !accumulatedContent.trim().endsWith('.')) {
+          accumulatedContent += '\n\n✓ **Task completed successfully.**'
+          updater.updateAiMessageBlocks((blocks) =>
+            blocks.map((b) =>
+              b.type === 'text' && (b as TextContentBlock).textType === 'text'
+                ? { ...b, content: accumulatedContent }
+                : b,
+            ),
+          )
         }
 
         break
@@ -1782,19 +1861,51 @@ NO RAW XML/TOOL TAGS & NO FULL-FILE CODE DUMPS:
         break
       }
 
-      chatHistory.push({
-        role: 'assistant',
-        content: turnContent || `Executed: ${validToolCalls.map((t) => t.name).join(', ')}`,
-      })
+      const hasNativeCalls = validToolCalls.some((tc) => tc.id && tc.id.startsWith('call_'))
+      if (hasNativeCalls && route.provider !== 'openrouter') {
+        chatHistory.push({
+          role: 'assistant',
+          content: turnContent || null,
+          tool_calls: validToolCalls.map((tc) => {
+            const callObj: any = {
+              id: tc.id,
+              type: 'function',
+              function: {
+                name: tc.name,
+                arguments: tc.args,
+              },
+            }
+            if (tc.extra_content) {
+              callObj.extra_content = tc.extra_content
+            }
+            return callObj
+          }),
+        } as any)
 
-      const nextUserInstruction = isActionRequired
-        ? `Tool execution results:\n${toolResultsForHistory.join('\n\n')}\n\nYou have completed the necessary tools. Now finalize the task and present your final answer directly to the user.`
-        : `Tool execution results:\n${toolResultsForHistory.join('\n\n')}\n\nBased on these tool results, provide your final direct answer to the user now. Do not call additional tools.`
+        for (let i = 0; i < validToolCalls.length; i++) {
+          const tc = validToolCalls[i]
+          const res = toolResultsForHistory[i] || 'Done'
+          chatHistory.push({
+            role: 'tool',
+            tool_call_id: tc.id,
+            content: res,
+          } as any)
+        }
+      } else {
+        chatHistory.push({
+          role: 'assistant',
+          content: turnContent || `Executed tools: ${validToolCalls.map((t) => t.name).join(', ')}`,
+        })
 
-      chatHistory.push({
-        role: 'user',
-        content: nextUserInstruction,
-      })
+        const nextUserInstruction = !hasExecutedModification
+          ? `Tool execution results:\n${toolResultsForHistory.join('\n\n')}\n\nNow proceed immediately with the next step. Create the application files using write_file or execute the required terminal commands to build the complete implementation.`
+          : `Tool execution results:\n${toolResultsForHistory.join('\n\n')}\n\nAll tools executed. Briefly summarize your work and confirm completion to the user.`
+
+        chatHistory.push({
+          role: 'user',
+          content: nextUserInstruction,
+        })
+      }
     }
 
     try {

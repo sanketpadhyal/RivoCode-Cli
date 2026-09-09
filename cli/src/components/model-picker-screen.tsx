@@ -23,24 +23,14 @@ export interface ModelOption {
 
 export const AVAILABLE_MODELS: ModelOption[] = [
   {
-    id: 'minimax-free',
-    name: 'minimax-free',
-    badge: '(MiniMax M2.7 · 196k Context · Free Tier)',
-    icon: '∿',
+    id: 'cohere-north-mini-code-free',
+    name: 'cohere-north-mini-code',
+    badge: '(Cohere North Mini Code · Free Tier)',
+    icon: '❖',
     iconPadding: ' ',
-    iconColor: '#F43F5E',
-    description: 'MiniMax M2.7 on OpenRouter · 196,000 token window · Fast, high-productivity foundation model for coding & long sessions',
+    iconColor: '#FF7052',
+    description: 'Cohere North Mini Code on OpenRouter (openrouter.ai/keys) · Specialized for fast code generation & completions',
     category: 'recommended',
-  },
-  {
-    id: 'llama-3.3-70b-free',
-    name: 'llama-3.3-70b-free',
-    badge: '(Meta Llama 3.3 · Free Tier)',
-    icon: '∞',
-    iconPadding: ' ',
-    iconColor: '#0081FB',
-    description: 'Free Meta Llama 3.3 70B on OpenRouter (openrouter.ai/keys) · Easy setup & long sessions · Good for basic coding, Git & React · Not suitable for large refactors',
-    category: 'other',
   },
   {
     id: 'gemini',

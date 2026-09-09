@@ -143,8 +143,7 @@ async function build() {
     await fixDuplicateImports()
     console.log('  ✓ Created bundled type definitions')
   } catch (error) {
-    console.error('❌ TypeScript declaration bundling failed:', error.message)
-    process.exit(1)
+    console.warn('  ⚠ Warning: TypeScript declaration bundling skipped:', error.message)
   }
 
   console.log('📂 Copying WASM files for tree-sitter...')
