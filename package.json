@@ -11,6 +11,7 @@
   },
   "files": [
     "bin/rivo.cjs",
+    "bin/postinstall.cjs",
     "README.md",
     "LICENSE"
   ],
@@ -42,6 +43,7 @@
     "sdk"
   ],
   "scripts": {
+    "postinstall": "node bin/postinstall.cjs",
     "rivo": "bun --cwd cli dev",
     "start": "bun run rivo",
     "start-cli": "bun run rivo",
