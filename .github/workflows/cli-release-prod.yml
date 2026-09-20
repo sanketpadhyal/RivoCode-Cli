@@ -222,10 +222,31 @@ jobs:
           mkdir -p npm/cli-linux-x64/bin npm/cli-linux-arm64/bin npm/cli-darwin-x64/bin npm/cli-darwin-arm64/bin npm/cli-win32-x64/bin
           
           tar -xzf release-assets/rivo-linux-x64.tar.gz -C npm/cli-linux-x64/bin
+          mv npm/cli-linux-x64/bin/rivo-linux-x64 npm/cli-linux-x64/bin/rivo
+          [ -f npm/cli-linux-x64/bin/tree-sitter.wasm ] && mv npm/cli-linux-x64/bin/tree-sitter.wasm npm/cli-linux-x64/tree-sitter.wasm
+          chmod +x npm/cli-linux-x64/bin/rivo
+
           tar -xzf release-assets/rivo-linux-arm64.tar.gz -C npm/cli-linux-arm64/bin
+          mv npm/cli-linux-arm64/bin/rivo-linux-arm64 npm/cli-linux-arm64/bin/rivo
+          [ -f npm/cli-linux-arm64/bin/tree-sitter.wasm ] && mv npm/cli-linux-arm64/bin/tree-sitter.wasm npm/cli-linux-arm64/tree-sitter.wasm
+          chmod +x npm/cli-linux-arm64/bin/rivo
+
           tar -xzf release-assets/rivo-darwin-x64.tar.gz -C npm/cli-darwin-x64/bin
+          mv npm/cli-darwin-x64/bin/rivo-darwin-x64 npm/cli-darwin-x64/bin/rivo
+          [ -f npm/cli-darwin-x64/bin/tree-sitter.wasm ] && mv npm/cli-darwin-x64/bin/tree-sitter.wasm npm/cli-darwin-x64/tree-sitter.wasm
+          chmod +x npm/cli-darwin-x64/bin/rivo
+
           tar -xzf release-assets/rivo-darwin-arm64.tar.gz -C npm/cli-darwin-arm64/bin
+          mv npm/cli-darwin-arm64/bin/rivo-darwin-arm64 npm/cli-darwin-arm64/bin/rivo
+          [ -f npm/cli-darwin-arm64/bin/tree-sitter.wasm ] && mv npm/cli-darwin-arm64/bin/tree-sitter.wasm npm/cli-darwin-arm64/tree-sitter.wasm
+          chmod +x npm/cli-darwin-arm64/bin/rivo
+
           unzip release-assets/rivo-windows-x64.exe.zip -d npm/cli-win32-x64/bin
+          mv npm/cli-win32-x64/bin/rivo-windows-x64.exe npm/cli-win32-x64/bin/rivo.exe
+          [ -f npm/cli-win32-x64/bin/tree-sitter.wasm ] && mv npm/cli-win32-x64/bin/tree-sitter.wasm npm/cli-win32-x64/tree-sitter.wasm
+
+          echo "=== Package contents ==="
+          for dir in npm/cli-*/; do echo "--- $dir ---" && find "$dir" -type f; done
 
       - name: Authenticate with NPM
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
