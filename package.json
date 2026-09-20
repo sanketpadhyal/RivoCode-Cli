@@ -6,11 +6,11 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "rivo": "bin/rivo.js",
-    "rivocode": "bin/rivo.js"
+    "rivo": "bin/rivo.cjs",
+    "rivocode": "bin/rivo.cjs"
   },
   "files": [
-    "bin/rivo.js",
+    "bin/rivo.cjs",
     "README.md",
     "LICENSE"
   ],
