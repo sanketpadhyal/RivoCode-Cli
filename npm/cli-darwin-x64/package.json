@@ -1,6 +1,6 @@
 {
   "name": "@rivocode-cli/cli-darwin-x64",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "darwin-x64 binary for @rivocode-cli/cli",
   "os": [
     "darwin"

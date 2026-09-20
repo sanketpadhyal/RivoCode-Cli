@@ -1,6 +1,6 @@
 {
   "name": "@rivocode-cli/cli-linux-arm64",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "linux-arm64 binary for @rivocode-cli/cli",
   "os": [
     "linux"
