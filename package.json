@@ -47,6 +47,7 @@
     "start-cli": "bun run rivo",
     "dev": "bun run rivo",
     "build:binary": "bun run --cwd=cli build:binary",
+    "install:local": "bun run build:binary && cp cli/bin/rivo ~/.bun/bin/rivo && cp cli/bin/rivo ~/.bun/bin/rivocode && cp cli/bin/tree-sitter.wasm ~/.bun/bin/tree-sitter.wasm && codesign -s - --force ~/.bun/bin/rivo ~/.bun/bin/rivocode",
     "release:cli": "bun run --cwd=cli release",
     "release:sdk": "bun run --cwd=sdk release",
     "build:sdk": "cd sdk && bun run build",

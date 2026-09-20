@@ -199,6 +199,7 @@ export const MultilineInput = forwardRef<
   forwardedRef,
 ) {
   const theme = useTheme()
+  const autoAcceptEdits = useChatStore((state) => state.autoAcceptEdits)
   const renderer = useRenderer()
   const appContext = useAppContext()
   const { keyHandler } = appContext
@@ -1030,7 +1031,7 @@ export const MultilineInput = forwardRef<
   })()
 
   const inputColor = isPlaceholder
-    ? theme.muted
+    ? (autoAcceptEdits ? '#ec4899' : theme.muted)
     : focused
       ? theme.inputFocusedFg
       : theme.inputFg

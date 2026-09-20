@@ -22,6 +22,19 @@ RivoCode is an autonomous AI coding assistant that operates directly within your
 
 ---
 
+## What's New in v3.0.6
+
+- 🚀 **End-to-End Autonomous Execution**: Resolved premature exit and stalling issues — RivoCode autonomously completes multi-file tasks, executes tests, and verifies results end-to-end.
+- ⚡ **Live Real-Time Activity Status**: Dynamic status bar indicators (`⚡ Running: ...`, `✎ Editing ...`, `◎ Reading ...`, `⌕ Listing ...`, `◈ Fetching ...`) display real-time tool actions.
+- 🧠 **Curated Free Frontier Models**: Streamlined model picker featuring top free 1M-context models:
+  - **`nvidia-nemotron-3-ultra`** (550B MoE model · 1M context · OpenRouter Free Tier)
+  - **`gemini-3.6-flash`** (Google Gemini · 1M context · Google AI Studio Free Tier)
+- 🎯 **Clean Model Switcher**: Minimalist, distraction-free model picker displaying only essential, actionable details.
+- 🎨 **Enhanced Auto-Accept Mode**: Clean pink accenting for auto-accept edits without redundant badges.
+- 🛡️ **Intelligent Rate-Limit Diagnostics**: Provider-aware error reporting and automatic rate-limit recovery.
+
+---
+
 ## Quick Start
 
 Run RivoCode instantly without manual binary downloads:
@@ -40,76 +53,27 @@ npx @rivocode-cli/cli "Refactor authentication middleware to use JWT"
 
 ## Installation
 
-Install RivoCode globally across your operating system for access via the `rivo` command.
+Install RivoCode globally with a single universal command on **macOS**, **Windows**, or **Linux**:
 
-### macOS Installation
-
-#### Using npm:
 ```bash
 npm install -g @rivocode-cli/cli
 ```
 
-#### Using Homebrew / Bun:
-```bash
-bun add -g @rivocode-cli/cli
-```
-
-#### Using pnpm:
-```bash
-pnpm add -g @rivocode-cli/cli
-```
-
-#### Using yarn:
-```bash
-yarn global add @rivocode-cli/cli
-```
-
----
-
-### Windows Installation
-
-Open **PowerShell** or **Command Prompt** (Run as Administrator if necessary):
-
-#### Using npm:
-```powershell
-npm install -g @rivocode-cli/cli
-```
-
-#### Using pnpm:
-```powershell
-pnpm add -g @rivocode-cli/cli
-```
-
-#### Using yarn:
-```powershell
-yarn global add @rivocode-cli/cli
-```
-
----
-
-### Linux Installation
-
-#### Using npm:
-```bash
-sudo npm install -g @rivocode-cli/cli
-```
-
-#### Using bun:
-```bash
-bun add -g @rivocode-cli/cli
-```
+*(You can also use `bun add -g @rivocode-cli/cli`, `pnpm add -g @rivocode-cli/cli`, or `yarn global add @rivocode-cli/cli`)*
 
 ---
 
 ### Verify Installation
 
-After global installation, launch the CLI from any directory:
+Once installed, launch RivoCode from any directory:
 
 ```bash
 rivo
 ```
 
-Check the installed version:
+*(or use the alias `rivocode`)*
+
+Check your installed version:
 
 ```bash
 rivo --version
@@ -225,23 +189,15 @@ rivocode/
 
 ## Uninstallation
 
-### Remove Global Package
+To uninstall RivoCode from **macOS**, **Windows**, or **Linux**:
 
 ```bash
-# npm
 npm uninstall -g @rivocode-cli/cli
-
-# bun
-bun remove -g @rivocode-cli/cli
-
-# pnpm
-pnpm remove -g @rivocode-cli/cli
-
-# yarn
-yarn global remove @rivocode-cli/cli
 ```
 
-### Clean Binary Cache & Configuration
+*(Or `bun remove -g @rivocode-cli/cli`, `pnpm remove -g @rivocode-cli/cli`)*
+
+### Clean Configuration & Cache (Optional)
 
 #### macOS & Linux:
 ```bash

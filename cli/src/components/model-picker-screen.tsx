@@ -15,32 +15,26 @@ export interface ModelOption {
   name: string
   badge?: string
   description: string
-  icon: string
-  iconPadding: string
-  iconColor: string
+  icon?: string
+  iconPadding?: string
+  iconColor?: string
   category?: 'recommended' | 'other'
 }
 
 export const AVAILABLE_MODELS: ModelOption[] = [
   {
-    id: 'cohere-north-mini-code-free',
-    name: 'cohere-north-mini-code',
-    badge: '(Cohere North Mini Code · Free Tier)',
-    icon: '❖',
-    iconPadding: ' ',
-    iconColor: '#FF7052',
-    description: 'Cohere North Mini Code on OpenRouter (openrouter.ai/keys) · Specialized for fast code generation & completions',
+    id: 'nvidia-nemotron-3-ultra-free',
+    name: 'nvidia-nemotron-3-ultra',
+    badge: '(OpenRouter Free · 1M Context)',
+    description: '550B frontier model for complex logic and long coding sessions.',
     category: 'recommended',
   },
   {
     id: 'gemini',
     name: 'gemini-3.6-flash',
-    badge: '(Google Gemini · 1M Context & Fast)',
-    icon: '✦',
-    iconPadding: ' ',
-    iconColor: '#38BDF8',
-    description: 'Google Gemini via Google AI Studio (aistudio.google.com) · 1M token window · Recommended for big tasks, deep reasoning & large codebases',
-    category: 'other',
+    badge: '(Google Free · 1M Context)',
+    description: 'Fast and responsive model for general coding and project edits.',
+    category: 'recommended',
   },
 ]
 
@@ -282,10 +276,6 @@ export const ModelPickerScreen = ({
                 <span fg={isSelected ? theme.primary : theme.muted}>
                   {isSelected ? '▶ ' : '  '}
                 </span>
-                <span fg={model.iconColor} attributes={TextAttributes.BOLD}>
-                  {model.icon}
-                </span>
-                <span>{model.iconPadding}</span>
                 <span
                   fg={theme.foreground}
                   attributes={isSelected ? TextAttributes.BOLD : undefined}
@@ -296,7 +286,7 @@ export const ModelPickerScreen = ({
                   <span fg={theme.muted}> {model.badge}</span>
                 ) : null}
                 {'\n'}
-                <span fg={theme.muted}>       {model.description}</span>
+                <span fg={theme.muted}>    {model.description}</span>
                 {idx < filteredModels.length - 1 &&
                 filteredModels[idx + 1].category === model.category
                   ? '\n\n'

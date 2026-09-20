@@ -280,9 +280,14 @@ export const ChatInputBar = ({
     onInterruptStream()
   }
 
-  const effectivePlaceholder =
-    inputMode === 'default' ? inputPlaceholder : modeConfig.placeholder
-  const borderColor = theme[modeConfig.color]
+  const effectivePlaceholder = autoAcceptEdits
+    ? (isNarrowWidth
+        ? 'Ask RivoCode (auto-accept on)...'
+        : 'Ask RivoCode (auto-accept edits is on) or type / for commands...')
+    : inputMode === 'default'
+      ? inputPlaceholder
+      : modeConfig.placeholder
+  const borderColor = autoAcceptEdits ? '#ec4899' : theme[modeConfig.color]
 
   if (askUserState) {
     const isCommand = askUserState.questions[0]?.header === 'Command'
@@ -433,7 +438,7 @@ export const ChatInputBar = ({
           }}
         >
           <box style={{ flexDirection: 'row', alignItems: 'center' }}>
-            {activeSession ? (
+            {activeSession && (
               <text style={{ wrapMode: 'none' }}>
                 <span
                   fg={activeSession.status === 'running' ? '#38bdf8' : '#94a3b8'}
@@ -448,13 +453,7 @@ export const ChatInputBar = ({
                   {'(Ctrl+O to view logs)'}
                 </span>
               </text>
-            ) : autoAcceptEdits ? (
-              <text style={{ wrapMode: 'none' }}>
-                <span fg="#f43f5e">
-                  {'⚡ auto accept edits is on'}
-                </span>
-              </text>
-            ) : null}
+            )}
           </box>
           <box style={{ flexDirection: 'row', alignItems: 'center' }}>
             <text style={{ wrapMode: 'none' }}>
@@ -544,7 +543,7 @@ export const ChatInputBar = ({
           )}
           {!modeConfig.label && !modeConfig.icon && (
             <box style={{ flexShrink: 0, paddingRight: 1 }}>
-              <text style={{ fg: '#facc15' }}>❯</text>
+              <text style={{ fg: autoAcceptEdits ? '#ec4899' : '#facc15' }}>❯</text>
             </box>
           )}
           <box style={{ flexGrow: 1, minWidth: 0 }}>
@@ -584,7 +583,7 @@ export const ChatInputBar = ({
         }}
       >
         <box style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {activeSession ? (
+          {activeSession && (
             <text style={{ wrapMode: 'none' }}>
               <span
                 fg={activeSession.status === 'running' ? '#38bdf8' : '#94a3b8'}
@@ -596,16 +595,10 @@ export const ChatInputBar = ({
                 {activeSession.status === 'running' ? '● Running ' : '✓ Done '}
               </span>
               <span fg={theme.muted}>
-                {'(Ctrl+O to view logs)'}
+                {'(Ctrl+O to view logs) '}
               </span>
             </text>
-          ) : autoAcceptEdits ? (
-            <text style={{ wrapMode: 'none' }}>
-              <span fg="#f43f5e">
-                {'◈ auto accept edits is on'}
-              </span>
-            </text>
-          ) : null}
+          )}
         </box>
         <box style={{ flexDirection: 'row', alignItems: 'center' }}>
           <text style={{ wrapMode: 'none' }}>

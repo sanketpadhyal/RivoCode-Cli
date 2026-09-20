@@ -60,6 +60,7 @@ export const StatusBar = ({
 }: StatusBarProps) => {
   const theme = useTheme()
   const liveTokens = useChatStore((state) => state.liveTokenCount)
+  const currentAction = useChatStore((state) => state.currentAction)
   const messages = useChatStore((state) => state.messages)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
 
@@ -172,11 +173,36 @@ export const StatusBar = ({
         return null
 
       case 'waiting':
+      case 'streaming': {
+        const actionText =
+          currentAction ||
+          (statusIndicatorState.kind === 'streaming'
+            ? 'Generating...'
+            : `${thinkingState.verb}...`)
+
+        const displayVerb = actionText.endsWith('...')
+          ? actionText
+          : `${actionText}...`
+
+        const actionIcon = currentAction?.startsWith('Running')
+          ? '⚡'
+          : currentAction?.startsWith('Editing') || currentAction?.startsWith('Writing')
+            ? '✎'
+            : currentAction?.startsWith('Reading')
+              ? '◎'
+              : currentAction?.startsWith('Listing')
+                ? '⌕'
+                : currentAction?.startsWith('Searching')
+                  ? '⌕'
+                  : currentAction?.startsWith('Fetching')
+                    ? '◈'
+                    : thinkingState.icon
+
         return (
           <>
-            <span fg="#f97316">{`${thinkingState.icon} `}</span>
+            <span fg="#f97316">{`${actionIcon} `}</span>
             <ShimmerText
-              text={`${thinkingState.verb}...`}
+              text={displayVerb}
               interval={SHIMMER_INTERVAL_MS}
               primaryColor="#f97316"
             />
@@ -187,21 +213,7 @@ export const StatusBar = ({
             </span>
           </>
         )
-
-      case 'streaming':
-        return (
-          <>
-            <span fg="#f97316">{`${thinkingState.icon} `}</span>
-            <ShimmerText
-              text="Generating..."
-              interval={SHIMMER_INTERVAL_MS}
-              primaryColor="#f97316"
-            />
-            <span fg="#f97316">
-              {` [${elapsedSeconds}s · ${trendArrow} ${liveTokens.toLocaleString()} tokens]`}
-            </span>
-          </>
-        )
+      }
     }
   }
 

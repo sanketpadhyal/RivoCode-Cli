@@ -215,7 +215,7 @@ export function resolveModelRoute(modelName: string): ModelRoute {
     }
   }
 
-  if (normalized.includes('laguna-s') || normalized.includes('poolside-s') || normalized.includes('laguna-s-2.1')) {
+  if (normalized.includes('laguna-s') || normalized.includes('poolside-s') || normalized.includes('laguna-s-2.1') || normalized.includes('poolside')) {
     return {
       provider: 'openrouter',
       endpoint: 'https://openrouter.ai/api/v1/chat/completions',
@@ -225,12 +225,22 @@ export function resolveModelRoute(modelName: string): ModelRoute {
     }
   }
 
-  if (normalized.includes('laguna') || normalized.includes('poolside')) {
+  if (normalized.includes('laguna')) {
     return {
       provider: 'openrouter',
       endpoint: 'https://openrouter.ai/api/v1/chat/completions',
       modelId: 'poolside/laguna-xs-2.1:free',
       displayName: 'Poolside Laguna XS 2.1 (Free Tier)',
+      apiKeyUrl: 'https://openrouter.ai/keys',
+    }
+  }
+
+  if (normalized.includes('qwen')) {
+    return {
+      provider: 'openrouter',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      modelId: 'qwen/qwen3.8-27b:free',
+      displayName: 'Qwen 3.8 27B (Free OpenRouter)',
       apiKeyUrl: 'https://openrouter.ai/keys',
     }
   }
@@ -1330,13 +1340,16 @@ CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
     }
   }
 
-  chatHistory.push({ role: 'user', content: prompt })
+  const lastHistoryMsg = chatHistory[chatHistory.length - 1]
+  if (!lastHistoryMsg || lastHistoryMsg.role !== 'user' || lastHistoryMsg.content !== prompt) {
+    chatHistory.push({ role: 'user', content: prompt })
+  }
 
   let hasThinkingBlock = false
   let accumulatedThinking = ''
   let accumulatedContent = ''
   let turns = 0
-  const maxTurns = 16
+  const maxTurns = 25
 
   try {
     const headers: Record<string, string> = {
@@ -1359,6 +1372,8 @@ CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
       content: '',
     })
 
+    useChatStore.getState().setCurrentAction('Thinking...')
+
     const isConversational = /^(hi|hey|hello|thanks|thank you|sup|yo|good|nice|cool|ok|okay|what is|who is|what can|what should|what do|what are|what would|tell me|explain|describe|how does|how do|what does|why is|when did|can you tell|is this|is there|are there|do you|does this|should i|can i|could you|would you)\b/i.test(prompt.trim())
     const isActionRequired = !isConversational && /\b(fix|add|create|build|update|make|implement|refactor|change|modify|write|delete|remove|put|apply|generate|install|run|start|serve|setup|port|replace|edit|patch|convert|migrate|optimize|debug|test|deploy|init|scaffold|extend|improve|enhance|support|enable|disable|integrate|connect|link|merge|split|extract|export|import|parse|format|style|animate|render|display|show|hide|toggle|handle|validate|sanitize)\b/i.test(prompt)
     const isClaude = route.modelId.includes('claude')
@@ -1375,6 +1390,7 @@ CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
 
       if (chatHistory.length > 20) {
         const sysMsg = chatHistory[0]
+        const firstUserMsg = chatHistory.find((m) => m.role === 'user')
         let startIndex = Math.max(1, chatHistory.length - 10)
         while (startIndex < chatHistory.length && chatHistory[startIndex]?.role !== 'user') {
           startIndex++
@@ -1382,9 +1398,12 @@ CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
         const recentTurns = startIndex < chatHistory.length ? chatHistory.slice(startIndex) : chatHistory.slice(-4)
         chatHistory.length = 0
         if (sysMsg) chatHistory.push(sysMsg)
+        if (firstUserMsg && !recentTurns.includes(firstUserMsg)) {
+          chatHistory.push(firstUserMsg)
+        }
         chatHistory.push({
           role: 'system',
-          content: '[Context compacted: earlier turns summarized]',
+          content: '[Context compacted: earlier tool interactions summarized]',
         })
         chatHistory.push(...recentTurns)
       }
@@ -1522,8 +1541,15 @@ CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
         }
 
         if (response.status === 429) {
+          const providerLabel = route.displayName || route.provider
+          const hint =
+            route.provider === 'openrouter'
+              ? 'Free models on OpenRouter share global per-minute rate limits. Please wait a moment or try another free model in the model picker.'
+              : route.provider === 'gemini'
+              ? 'Google Gemini free tier per-minute limit reached. Please wait a few seconds or switch to Groq / OpenRouter.'
+              : 'Rate limit reached for this provider. Please wait a moment before trying again.'
           throw new Error(
-            `Rate limit reached on Gemini Free Tier. Please wait a moment or switch to Groq (gpt-oss-120b) for higher rate limits.`,
+            `Rate limit reached on ${providerLabel}${cleanMsg ? `: ${cleanMsg}` : ''}. ${hint}`,
           )
         }
 
@@ -1572,6 +1598,7 @@ CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
 
             const reasoningChunk = delta.reasoning_content || delta.reasoning
             if (reasoningChunk) {
+              useChatStore.getState().setCurrentAction('Thinking...')
               if (!hasThinkingBlock) {
                 hasThinkingBlock = true
                 updater.addBlock({
@@ -1597,6 +1624,7 @@ CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
 
             const contentChunk = delta.content
             if (contentChunk) {
+              useChatStore.getState().setCurrentAction('Responding...')
               turnContent += contentChunk
               accumulatedContent += contentChunk
               const displayContent = cleanStreamedContent(accumulatedContent)
@@ -1689,26 +1717,12 @@ CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
           )
         }
 
-        // If inspection/read tools were executed but no code modification has occurred yet, drive model to build the app!
-        if (!hasExecutedModification && executedToolSignatures.size > 0 && turns < 10) {
-          chatHistory.push({
-            role: 'assistant',
-            content: turnContent || 'I have inspected the directory structure.',
-          })
-          chatHistory.push({
-            role: 'user',
-            content:
-              'Now proceed immediately to create the application files using write_file or execute the required terminal commands (e.g. npx create-react-app or bun create) to build the complete implementation.',
-          })
-          continue
-        }
-
-        // Once files have been created/modified, force a final text response turn without tools!
+        // Once tools have completed, if turn content was empty, request a final summary once
         if (!turnContent.trim() && executedToolSignatures.size > 0 && !hasForcedFinalAnswer && turns < maxTurns) {
           hasForcedFinalAnswer = true
           chatHistory.push({
             role: 'user',
-            content: 'All file changes and tool executions are complete. Briefly summarize your work and confirm completion to the user now. Do not call any tools.',
+            content: 'All tool executions are complete. Briefly summarize your work and confirm completion to the user now. Do not call any tools.',
           })
           continue
         }
@@ -1766,6 +1780,27 @@ CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
           } else if (tc.name === 'write_file' || tc.name === 'run_terminal_command') {
             hasExecutedModification = true
           }
+          if (tc.name === 'write_file') {
+            const fileName = path.basename(parsedArgs.path || 'file')
+            useChatStore.getState().setCurrentAction(`Editing ${fileName}`)
+          } else if (tc.name === 'run_terminal_command') {
+            const shortCmd = (parsedArgs.command || '').trim().replace(/\s+/g, ' ').slice(0, 32)
+            useChatStore.getState().setCurrentAction(`Running: ${shortCmd}`)
+          } else if (tc.name === 'read_files') {
+            const fileList = (parsedArgs.paths || []).map((p: any) => path.basename(String(p))).slice(0, 2).join(', ')
+            useChatStore.getState().setCurrentAction(`Reading ${fileList || 'files'}`)
+          } else if (tc.name === 'list_directory') {
+            const folder = path.basename(parsedArgs.path || '.')
+            useChatStore.getState().setCurrentAction(`Listing ${folder}/`)
+          } else if (tc.name === 'search_web' || tc.name === 'web_search') {
+            const q = (parsedArgs.query || parsedArgs.q || '').slice(0, 25)
+            useChatStore.getState().setCurrentAction(`Searching web: "${q}"`)
+          } else if (tc.name === 'fetch_web_content') {
+            useChatStore.getState().setCurrentAction('Fetching web content')
+          } else {
+            useChatStore.getState().setCurrentAction(`Executing ${tc.name}`)
+          }
+
           const filePath = parsedArgs.path ? (path.isAbsolute(parsedArgs.path) ? parsedArgs.path : path.join(projectRoot, parsedArgs.path)) : ''
           const oldContent = (tc.name === 'write_file' && filePath && fs.existsSync(filePath)) ? fs.readFileSync(filePath, 'utf-8') : null
 
@@ -1861,8 +1896,8 @@ CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
         break
       }
 
-      const hasNativeCalls = validToolCalls.some((tc) => tc.id && tc.id.startsWith('call_'))
-      if (hasNativeCalls && route.provider !== 'openrouter') {
+      const hasNativeCalls = validToolCalls.some((tc) => Boolean(tc.id))
+      if (hasNativeCalls) {
         chatHistory.push({
           role: 'assistant',
           content: turnContent || null,
@@ -1897,9 +1932,7 @@ CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
           content: turnContent || `Executed tools: ${validToolCalls.map((t) => t.name).join(', ')}`,
         })
 
-        const nextUserInstruction = !hasExecutedModification
-          ? `Tool execution results:\n${toolResultsForHistory.join('\n\n')}\n\nNow proceed immediately with the next step. Create the application files using write_file or execute the required terminal commands to build the complete implementation.`
-          : `Tool execution results:\n${toolResultsForHistory.join('\n\n')}\n\nAll tools executed. Briefly summarize your work and confirm completion to the user.`
+        const nextUserInstruction = `Tool execution results:\n${toolResultsForHistory.join('\n\n')}\n\nProceed immediately with the next steps to complete the task. If there are more files to create or modify using write_file, or terminal commands to run using run_terminal_command, continue executing them now. Only when the entire implementation is completely finished, provide your final summary to the user.`
 
         chatHistory.push({
           role: 'user',
@@ -1961,5 +1994,7 @@ CONCISE RESPONSES & NO FULL-FILE CODE DUMPS:
       },
     }
     onComplete(errorRunState)
+  } finally {
+    useChatStore.getState().setCurrentAction(null)
   }
 }

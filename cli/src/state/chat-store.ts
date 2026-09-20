@@ -86,6 +86,7 @@ export type ChatStoreState = {
   selectedModel: string | null
   autoAcceptEdits: boolean
   liveTokenCount: number
+  currentAction: string | null
 }
 
 const findLatestFollowupInBlocks = (
@@ -183,6 +184,7 @@ type ChatStoreActions = {
   setAutoAcceptEdits: (value: boolean) => void
   toggleAutoAcceptEdits: () => void
   setLiveTokenCount: (tokens: number) => void
+  setCurrentAction: (action: string | null) => void
   reset: () => void
 }
 
@@ -224,11 +226,17 @@ const initialState: ChatStoreState = {
   selectedModel: 'gemini-3.6-flash',
   autoAcceptEdits: false,
   liveTokenCount: 0,
+  currentAction: null,
 }
 
 export const useChatStore = create<ChatStore>()(
   immer((set) => ({
     ...initialState,
+
+    setCurrentAction: (action) =>
+      set((state) => {
+        state.currentAction = action
+      }),
 
     setLiveTokenCount: (tokens) =>
       set((state) => {
