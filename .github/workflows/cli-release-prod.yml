@@ -71,7 +71,7 @@ jobs:
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
           
           # Update version in package.json files
-          bun -e "const fs = require('fs'); ['package.json', 'cli/package.json'].forEach(p => { if (fs.existsSync(p)) { const j = JSON.parse(fs.readFileSync(p, 'utf8')); j.version = '$NEW_VERSION'; fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n'); } })"
+          bun -e "const fs = require('fs'); ['package.json', 'cli/package.json', 'npm/cli-linux-x64/package.json', 'npm/cli-linux-arm64/package.json', 'npm/cli-darwin-x64/package.json', 'npm/cli-darwin-arm64/package.json', 'npm/cli-win32-x64/package.json'].forEach(p => { if (fs.existsSync(p)) { const j = JSON.parse(fs.readFileSync(p, 'utf8')); j.version = '$NEW_VERSION'; if (j.optionalDependencies) { Object.keys(j.optionalDependencies).forEach(k => { if (k.startsWith('@rivocode-cli/cli-')) j.optionalDependencies[k] = '$NEW_VERSION'; }); } fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n'); } })"
           
           git commit -am "chore(release): bump version to $NEW_VERSION"
           git tag "$TAG_NAME"
@@ -211,11 +211,33 @@ jobs:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Download All Binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Prepare Platform Packages
+        run: |
+          mkdir -p npm/cli-linux-x64/bin npm/cli-linux-arm64/bin npm/cli-darwin-x64/bin npm/cli-darwin-arm64/bin npm/cli-win32-x64/bin
+          
+          tar -xzf release-assets/rivo-linux-x64.tar.gz -C npm/cli-linux-x64/bin
+          tar -xzf release-assets/rivo-linux-arm64.tar.gz -C npm/cli-linux-arm64/bin
+          tar -xzf release-assets/rivo-darwin-x64.tar.gz -C npm/cli-darwin-x64/bin
+          tar -xzf release-assets/rivo-darwin-arm64.tar.gz -C npm/cli-darwin-arm64/bin
+          unzip release-assets/rivo-windows-x64.exe.zip -d npm/cli-win32-x64/bin
+
       - name: Authenticate with NPM
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
       - name: Publish to NPM
-        run: npm publish --access public
+        run: |
+          cd npm/cli-linux-x64 && npm publish --access public && cd ../..
+          cd npm/cli-linux-arm64 && npm publish --access public && cd ../..
+          cd npm/cli-darwin-x64 && npm publish --access public && cd ../..
+          cd npm/cli-darwin-arm64 && npm publish --access public && cd ../..
+          cd npm/cli-win32-x64 && npm publish --access public && cd ../..
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

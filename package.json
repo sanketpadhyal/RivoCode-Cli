@@ -7,14 +7,20 @@
   "type": "module",
   "bin": {
     "rivo": "bin/rivo.js",
-    "rivocode": "bin/rivo.js",
-    "cli": "bin/rivo.js"
+    "rivocode": "bin/rivo.js"
   },
   "files": [
-    "bin",
+    "bin/rivo.js",
     "README.md",
     "LICENSE"
   ],
+  "optionalDependencies": {
+    "@rivocode-cli/cli-linux-x64": "3.0.0",
+    "@rivocode-cli/cli-linux-arm64": "3.0.0",
+    "@rivocode-cli/cli-darwin-x64": "3.0.0",
+    "@rivocode-cli/cli-darwin-arm64": "3.0.0",
+    "@rivocode-cli/cli-win32-x64": "3.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sanketpadhyal/RivoCode-Cli.git"

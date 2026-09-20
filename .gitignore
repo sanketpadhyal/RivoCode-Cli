@@ -12,6 +12,7 @@ dev
 dist
 dist-env
 cli/bin/
+npm/*/bin/
 *.tsbuildinfo
 
 tags

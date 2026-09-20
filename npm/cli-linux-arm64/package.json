@@ -1,0 +1,23 @@
+{
+  "name": "@rivocode-cli/cli-linux-arm64",
+  "version": "3.0.0",
+  "description": "linux-arm64 binary for @rivocode-cli/cli",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "main": "bin/rivo",
+  "files": [
+    "bin/rivo",
+    "tree-sitter.wasm"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sanketpadhyal/RivoCode-Cli.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
