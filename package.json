@@ -1,6 +1,6 @@
 {
   "name": "@rivocode-cli/cli",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "RivoCode — AI-powered terminal coding assistant",
   "author": "Sanket Padhyal <mrsanketpadhyal@gmail.com>",
   "license": "MIT",
@@ -16,11 +16,11 @@
     "LICENSE"
   ],
   "optionalDependencies": {
-    "@rivocode-cli/cli-linux-x64": "3.0.3",
-    "@rivocode-cli/cli-linux-arm64": "3.0.3",
-    "@rivocode-cli/cli-darwin-x64": "3.0.3",
-    "@rivocode-cli/cli-darwin-arm64": "3.0.3",
-    "@rivocode-cli/cli-win32-x64": "3.0.3"
+    "@rivocode-cli/cli-linux-x64": "3.0.4",
+    "@rivocode-cli/cli-linux-arm64": "3.0.4",
+    "@rivocode-cli/cli-darwin-x64": "3.0.4",
+    "@rivocode-cli/cli-darwin-arm64": "3.0.4",
+    "@rivocode-cli/cli-win32-x64": "3.0.4"
   },
   "repository": {
     "type": "git",
